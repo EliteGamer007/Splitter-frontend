@@ -212,6 +212,39 @@ export default function ThreadPage({ onNavigate, postId, userData }) {
 
       {post && (
         <div className="root-post-card">
+          {post.parent_context?.status === 'available' && post.parent_context?.post && (
+            <div style={{
+              marginBottom: '12px',
+              padding: '10px',
+              borderRadius: '8px',
+              border: '1px solid rgba(0, 217, 255, 0.35)',
+              background: 'rgba(0, 217, 255, 0.08)'
+            }}>
+              <div style={{ fontSize: '12px', opacity: 0.85, marginBottom: '6px' }}>
+                Thread context loaded {post.parent_context.source === 'cache' ? 'from local cache' : 'from remote instance'}
+              </div>
+              <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '4px' }}>
+                Replying to @{post.parent_context.post.username || 'remote-user'}
+              </div>
+              <div style={{ fontSize: '14px' }}>
+                {post.parent_context.post.content || '(No content)'}
+              </div>
+            </div>
+          )}
+
+          {post.parent_context?.status === 'missing' && (
+            <div style={{
+              marginBottom: '12px',
+              padding: '10px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255, 140, 0, 0.45)',
+              background: 'rgba(255, 140, 0, 0.1)',
+              fontSize: '13px'
+            }}>
+              ⚠️ Parent post unavailable. {post.parent_context?.message || 'It may be deleted or unreachable.'}
+            </div>
+          )}
+
           <div className="post-author-name">
             @{post.username || 'unknown'}
           </div>
