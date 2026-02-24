@@ -614,8 +614,24 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
                         🗓 {new Date(entry.rotated_at).toLocaleString()}
                       </span>
                     </div>
-                    <div style={{ color: '#ff8888', wordBreak: 'break-all', marginBottom: '4px' }}>
-                      <strong>Key:</strong> <code>{entry.old_public_key?.substring(0, 44)}…</code>
+                    <div style={{ color: '#ff8888', wordBreak: 'break-all', marginBottom: '4px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <strong style={{ marginRight: '4px' }}>Key:</strong> <code style={{ marginRight: '8px' }}>{entry.old_public_key?.substring(0, 44)}…</code>
+                      <button
+                        onClick={() => handleCopyToClipboard(entry.old_public_key, `revoked-${i}`)}
+                        style={{
+                          background: 'transparent',
+                          border: '1px solid rgba(255,136,136,0.3)',
+                          color: '#ff8888',
+                          borderRadius: '4px',
+                          padding: '2px 8px',
+                          fontSize: '10px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {copiedField === `revoked-${i}` ? '✓' : 'Copy Full Key'}
+                      </button>
                     </div>
                     <div style={{ color: 'var(--text-secondary)', wordBreak: 'break-all' }}>
                       <strong>Replaced by:</strong> <code>{entry.new_public_key?.substring(0, 32)}…</code>
@@ -647,7 +663,16 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
                   onClick={async () => {
                     setIsCheckingKey(true);
                     try {
-                      const res = await authApi.checkKeyRevocation(checkKeyInput.trim());
+                      let keyToCheck = checkKeyInput.trim();
+                      if (keyToCheck.startsWith('did:key:')) {
+                        // Strip did:key:z6Mk... prefix to get the raw public key
+                        if (keyToCheck.startsWith('did:key:z6Mk')) {
+                          keyToCheck = keyToCheck.substring(12);
+                        } else if (keyToCheck.startsWith('did:key:z')) {
+                          keyToCheck = keyToCheck.substring(9);
+                        }
+                      }
+                      const res = await authApi.checkKeyRevocation(keyToCheck);
                       setCheckKeyResult(res);
                     } catch (e) {
                       setCheckKeyResult({ status: 'error', revoked: false });
@@ -692,6 +717,6 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
           </ul>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

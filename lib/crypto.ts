@@ -1,9 +1,9 @@
-// Crypto utilities for DID generation and signing (browser-side)
-// This runs in the browser using Web Crypto API
+// This runs in the browser using Web Crypto API and a custom Ed25519 utility
+import { generateKeyPair as generateEdKeyPair, sign as signEd } from './ed25519-browser';
 
 export interface KeyPair {
-  publicKey: CryptoKey;
-  privateKey: CryptoKey;
+  publicKey: CryptoKey | Uint8Array | null;
+  privateKey: CryptoKey | Uint8Array | null | any;
   publicKeyBase64: string;
   privateKeyBase64: string;
   did: string;
@@ -26,23 +26,14 @@ interface RecoveryFileV2 {
   checksum: string;
 }
 
-// Generate a new Ed25519 (actually P-256 ECDSA) keypair for DID
+// Generate a new Ed25519 keypair for DID and P-256 for encryption
 export async function generateKeyPair(): Promise<KeyPair> {
-  // Generate Signing Keypair (ECDSA P-256)
-  const signKeyPair = await window.crypto.subtle.generateKey(
-    {
-      name: 'ECDSA',
-      namedCurve: 'P-256',
-    },
-    true, // extractable
-    ['sign', 'verify']
-  );
+  // Generate Signing Keypair (Ed25519) using custom browser utility for raw key support
+  const edKeyPair = await generateEdKeyPair();
 
-  const signPublicKeyBuffer = await window.crypto.subtle.exportKey('spki', signKeyPair.publicKey);
-  const signPublicKeyBase64 = bufferToBase64(signPublicKeyBuffer);
-
-  const signPrivateKeyBuffer = await window.crypto.subtle.exportKey('pkcs8', signKeyPair.privateKey);
-  const signPrivateKeyBase64 = bufferToBase64(signPrivateKeyBuffer);
+  const signPublicKeyBase64 = uint8ArrayToBase64(edKeyPair.publicKey);
+  // Store secretKey (64 bytes) as hex to match SecurityPage.jsx standard
+  const signPrivateKeyHex = Array.from(edKeyPair.secretKey).map(b => b.toString(16).padStart(2, '0')).join('');
 
   // Generate DID from signing public key
   const did = await generateDID(signPublicKeyBase64);
@@ -64,10 +55,10 @@ export async function generateKeyPair(): Promise<KeyPair> {
   const encPrivateKeyBase64 = bufferToBase64(encPrivateKeyBuffer);
 
   return {
-    publicKey: signKeyPair.publicKey,
-    privateKey: signKeyPair.privateKey,
+    publicKey: edKeyPair.publicKey,
+    privateKey: edKeyPair.secretKey,
     publicKeyBase64: signPublicKeyBase64,
-    privateKeyBase64: signPrivateKeyBase64,
+    privateKeyBase64: signPrivateKeyHex,
     did,
     encryptionPublicKey: encKeyPair.publicKey,
     encryptionPrivateKey: encKeyPair.privateKey,
@@ -83,36 +74,41 @@ async function generateDID(publicKeyBase64: string): Promise<string> {
   return `did:key:z6Mk${hash.substring(0, 40)}`;
 }
 
-// Sign a challenge with private key
-export async function signChallenge(privateKey: CryptoKey, challenge: string): Promise<string> {
+// Sign a challenge with private key (Ed25519)
+export async function signChallenge(privateKey: Uint8Array | string, challenge: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(challenge);
 
-  const signature = await window.crypto.subtle.sign(
-    {
-      name: 'ECDSA',
-      hash: { name: 'SHA-256' },
-    },
-    privateKey,
-    data
-  );
+  let keyBytes: Uint8Array;
+  if (typeof privateKey === 'string') {
+    keyBytes = await importPrivateKey(privateKey);
+  } else {
+    keyBytes = privateKey;
+  }
 
-  return bufferToBase64(signature);
+  const signature = await signEd(data, keyBytes);
+  return uint8ArrayToBase64(signature);
 }
 
-// Import a private key from base64 (ECDSA)
-export async function importPrivateKey(base64Key: string): Promise<CryptoKey> {
-  const buffer = base64ToBuffer(base64Key);
-  return await window.crypto.subtle.importKey(
-    'pkcs8',
-    buffer,
-    {
-      name: 'ECDSA',
-      namedCurve: 'P-256',
-    },
-    true,
-    ['sign']
-  );
+// Import a private key (Ed25519) — handles both Hex (SecurityPage) and Base64
+export async function importPrivateKey(keyString: string): Promise<Uint8Array> {
+  // Check if it's hex (128 chars for 64-byte Ed25519 secret key)
+  if (/^[0-9a-fA-F]{128}$/.test(keyString)) {
+    const bytes = new Uint8Array(64);
+    for (let i = 0; i < 64; i++) {
+      bytes[i] = parseInt(keyString.substr(i * 2, 2), 16);
+    }
+    return bytes;
+  }
+
+  // Otherwise assume Base64
+  try {
+    const buffer = base64ToBuffer(keyString);
+    return new Uint8Array(buffer);
+  } catch (e) {
+    console.error('Failed to decode private key as hex or base64');
+    throw new Error('Invalid private key format');
+  }
 }
 
 // Import Encryption Private Key (ECDH)
@@ -248,14 +244,18 @@ function assertRecoveryDataIntegrity(recoveryData: any): void {
 }
 
 
-// Helper: Convert ArrayBuffer to Base64
-function bufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
+// Helper: Convert Uint8Array to Base64
+function uint8ArrayToBase64(bytes: Uint8Array): string {
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+// Helper: Convert ArrayBuffer to Base64 (legacy name)
+function bufferToBase64(buffer: ArrayBuffer): string {
+  return uint8ArrayToBase64(new Uint8Array(buffer));
 }
 
 // Helper: Convert Base64 to ArrayBuffer
@@ -278,7 +278,10 @@ async function hashString(str: string): Promise<string> {
 
 // Store keypair in localStorage
 export function storeKeyPair(keyPair: KeyPair): void {
-  localStorage.setItem('private_key', keyPair.privateKeyBase64);
+  // Store private_key in the format it came in (Hex for Ed25519 if it was generated/rotated in SecurityPage)
+  // or use the base64 string provided in the KeyPair object.
+  const sk = keyPair.privateKeyBase64; // This might actually be hex now, but we keep the name for compatibility
+  localStorage.setItem('private_key', sk);
   localStorage.setItem('public_key', keyPair.publicKeyBase64);
   localStorage.setItem('did', keyPair.did);
 
@@ -321,7 +324,7 @@ export async function loadKeyPair(): Promise<KeyPair | null> {
 
     return {
       privateKey,
-      publicKey: null as any, // Not needed for signing, avoided import overhead
+      publicKey: null,
       publicKeyBase64,
       privateKeyBase64,
       did,
@@ -480,25 +483,25 @@ export async function importRecoveryFile(file: File, passphrase?: string): Promi
 }
 // Load ONLY encryption keys (for users without DID/signing keys)
 export async function loadEncryptionKeys(): Promise<{ encryptionPrivateKey?: CryptoKey; encryptionPublicKey?: CryptoKey; encryptionPrivateKeyBase64?: string; encryptionPublicKeyBase64?: string } | null> {
-    const encryptionPrivateKeyBase64 = localStorage.getItem('encryption_private_key');
-    const encryptionPublicKeyBase64 = localStorage.getItem('encryption_public_key');
+  const encryptionPrivateKeyBase64 = localStorage.getItem('encryption_private_key');
+  const encryptionPublicKeyBase64 = localStorage.getItem('encryption_public_key');
 
-    if (!encryptionPrivateKeyBase64 || !encryptionPublicKeyBase64) {
-        return null;
-    }
+  if (!encryptionPrivateKeyBase64 || !encryptionPublicKeyBase64) {
+    return null;
+  }
 
-    try {
-        const encryptionPrivateKey = await importEncryptionPrivateKey(encryptionPrivateKeyBase64);
-        const encryptionPublicKey = await importEncryptionPublicKey(encryptionPublicKeyBase64);
+  try {
+    const encryptionPrivateKey = await importEncryptionPrivateKey(encryptionPrivateKeyBase64);
+    const encryptionPublicKey = await importEncryptionPublicKey(encryptionPublicKeyBase64);
 
-        return {
-            encryptionPrivateKey,
-            encryptionPublicKey,
-            encryptionPrivateKeyBase64,
-            encryptionPublicKeyBase64,
-        };
-    } catch (error) {
-        console.error('Failed to load encryption keys:', error);
-        return null;
-    }
+    return {
+      encryptionPrivateKey,
+      encryptionPublicKey,
+      encryptionPrivateKeyBase64,
+      encryptionPublicKeyBase64,
+    };
+  } catch (error) {
+    console.error('Failed to load encryption keys:', error);
+    return null;
+  }
 }
