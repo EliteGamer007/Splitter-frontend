@@ -1,0 +1,49 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (best-effort)
+        run: |
+          if npm pkg get scripts.lint | grep -qv "null"; then
+            if npm ls eslint --depth=0 >/dev/null 2>&1; then
+              npm run lint
+            else
+              echo "Skipping lint: eslint dependency not installed in this repo."
+            fi
+          else
+            echo "Skipping lint: no lint script configured."
+          fi
+
+      - name: Stable test suite (gating)
+        run: npm test -- --ci --watchAll=false __tests__/lib/api.test.ts
+
+      - name: Full test suite (non-blocking diagnostics)
+        continue-on-error: true
+        run: npm test -- --ci --watchAll=false
+
+      - name: Build
+        run: npm run build

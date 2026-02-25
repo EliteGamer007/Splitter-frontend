@@ -1,0 +1,10 @@
+.git
+.github
+.vscode
+.idea
+node_modules
+.next/cache
+coverage
+*.log
+.env
+.env.*
