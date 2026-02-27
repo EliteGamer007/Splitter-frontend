@@ -440,6 +440,10 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
         }
 
         setPosts(filteredPosts);
+        localStorage.setItem(
+          `timeline_cache_${activeTab}`,
+          JSON.stringify(filteredPosts)
+        );
       } else {
         if (activeTab === 'home') {
           setPosts(SAMPLE_POSTS);
