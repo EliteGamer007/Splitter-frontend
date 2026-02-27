@@ -329,6 +329,18 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   };
 
   const fetchPosts = async () => {
+    if (!navigator.onLine) {
+      const cached = localStorage.getItem(`timeline_cache_${activeTab}`);
+      if (cached) {
+        try {
+          setPosts(JSON.parse(cached));
+        } catch (e) {
+          console.error("Failed to parse cached timeline:", e);
+        }
+      }
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -395,27 +407,27 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
           const derivedUsername = identity.username || post.author_did?.split(':').pop() || 'unknown';
 
           return {
-          id: post.id,
-          author: `${derivedUsername}@${derivedDomain}`,
-          authorId: post.author_id || post.user_id,
-          avatar: post.avatar_url || '👤',
-          displayName: post.display_name || derivedUsername || 'Unknown',
-          handle: `@${derivedUsername}`,
-          timestamp: formatTimestamp(post.created_at),
-          createdAt: post.created_at,
-          updatedAt: post.updated_at,
-          content: post.content,
-          replies: post.total_reply_count || 0,
-          boosts: post.repost_count || 0,
-          likes: post.like_count || 0,
-          local: post.is_remote !== undefined ? !post.is_remote : (post.is_local !== undefined ? post.is_local : true),
-          isRemote: post.is_remote || false,
-          domain: derivedDomain,
-          visibility: post.visibility || 'public',
-          liked: post.liked || false,
-          reposted: post.reposted || false,
-          bookmarked: post.bookmarked || false,
-          imageUrl: post.media?.[0]?.media_url || null
+            id: post.id,
+            author: `${derivedUsername}@${derivedDomain}`,
+            authorId: post.author_id || post.user_id,
+            avatar: post.avatar_url || '👤',
+            displayName: post.display_name || derivedUsername || 'Unknown',
+            handle: `@${derivedUsername}`,
+            timestamp: formatTimestamp(post.created_at),
+            createdAt: post.created_at,
+            updatedAt: post.updated_at,
+            content: post.content,
+            replies: post.total_reply_count || 0,
+            boosts: post.repost_count || 0,
+            likes: post.like_count || 0,
+            local: post.is_remote !== undefined ? !post.is_remote : (post.is_local !== undefined ? post.is_local : true),
+            isRemote: post.is_remote || false,
+            domain: derivedDomain,
+            visibility: post.visibility || 'public',
+            liked: post.liked || false,
+            reposted: post.reposted || false,
+            bookmarked: post.bookmarked || false,
+            imageUrl: post.media?.[0]?.media_url || null
           };
         });
         const currentDomain = instanceInfo.domain;
@@ -429,19 +441,19 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
 
         setPosts(filteredPosts);
       } else {
-    if (activeTab === 'home') {
-      setPosts(SAMPLE_POSTS);
-    } else {
-      setPosts([]);
-    }
+        if (activeTab === 'home') {
+          setPosts(SAMPLE_POSTS);
+        } else {
+          setPosts([]);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch posts:', err);
-    if (activeTab === 'home') {
-    setPosts(SAMPLE_POSTS);
-    } else {
-    setPosts([]);
-    }
+      if (activeTab === 'home') {
+        setPosts(SAMPLE_POSTS);
+      } else {
+        setPosts([]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -615,9 +627,9 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       <nav className="home-nav">
         <div className="nav-left">
           <h1 className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img 
-              src="/logo.png" 
-              alt="Logo" 
+            <img
+              src="/logo.png"
+              alt="Logo"
               style={{
                 height: '66px',
                 width: 'auto',
