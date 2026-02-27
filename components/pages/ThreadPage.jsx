@@ -174,6 +174,13 @@ export default function ThreadPage({ onNavigate, postId, userData }) {
 
       const replies = await postApi.getReplies(postId);
       setRepliesTree(buildReplyTree(replies));
+      localStorage.setItem(
+        `thread_cache_${postId}`,
+        JSON.stringify({
+          post: postData,
+          replies: replies
+        })
+      );
     } catch (err) {
       setError('Failed to load thread');
     } finally {
