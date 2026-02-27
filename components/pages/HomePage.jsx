@@ -74,6 +74,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   const [isSearching, setIsSearching] = useState(false);
   const [followingUsers, setFollowingUsers] = useState(new Set());
   const [followLoading, setFollowLoading] = useState(new Set());
+  const [isOffline, setIsOffline] = useState(false);
 
   // Edit/Delete state
   const [editingPostId, setEditingPostId] = useState(null);
@@ -140,6 +141,22 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   useEffect(() => {
     fetchPosts();
   }, [activeTab]);
+
+  useEffect(() => {
+    const updateStatus = () => {
+      setIsOffline(!navigator.onLine);
+    };
+
+    updateStatus();
+
+    window.addEventListener("online", updateStatus);
+    window.addEventListener("offline", updateStatus);
+
+    return () => {
+      window.removeEventListener("online", updateStatus);
+      window.removeEventListener("offline", updateStatus);
+    };
+  }, []);
 
   // Fetch current user's following list and update counts on mount
   useEffect(() => {
