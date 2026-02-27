@@ -135,6 +135,22 @@ export default function ThreadPage({ onNavigate, postId, userData }) {
   const [mainReplyText, setMainReplyText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingToId, setReplyingToId] = useState(null);
+  const [isOffline, setIsOffline] = useState(
+    typeof navigator !== 'undefined' ? !navigator.onLine : false
+  );
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (postId) loadThreadData();
