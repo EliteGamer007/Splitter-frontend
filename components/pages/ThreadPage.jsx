@@ -242,6 +242,18 @@ export default function ThreadPage({ onNavigate, postId, userData }) {
           {isDarkMode ? '🌙' : '☀️'}
         </button>
       </div>
+      {isOffline && (
+        <div style={{
+          background: 'rgba(255, 140, 0, 0.15)',
+          border: '1px solid orange',
+          padding: '10px',
+          borderRadius: '8px',
+          marginBottom: '12px',
+          textAlign: 'center'
+        }}>
+          ⚠️ You are offline. Viewing cached thread (read-only mode).
+        </div>
+      )}
 
       {post && (
         <div className="root-post-card">
