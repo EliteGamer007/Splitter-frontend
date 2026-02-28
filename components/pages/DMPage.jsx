@@ -29,6 +29,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showNewChat, setShowNewChat] = useState(false);
+  const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
 
   // E2EE State
   const [myKeyPair, setMyKeyPair] = useState(null);
@@ -41,6 +42,55 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   const [editMessage, setEditMessage] = useState('');
 
   const messagesEndRef = useRef(null);
+
+  const getOfflineQueueKey = () => {
+    const uid = userData?.id || 'anonymous';
+    return `splitter_dm_offline_queue_${uid}`;
+  };
+
+  const loadOfflineQueue = () => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(getOfflineQueueKey());
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveOfflineQueue = (queue) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(getOfflineQueueKey(), JSON.stringify(queue));
+  };
+
+  const queueOfflineMessage = (queuedMessage) => {
+    const queue = loadOfflineQueue();
+    queue.push(queuedMessage);
+    saveOfflineQueue(queue);
+  };
+
+  const syncQueuedMessages = async () => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+
+    const queue = loadOfflineQueue();
+    if (queue.length === 0) return;
+
+    try {
+      const result = await messageApi.syncQueuedMessages(queue);
+      const successful = (result.results || []).filter((entry) => !entry.error);
+      const successIds = new Set(successful.map((entry) => entry.client_message_id));
+      const remaining = queue.filter((entry) => !successIds.has(entry.client_message_id));
+      saveOfflineQueue(remaining);
+
+      if (selectedThread) {
+        await selectThread(selectedThread);
+      }
+      await fetchThreads();
+    } catch (err) {
+      console.warn('Offline DM sync failed; will retry later:', err?.message || err);
+    }
+  };
 
   const renderAvatar = (user, className = '', size = 40) => {
     const raw = user?.avatar_url || user?.avatar || '';
@@ -120,6 +170,31 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   useEffect(() => {
     fetchThreads();
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = () => {
+      setIsOffline(false);
+      syncQueuedMessages();
+    };
+
+    const handleOffline = () => {
+      setIsOffline(true);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    if (navigator.onLine) {
+      syncQueuedMessages();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [selectedThread, userData?.id]);
 
   // Handle selectedUser from navigation (New Chat)
   useEffect(() => {
@@ -419,6 +494,39 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
         }
       }
 
+      const clientMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `offline-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      const clientCreatedAt = new Date().toISOString();
+
+      if (isOffline || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+        queueOfflineMessage({
+          client_message_id: clientMessageId,
+          recipient_id: recipientId,
+          content: payload.content,
+          ciphertext: payload.ciphertext || '',
+          client_created_at: clientCreatedAt,
+        });
+
+        const queuedLocalMessage = {
+          id: `queued-${clientMessageId}`,
+          thread_id: selectedThread.id,
+          sender_id: userData?.id,
+          recipient_id: recipientId,
+          client_message_id: clientMessageId,
+          content: messageText,
+          ciphertext: payload.ciphertext || '',
+          is_read: false,
+          created_at: clientCreatedAt,
+          decrypted: true,
+          queued_offline: true,
+        };
+
+        setMessages(prev => [...prev, queuedLocalMessage]);
+        setMessageText('');
+        return;
+      }
+
       const result = await messageApi.sendMessage(recipientId, payload.content, payload.ciphertext);
 
       // Add message to local state
@@ -437,6 +545,67 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
       // Refresh threads to update last message
       fetchThreads();
     } catch (err) {
+      const errorMessage = err?.message || '';
+      const likelyNetworkError =
+        errorMessage.includes('Failed to fetch') ||
+        errorMessage.includes('NetworkError') ||
+        errorMessage.includes('Network request failed');
+
+      if (likelyNetworkError) {
+        try {
+          const recipientId = selectedThread.participant_a_id === userData?.id
+            ? selectedThread.participant_b_id
+            : selectedThread.participant_a_id;
+
+          const clientMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `offline-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+          const clientCreatedAt = new Date().toISOString();
+
+          let fallbackPayload = {
+            recipient_id: recipientId,
+            content: messageText,
+            ciphertext: ''
+          };
+
+          if (isEncryptionReady && sharedSecret) {
+            const { ciphertext, iv } = await encryptMessage(messageText, sharedSecret);
+            fallbackPayload = {
+              recipient_id: recipientId,
+              content: '🔒 Encrypted Message',
+              ciphertext: JSON.stringify({ c: ciphertext, iv })
+            };
+          }
+
+          queueOfflineMessage({
+            client_message_id: clientMessageId,
+            recipient_id: fallbackPayload.recipient_id,
+            content: fallbackPayload.content,
+            ciphertext: fallbackPayload.ciphertext,
+            client_created_at: clientCreatedAt,
+          });
+
+          setMessages(prev => [...prev, {
+            id: `queued-${clientMessageId}`,
+            thread_id: selectedThread.id,
+            sender_id: userData?.id,
+            recipient_id: fallbackPayload.recipient_id,
+            client_message_id: clientMessageId,
+            content: messageText,
+            ciphertext: fallbackPayload.ciphertext,
+            is_read: false,
+            created_at: clientCreatedAt,
+            decrypted: true,
+            queued_offline: true,
+          }]);
+          setMessageText('');
+          setIsOffline(true);
+          return;
+        } catch (queueErr) {
+          console.error('Failed to queue message after network failure:', queueErr);
+        }
+      }
+
       console.error('Failed to send message:', err);
       alert('Failed to send message: ' + err.message);
     } finally {
@@ -786,6 +955,16 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                   : '⚠️ End-to-end encryption is not active. Keys may be missing.'}
               </div>
 
+              {isOffline && (
+                <div className="encryption-banner" style={{
+                  background: 'rgba(255, 170, 0, 0.15)',
+                  borderColor: '#ffaa00',
+                  marginTop: '8px'
+                }}>
+                  📡 Offline mode: messages are queued locally and will sync automatically when connection is restored.
+                </div>
+              )}
+
               {/* Messages Area */}
               <div className="messages-area">
                 {messages.length === 0 ? (
@@ -861,6 +1040,9 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                           <>
                             <div className="message-content">
                               {msg.content}
+                              {msg.queued_offline && (
+                                <span style={{ marginLeft: '6px', fontSize: '11px', opacity: 0.8 }}>⏳ Queued</span>
+                              )}
                               {isEdited && (
                                 <span style={{ marginLeft: '6px', fontSize: '11px', opacity: 0.7 }}>✏️ Edited</span>
                               )}

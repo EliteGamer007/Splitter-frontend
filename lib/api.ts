@@ -605,6 +605,26 @@ export const messageApi = {
     return handleResponse<{ message: any, thread: any, recipient: any }>(response);
   },
 
+  async syncQueuedMessages(queuedMessages: Array<{
+    client_message_id: string;
+    recipient_id: string;
+    content: string;
+    ciphertext?: string;
+    client_created_at?: string;
+  }>) {
+    const response = await fetch(`${apiBase()}/messages/sync`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ queued_messages: queuedMessages })
+    });
+    return handleResponse<{
+      results: any[];
+      created_count: number;
+      deduplicated_count: number;
+      failed_count: number;
+    }>(response);
+  },
+
   async deleteMessage(messageId: string) {
     const response = await fetch(`${apiBase()}/messages/${messageId}`, {
       method: 'DELETE',
