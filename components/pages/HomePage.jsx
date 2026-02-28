@@ -62,6 +62,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   const [activeTab, setActiveTab] = useState('home');
   const [newPostText, setNewPostText] = useState('');
   const [newPostVisibility, setNewPostVisibility] = useState('public');
+  const [newPostExpiryMinutes, setNewPostExpiryMinutes] = useState('0');
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPosting, setIsPosting] = useState(false);
@@ -424,6 +425,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             isRemote: post.is_remote || false,
             domain: derivedDomain,
             visibility: post.visibility || 'public',
+            expiresAt: post.expires_at || null,
             liked: post.liked || false,
             reposted: post.reposted || false,
             bookmarked: post.bookmarked || false,
@@ -478,6 +480,21 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     return `${diffDays}d ago`;
   };
 
+  const formatRemainingLifetime = (expiresAt) => {
+    if (!expiresAt) return '';
+    const expiryDate = new Date(expiresAt);
+    const diffMs = expiryDate.getTime() - Date.now();
+    if (Number.isNaN(expiryDate.getTime()) || diffMs <= 0) {
+      return 'Expired';
+    }
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 60) return `${minutes}m left`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h left`;
+    const days = Math.floor(hours / 24);
+    return `${days}d left`;
+  };
+
   const handlePostCreate = async () => {
     if (isOffline) {
       alert("You're offline. This action is disabled.");
@@ -492,7 +509,8 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       const newPost = await postApi.createPost(
         newPostText.trim(),          // always send content
         newPostVisibility,
-        selectedFile || undefined   // always send file if exists
+        selectedFile || undefined,   // always send file if exists
+        newPostExpiryMinutes === '0' ? null : Number(newPostExpiryMinutes)
       );
 
       const transformedPost = {
@@ -506,6 +524,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         content: newPost.content,
+        expiresAt: newPost.expires_at || null,
         replies: 0,
         boosts: 0,
         likes: 0,
@@ -520,6 +539,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       setNewPostText('');
       setSelectedFile(null);
       setPreviewUrl(null);
+      setNewPostExpiryMinutes('0');
 
     } catch (err) {
       setError('Failed to create post: ' + err.message);
@@ -1100,6 +1120,26 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     <option value="followers">👥 Followers</option>
                     <option value="circle">🔒 Circle</option>
                   </select>
+                  <select
+                    value={newPostExpiryMinutes}
+                    onChange={(e) => setNewPostExpiryMinutes(e.target.value)}
+                    title="Optional auto-expiration"
+                    style={{
+                      padding: '4px 8px',
+                      background: '#1a1a2e',
+                      border: '1px solid #333',
+                      color: '#00d9ff',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <option value="0">♾️ Persistent</option>
+                    <option value="60">⏳ 1 Hour</option>
+                    <option value="360">⏳ 6 Hours</option>
+                    <option value="1440">⏳ 24 Hours</option>
+                    <option value="4320">⏳ 3 Days</option>
+                  </select>
                 </div>
                 <div className="composer-actions">
                   <input
@@ -1190,6 +1230,11 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                         )}
                       </div>
                       <span className="post-time">{post.timestamp}</span>
+                      {post.expiresAt && (
+                        <span className="post-time" title={`Expires at ${new Date(post.expiresAt).toLocaleString()}`}>
+                          ⏳ {formatRemainingLifetime(post.expiresAt)}
+                        </span>
+                      )}
                     </div>
                   </div>
                   {post.visibility && post.visibility !== 'public' && (

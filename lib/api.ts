@@ -370,13 +370,17 @@ export const userApi = {
 
 // Post API
 export const postApi = {
-  async createPost(content: string, visibility: string = 'public', file?: File) {
+  async createPost(content: string, visibility: string = 'public', file?: File, expiresInMinutes?: number | null) {
     const fd = new FormData();
 
     // Always send content (even empty string)
     fd.append('content', content || '');
 
     fd.append('visibility', visibility);
+
+    if (expiresInMinutes && expiresInMinutes > 0) {
+      fd.append('expires_in_minutes', String(expiresInMinutes));
+    }
 
     if (file) {
       fd.append('file', file);
