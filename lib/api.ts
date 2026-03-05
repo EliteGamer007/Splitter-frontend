@@ -3,14 +3,14 @@
 
 // Instance URL mapping — maps server domain names to actual API URLs
 const INSTANCE_URLS: Record<string, string> = {
-  'splitter-1': 'http://localhost:8000/api/v1',
-  'splitter-2': 'http://localhost:8001/api/v1',
-  'localhost': 'http://localhost:8000/api/v1',  // backward compatibility
+  'splitter-1': process.env.NEXT_PUBLIC_INSTANCE_1_URL || 'http://localhost:8000/api/v1',
+  'splitter-2': process.env.NEXT_PUBLIC_INSTANCE_2_URL || 'http://localhost:8001/api/v1',
+  'localhost': process.env.NEXT_PUBLIC_INSTANCE_1_URL || 'http://localhost:8000/api/v1',  // backward compatibility
 };
 
 function normalizeApiBaseUrl(url: string): string {
   const raw = (url || '').trim();
-  if (!raw) return 'http://localhost:8000/api/v1';
+  if (!raw) return process.env.NEXT_PUBLIC_INSTANCE_1_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
   let normalized = raw.replace(/\/+$/, '');
 
@@ -36,12 +36,13 @@ function getApiBase(): string {
       return normalizedStored;
     }
   }
-  return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1');
+  return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_INSTANCE_1_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1');
 }
 
 // Set the API base URL (called when user selects a server)
 export function setApiBase(serverDomain: string): void {
-  const url = normalizeApiBaseUrl(INSTANCE_URLS[serverDomain] || `http://localhost:8000/api/v1`);
+  const fallbackUrl = process.env.NEXT_PUBLIC_INSTANCE_1_URL || `http://localhost:8000/api/v1`;
+  const url = normalizeApiBaseUrl(INSTANCE_URLS[serverDomain] || fallbackUrl);
   if (typeof window !== 'undefined') {
     localStorage.setItem('splitter_api_base', url);
     localStorage.setItem('splitter_instance', serverDomain);
