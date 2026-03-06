@@ -223,7 +223,7 @@ export const authApi = {
   },
 
   async registerKey(publicKey: string) {
-    const response = await fetch(`${API_BASE}/auth/register-key`, {
+    const response = await fetch(`${apiBase()}/auth/register-key`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ public_key: publicKey })
@@ -237,7 +237,7 @@ export const authApi = {
     nonce?: string;
     timestamp?: number;
   }) {
-    const response = await fetch(`${API_BASE}/auth/rotate-key`, {
+    const response = await fetch(`${apiBase()}/auth/rotate-key`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
@@ -246,28 +246,28 @@ export const authApi = {
   },
 
   async getKeyHistory() {
-    const response = await fetch(`${API_BASE}/auth/key-history`, {
+    const response = await fetch(`${apiBase()}/auth/key-history`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ key_history: any[]; count: number }>(response);
   },
 
   async getRevokedKeys() {
-    const response = await fetch(`${API_BASE}/auth/revoked-keys`, {
+    const response = await fetch(`${apiBase()}/auth/revoked-keys`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ did: string; active_key: string; revoked_keys: any[]; count: number }>(response);
   },
 
   async checkKeyRevocation(publicKey: string) {
-    const response = await fetch(`${API_BASE}/auth/check-key?key=${encodeURIComponent(publicKey)}`, {
+    const response = await fetch(`${apiBase()}/auth/check-key?key=${encodeURIComponent(publicKey)}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ key: string; status: string; revoked: boolean }>(response);
   },
 
   async revokeKey() {
-    const response = await fetch(`${API_BASE}/auth/revoke-key`, {
+    const response = await fetch(`${apiBase()}/auth/revoke-key`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
