@@ -271,8 +271,20 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
       if (!sharedSecret || messages.length === 0) return;
 
       const decryptedMessages = await Promise.all(messages.map(async (msg) => {
-        if (msg.decrypted) return msg; // Already decrypted
-        if (!msg.ciphertext) return { ...msg, decrypted: true }; // Plaintext message
+        // Skip decrypting messages sent by current user
+        if (msg.sender_id === userData?.id) {
+          return { ...msg, decrypted: true };
+        }
+
+        // Skip plaintext messages
+        if (!msg.ciphertext) {
+          return { ...msg, decrypted: true };
+        }
+
+        // Skip already decrypted
+        if (msg.decrypted) {
+          return msg;
+        }
 
         try {
           // Ciphertext format expected: "ciphertext|iv" or separate fields. 
