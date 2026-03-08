@@ -13,6 +13,8 @@ import SecurityPage from '@/components/pages/SecurityPage';
 import ModerationPage from '@/components/pages/ModerationPage';
 import FederationPage from '@/components/pages/FederationPage';
 import AdminPage from '@/components/pages/AdminPage';
+import TrendingPage from '@/components/pages/TrendingPage';
+import HashtagPage from '@/components/pages/HashtagPage';
 import { userApi, healthApi } from '@/lib/api';
 
 export default function App() {
@@ -39,6 +41,7 @@ export default function App() {
   const [viewingUserId, setViewingUserId] = useState(null);
   const [selectedDMUser, setSelectedDMUser] = useState(null);
   const [selectedThreadPostId, setSelectedThreadPostId] = useState(null);
+  const [selectedHashtag, setSelectedHashtag] = useState(null);
 
   // Check backend connection and auth state on mount
   useEffect(() => {
@@ -90,7 +93,7 @@ export default function App() {
 
   const navigateTo = (page: string, params?: any) => {
     // Redirect to login if trying to access protected pages without auth
-    const protectedPages = ['home', 'profile', 'dm', 'security', 'moderation', 'federation', 'thread', 'admin'];
+    const protectedPages = ['home', 'profile', 'dm', 'security', 'moderation', 'federation', 'thread', 'admin', 'trending', 'hashtag'];
     const hasToken = typeof window !== 'undefined' && localStorage.getItem('jwt_token');
 
     if (protectedPages.includes(page) && !isAuthenticated && !hasToken) {
@@ -110,6 +113,15 @@ export default function App() {
       setSelectedThreadPostId(params.postId);
       setSelectedDMUser(null);
       setViewingUserId(null);
+      setSelectedHashtag(null);
+    } else if (page === 'hashtag' && params?.hashtag) {
+      setSelectedHashtag(params.hashtag);
+      setSelectedDMUser(null);
+      setViewingUserId(null);
+    } else if (page === 'trending') {
+      setSelectedDMUser(null);
+      setViewingUserId(null);
+      setSelectedHashtag(null);
     } else {
       setSelectedDMUser(null);
       setViewingUserId(null);
@@ -199,6 +211,8 @@ export default function App() {
       {currentPage === 'moderation' && <ModerationPage {...sharedProps} />}
       {currentPage === 'federation' && <FederationPage {...sharedProps} />}
       {currentPage === 'admin' && <AdminPage {...sharedProps} />}
+      {currentPage === 'trending' && <TrendingPage {...sharedProps} />}
+      {currentPage === 'hashtag' && <HashtagPage {...sharedProps} hashtag={selectedHashtag} />}
     </div>
   );
 }

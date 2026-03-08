@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import '../styles/HomePage.css';
-import { postApi, interactionApi, adminApi, searchApi, messageApi, federationApi, getCurrentInstance } from '@/lib/api';
+import { postApi, interactionApi, adminApi, searchApi, messageApi, federationApi, hashtagApi, getCurrentInstance } from '@/lib/api';
 import HomePageWalkthrough from '@/components/ui/HomePageWalkthrough';
 
 // Sample posts for demo when no backend posts available
@@ -73,6 +73,8 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hashtagSearchResults, setHashtagSearchResults] = useState([]);
+  const [trendingHashtags, setTrendingHashtags] = useState([]);
   const [followingUsers, setFollowingUsers] = useState(new Set());
   const [followLoading, setFollowLoading] = useState(new Set());
   const [isOffline, setIsOffline] = useState(false);
@@ -143,6 +145,19 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     fetchPosts();
   }, [activeTab]);
 
+  // Fetch trending hashtags
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const data = await hashtagApi.getTrending(5);
+        setTrendingHashtags(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.log('Failed to fetch trending hashtags:', err);
+      }
+    };
+    fetchTrending();
+  }, []);
+
   useEffect(() => {
     const updateStatus = () => {
       setIsOffline(!navigator.onLine);
@@ -195,7 +210,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     loadFollowingListAndCounts();
   }, [userData?.id]);
 
-  // Search users
+  // Search users and hashtags
   const handleSearch = async () => {
     if (searchQuery.length < 2) return;
 
@@ -228,6 +243,17 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       } catch (fedErr) {
         console.log('Federation search unavailable:', fedErr);
       }
+
+      // Also search hashtags
+      const cleanQuery = searchQuery.startsWith('#') ? searchQuery.slice(1) : searchQuery;
+      let hashtagResults = [];
+      try {
+        hashtagResults = await hashtagApi.searchHashtags(cleanQuery, 5);
+        if (!Array.isArray(hashtagResults)) hashtagResults = [];
+      } catch (htErr) {
+        console.log('Hashtag search unavailable:', htErr);
+      }
+      setHashtagSearchResults(hashtagResults);
 
       // Merge local + federated, deduplicate by id+domain
       const seenUsernames = new Set();
@@ -711,7 +737,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
           <div style={{ position: 'relative' }}>
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Search users or #hashtags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
@@ -742,12 +768,53 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                   <div style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
                     Searching...
                   </div>
-                ) : searchResults.length === 0 ? (
+                ) : searchResults.length === 0 && hashtagSearchResults.length === 0 ? (
                   <div style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
-                    No users found
+                    No results found
                   </div>
                 ) : (
-                  searchResults.map((user, idx) => (
+                  <>
+                    {/* Hashtag Results */}
+                    {hashtagSearchResults.length > 0 && (
+                      <div>
+                        <div style={{ padding: '8px 16px', color: '#6c5ce7', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #333' }}>
+                          HASHTAGS
+                        </div>
+                        {hashtagSearchResults.map((ht) => (
+                          <div
+                            key={ht.tag}
+                            onClick={() => {
+                              setShowSearchResults(false);
+                              setSearchQuery('');
+                              onNavigate('hashtag', { hashtag: ht.tag });
+                            }}
+                            style={{
+                              padding: '10px 16px',
+                              borderBottom: '1px solid #333',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              cursor: 'pointer',
+                              transition: 'background 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#2a2a4a'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                          >
+                            <span style={{ color: '#6c5ce7', fontWeight: '600' }}>#{ht.tag}</span>
+                            <span style={{ color: '#888', fontSize: '12px' }}>{ht.count} posts</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* User Results */}
+                    {searchResults.length > 0 && (
+                      <div>
+                        {hashtagSearchResults.length > 0 && (
+                          <div style={{ padding: '8px 16px', color: '#00d9ff', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #333' }}>
+                            USERS
+                          </div>
+                        )}
+                    {searchResults.map((user, idx) => (
                     <div
                       key={`${user.id || 'user'}-${user.domain || user.instance_domain || 'local'}-${idx}`}
                       style={{
@@ -849,9 +916,12 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                         💬 DM
                       </button>
                     </div>
-                  ))
+                  ))}
+                      </div>
+                    )}
+                  </>
                 )}
-                {searchResults.length > 0 && (
+                {(searchResults.length > 0 || hashtagSearchResults.length > 0) && (
                   <div
                     style={{
                       padding: '8px 16px',
@@ -1204,7 +1274,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             {dedupePosts(posts).map((post, idx) => (
               <article key={`${post.id}-${post.authorId || post.author_did || 'author'}-${post.createdAt || idx}-${idx}`} className={`post ${post.local ? 'local' : 'remote'}`}>
                 <div className="post-header">
-                  <div className="post-author" style={{ cursor: 'pointer' }} onClick={() => onNavigate('profile')}>
+                  <div className="post-author" style={{ cursor: 'pointer' }} onClick={() => onNavigate('thread', { postId: post.id })}>
                     <span className="post-avatar">
                       {isImageAvatar(post.avatar) ? (
                         <img src={resolveAssetURL(post.avatar, post.domain)} alt="Post author avatar" className="avatar-image-fill" />
@@ -1438,25 +1508,44 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
         {/* Right Sidebar */}
         <aside className="home-trends">
           <div className="trends-section">
-            <h3 className="trends-title">Trending Topics</h3>
+            <h3 className="trends-title">🔥 Trending Topics</h3>
             <div className="trends-list">
-              <a href="#" className="trend-item">
-                <div className="trend-name">#Decentralization</div>
-                <div className="trend-count">2.4K posts</div>
-              </a>
-              <a href="#" className="trend-item">
-                <div className="trend-name">#Federation</div>
-                <div className="trend-count">1.8K posts</div>
-              </a>
-              <a href="#" className="trend-item">
-                <div className="trend-name">#PrivacyFirst</div>
-                <div className="trend-count">942 posts</div>
-              </a>
-              <a href="#" className="trend-item">
-                <div className="trend-name">#OpenSource</div>
-                <div className="trend-count">3.1K posts</div>
-              </a>
+              {trendingHashtags.length > 0 ? (
+                trendingHashtags.map((ht) => (
+                  <div
+                    key={ht.tag}
+                    className="trend-item"
+                    onClick={() => onNavigate('hashtag', { hashtag: ht.tag })}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="trend-name">#{ht.tag}</div>
+                    <div className="trend-count">{ht.count >= 1000 ? (ht.count / 1000).toFixed(1) + 'K' : ht.count} posts</div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ color: '#666', fontSize: '13px', padding: '8px 0' }}>
+                  No trending hashtags yet
+                </div>
+              )}
             </div>
+            <button
+              onClick={() => onNavigate('trending')}
+              style={{
+                width: '100%',
+                marginTop: '10px',
+                padding: '8px',
+                background: 'rgba(108, 92, 231, 0.15)',
+                border: '1px solid #6c5ce7',
+                color: '#6c5ce7',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontWeight: '600',
+                transition: 'all 0.2s'
+              }}
+            >
+              View All Trending →
+            </button>
           </div>
 
           <div className="trends-section">

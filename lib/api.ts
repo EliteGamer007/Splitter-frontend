@@ -401,7 +401,9 @@ export const postApi = {
   },
 
   async getPost(id: string) {
-    const response = await fetch(`${apiBase()}/posts/${id}`);
+    const response = await fetch(`${apiBase()}/posts/${id}`, {
+      headers: getAuthHeaders()
+    });
     return handleResponse<any>(response);
   },
 
@@ -445,7 +447,9 @@ export const postApi = {
   },
 
   async getReplies(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/replies`);
+    const response = await fetch(`${apiBase()}/posts/${postId}/replies`, {
+      headers: getAuthHeaders()
+    });
     return handleResponse<any[]>(response);
   },
 
@@ -933,6 +937,32 @@ export const federationApi = {
 };
 
 // Export all APIs
+export const hashtagApi = {
+  async getTrending(limit = 10) {
+    const response = await fetch(
+      `${apiBase()}/hashtags/trending?limit=${limit}`,
+      { headers: getAuthHeaders() }
+    );
+    return handleResponse<{ tag: string; count: number }[]>(response);
+  },
+
+  async getPostsByHashtag(tag: string, limit = 20, offset = 0) {
+    const response = await fetch(
+      `${apiBase()}/hashtags/tag/${encodeURIComponent(tag)}?limit=${limit}&offset=${offset}`,
+      { headers: getAuthHeaders() }
+    );
+    return handleResponse<{ hashtag: string; posts: any[]; count: number }>(response);
+  },
+
+  async searchHashtags(query: string, limit = 10) {
+    const response = await fetch(
+      `${apiBase()}/hashtags/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+      { headers: getAuthHeaders() }
+    );
+    return handleResponse<{ tag: string; count: number }[]>(response);
+  }
+};
+
 export const api = {
   auth: authApi,
   user: userApi,
@@ -943,7 +973,8 @@ export const api = {
   search: searchApi,
   message: messageApi,
   admin: adminApi,
-  federation: federationApi
+  federation: federationApi,
+  hashtag: hashtagApi
 };
 
 export default api;

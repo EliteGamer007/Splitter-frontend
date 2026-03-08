@@ -15,10 +15,17 @@ const formatTimestamp = (isoString) => {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  return `${diffDays}d ago`;
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+// Get initials from username for avatar fallback
+const getInitials = (username) => {
+  if (!username) return '?';
+  return username.charAt(0).toUpperCase();
 };
 
 // Recursive Reply Component
@@ -34,7 +41,7 @@ const ReplyItem = ({
 }) => {
   const [replyText, setReplyText] = useState('');
   const isReplying = replyingToId === reply.id;
-  const showReplyButton = depth < 3 && userData?.id;
+  const showReplyButton = depth < 4 && userData?.id;
 
   const handleSubmit = async () => {
     if (!replyText.trim()) return;
@@ -44,66 +51,63 @@ const ReplyItem = ({
   };
 
   return (
-    <div
-      className={`reply-card depth-${depth}`}
-      style={{
-        marginLeft: depth > 0 ? '20px' : '0',
-        borderLeft: depth > 0 ? '2px solid rgba(255,255,255,0.1)' : 'none',
-        paddingLeft: depth > 0 ? '12px' : '0'
-      }}
-    >
-      <div className="reply-author-section">
-        <div className="reply-avatar">{reply.avatar_url || '👤'}</div>
-        <div className="reply-author-info">
-          <div className="reply-author-name">
-            {reply.username ? `@${reply.username}` : 'Unknown'}
+    <div className={`reply-item ${depth > 0 ? 'reply-nested' : ''}`}>
+      {depth > 0 && <div className="reply-thread-line" />}
+      <div className="reply-inner">
+        <div className="reply-avatar-col">
+          <div className="reply-avatar">
+            {getInitials(reply.username)}
           </div>
-          <div className="reply-timestamp">
-            {formatTimestamp(reply.created_at)}
+          {reply.children?.length > 0 && <div className="reply-connector-line" />}
+        </div>
+        <div className="reply-main">
+          <div className="reply-header">
+            <span className="reply-author-name">
+              {reply.username ? `@${reply.username}` : 'Unknown'}
+            </span>
+            <span className="reply-dot">·</span>
+            <span className="reply-timestamp">
+              {formatTimestamp(reply.created_at)}
+            </span>
           </div>
+
+          <div className="reply-body">{reply.content}</div>
+
+          {showReplyButton && (
+            <div className="reply-actions">
+              <button
+                className={`action-button ${isReplying ? 'active' : ''}`}
+                onClick={() => setReplyingToId(isReplying ? null : reply.id)}
+              >
+                💬 {isReplying ? 'Cancel' : 'Reply'}
+              </button>
+            </div>
+          )}
+
+          {isReplying && (
+            <div className="inline-reply-composer">
+              <textarea
+                className="reply-textarea small"
+                placeholder={`Reply to @${reply.username || 'user'}...`}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                autoFocus
+                disabled={isOffline}
+                rows={2}
+              />
+              <div className="inline-composer-actions">
+                <button
+                  className="reply-btn-submit"
+                  onClick={handleSubmit}
+                  disabled={isOffline || !replyText.trim() || isSubmitting}
+                >
+                  {isSubmitting ? '...' : 'Reply'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      <div className="reply-body">{reply.content}</div>
-
-      {showReplyButton && (
-        <div className="reply-actions">
-          <button
-            className="action-button"
-            onClick={() => setReplyingToId(isReplying ? null : reply.id)}
-          >
-            💬 Reply
-          </button>
-        </div>
-      )}
-
-      {isReplying && (
-        <div className="nested-reply-composer" style={{ marginTop: '10px' }}>
-          <textarea
-            className="reply-textarea"
-            placeholder={`Replying to @${reply.username || 'user'}...`}
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            autoFocus
-            disabled={isOffline}
-          />
-          <div className="composer-actions">
-            <button
-              className="reply-button cancel"
-              onClick={() => setReplyingToId(null)}
-            >
-              Cancel
-            </button>
-            <button
-              className="reply-button"
-              onClick={handleSubmit}
-              disabled={isOffline || !replyText.trim() || isSubmitting}
-            >
-              {isSubmitting ? 'Posting...' : 'Reply'}
-            </button>
-          </div>
-        </div>
-      )}
 
       {reply.children?.length > 0 && (
         <div className="reply-children">
@@ -245,118 +249,151 @@ export default function ThreadPage({ onNavigate, postId, userData }) {
     setMainReplyText('');
   };
 
+  const replyCount = post?.total_reply_count || repliesTree.length || 0;
+
   return (
     <div className="thread-container">
+      {/* Top Bar */}
       <div className="thread-navbar">
-        <button onClick={() => onNavigate('home')}>← Back</button>
-        <button onClick={toggleTheme}>
+        <button className="nav-back-btn" onClick={() => onNavigate('home')}>
+          ← Back
+        </button>
+        <span className="nav-title">Thread</span>
+        <button className="nav-theme-btn" onClick={toggleTheme}>
           {isDarkMode ? '🌙' : '☀️'}
         </button>
       </div>
-      {isOffline && (
-        <div style={{
-          background: 'rgba(255, 140, 0, 0.15)',
-          border: '1px solid orange',
-          padding: '10px',
-          borderRadius: '8px',
-          marginBottom: '12px',
-          textAlign: 'center'
-        }}>
-          ⚠️ You are offline. Viewing cached thread (read-only mode).
-        </div>
-      )}
 
-      {post && (
-        <div className="root-post-card">
-          {post.parent_context?.status === 'available' && post.parent_context?.post && (
-            <div style={{
-              marginBottom: '12px',
-              padding: '10px',
-              borderRadius: '8px',
-              border: '1px solid rgba(0, 217, 255, 0.35)',
-              background: 'rgba(0, 217, 255, 0.08)'
-            }}>
-              <div style={{ fontSize: '12px', opacity: 0.85, marginBottom: '6px' }}>
-                Thread context loaded {post.parent_context.source === 'cache' ? 'from local cache' : 'from remote instance'}
+      <div className="thread-content">
+        {isOffline && (
+          <div className="offline-banner">
+            ⚠️ You are offline — viewing cached thread.
+          </div>
+        )}
+
+        {isLoading && (
+          <div className="thread-loading">
+            <div className="loading-spinner" />
+            <span>Loading thread...</span>
+          </div>
+        )}
+
+        {error && !isLoading && (
+          <div className="thread-error">
+            {error}
+            <button onClick={loadThreadData} className="retry-btn">Retry</button>
+          </div>
+        )}
+
+        {/* Original Post */}
+        {post && !isLoading && (
+          <>
+            <div className="root-post-card">
+              {post.parent_context?.status === 'available' && post.parent_context?.post && (
+                <div className="parent-context-card">
+                  <span className="parent-context-label">
+                    Replying to @{post.parent_context.post.username || 'remote-user'}
+                  </span>
+                  <p className="parent-context-content">
+                    {post.parent_context.post.content || '(No content)'}
+                  </p>
+                </div>
+              )}
+
+              {post.parent_context?.status === 'missing' && (
+                <div className="parent-context-missing">
+                  ⚠️ Parent post unavailable. {post.parent_context?.message || 'It may be deleted or unreachable.'}
+                </div>
+              )}
+
+              <div className="root-post-author">
+                <div className="root-post-avatar">
+                  {getInitials(post.username)}
+                </div>
+                <div className="root-post-meta">
+                  <span className="root-post-name">@{post.username || 'unknown'}</span>
+                  <span className="root-post-time">{formatTimestamp(post.created_at)}</span>
+                </div>
               </div>
-              <div style={{ fontSize: '13px', opacity: 0.9, marginBottom: '4px' }}>
-                Replying to @{post.parent_context.post.username || 'remote-user'}
-              </div>
-              <div style={{ fontSize: '14px' }}>
-                {post.parent_context.post.content || '(No content)'}
+
+              <div className="root-post-body">{post.content}</div>
+
+              {post.image_url && (
+                <div className="root-post-image">
+                  <img src={post.image_url} alt="Post attachment" />
+                </div>
+              )}
+
+              <div className="root-post-stats">
+                <span className="stat-item">💬 {replyCount} {replyCount === 1 ? 'Reply' : 'Replies'}</span>
               </div>
             </div>
-          )}
 
-          {post.parent_context?.status === 'missing' && (
-            <div style={{
-              marginBottom: '12px',
-              padding: '10px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255, 140, 0, 0.45)',
-              background: 'rgba(255, 140, 0, 0.1)',
-              fontSize: '13px'
-            }}>
-              ⚠️ Parent post unavailable. {post.parent_context?.message || 'It may be deleted or unreachable.'}
+            {/* Reply Composer - right under the post */}
+            {userData?.id && (
+              <div className="main-reply-composer">
+                <div className="composer-avatar">
+                  {getInitials(userData.username)}
+                </div>
+                <div className="composer-input-area">
+                  <textarea
+                    className="reply-textarea"
+                    value={mainReplyText}
+                    onChange={(e) => setMainReplyText(e.target.value)}
+                    placeholder={`Reply to @${post.username || 'this post'}...`}
+                    disabled={isOffline}
+                    rows={2}
+                    onFocus={(e) => { e.target.rows = 4; }}
+                    onBlur={(e) => { if (!e.target.value) e.target.rows = 2; }}
+                  />
+                  {mainReplyText.trim() && (
+                    <div className="composer-actions">
+                      <span className="char-count">{mainReplyText.length}/500</span>
+                      <button
+                        className="reply-btn-submit"
+                        onClick={handleMainReplySubmit}
+                        disabled={isOffline || !mainReplyText.trim() || isSubmitting}
+                      >
+                        {isSubmitting ? 'Posting...' : 'Reply'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Replies Section */}
+            <div className="replies-section">
+              <div className="replies-header">
+                {replyCount > 0 ? `${replyCount} ${replyCount === 1 ? 'Reply' : 'Replies'}` : 'Replies'}
+              </div>
+
+              {repliesTree.length === 0 ? (
+                <div className="empty-replies">
+                  <span className="empty-icon">💬</span>
+                  <p>No replies yet. Be the first to reply!</p>
+                </div>
+              ) : (
+                <div className="replies-list">
+                  {repliesTree.map(reply => (
+                    <ReplyItem
+                      key={reply.id}
+                      reply={reply}
+                      depth={0}
+                      replyingToId={replyingToId}
+                      setReplyingToId={setReplyingToId}
+                      onSubmitReply={handlePostReply}
+                      isSubmitting={isSubmitting}
+                      userData={userData}
+                      isOffline={isOffline}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-
-          <div className="post-author-name">
-            @{post.username || 'unknown'}
-          </div>
-          <div className="post-body">{post.content}</div>
-          <div className="post-stats">
-            <span>{post.total_reply_count || 0} Replies</span>
-          </div>
-        </div>
-      )}
-
-      <div className="replies-section">
-        {repliesTree.length === 0 ? (
-          <div className="empty-replies">No replies yet.</div>
-        ) : (
-          repliesTree.map(reply => (
-            <ReplyItem
-              key={reply.id}
-              reply={reply}
-              depth={1}
-              replyingToId={replyingToId}
-              setReplyingToId={setReplyingToId}
-              onSubmitReply={handlePostReply}
-              isSubmitting={isSubmitting}
-              userData={userData}
-              isOffline={isOffline}
-            />
-          ))
+          </>
         )}
       </div>
-
-      {userData?.id && (
-        <div className="reply-composer">
-          <textarea
-            className="reply-textarea"
-            value={mainReplyText}
-            onChange={(e) => setMainReplyText(e.target.value)}
-            placeholder="Write a reply..."
-            disabled={isOffline}
-          />
-          <div className="composer-actions">
-            <button
-              className="reply-button cancel"
-              onClick={() => setMainReplyText('')}
-            >
-              Cancel
-            </button>
-            <button
-              className="reply-button"
-              onClick={handleMainReplySubmit}
-              disabled={isOffline || !mainReplyText.trim() || isSubmitting}
-            >
-              {isSubmitting ? 'Posting...' : 'Reply'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
