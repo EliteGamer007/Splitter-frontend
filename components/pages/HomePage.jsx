@@ -696,7 +696,14 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       {/* Top Navigation */}
       <nav className="home-nav">
         <div className="nav-left">
-          <h1 className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1
+            className="nav-logo"
+            onClick={() => {
+              setActiveTab('home');
+              onNavigate('home');
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+          >
             <img
               src="/logo.png"
               alt="Logo"
@@ -814,109 +821,109 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                             USERS
                           </div>
                         )}
-                    {searchResults.map((user, idx) => (
-                    <div
-                      key={`${user.id || 'user'}-${user.domain || user.instance_domain || 'local'}-${idx}`}
-                      style={{
-                        padding: '12px 16px',
-                        borderBottom: '1px solid #333',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        transition: 'background 0.2s'
-                      }}
-                    >
-                      <div
-                        onClick={() => {
-                          setShowSearchResults(false);
-                          setSearchQuery('');
-                          onNavigate('profile', { userId: user.id });
-                        }}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          flex: 1,
-                          cursor: 'pointer',
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                      >
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #00d9ff, #00ff88)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '18px'
-                        }}>
-                          {isImageAvatar(user.avatar_url) ? (
-                            <img src={resolveAssetURL(user.avatar_url, user.domain || user.instance_domain)} alt="User avatar" className="avatar-image-fill" />
-                          ) : (
-                            user.avatar_url || '👤'
-                          )}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ color: '#fff', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {user.display_name || user.username}
-                            {user.is_remote && (
-                              <span style={{
-                                fontSize: '10px',
-                                padding: '1px 6px',
-                                background: 'rgba(255,136,0,0.2)',
-                                color: '#ff8800',
+                        {searchResults.map((user, idx) => (
+                          <div
+                            key={`${user.id || 'user'}-${user.domain || user.instance_domain || 'local'}-${idx}`}
+                            style={{
+                              padding: '12px 16px',
+                              borderBottom: '1px solid #333',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              transition: 'background 0.2s'
+                            }}
+                          >
+                            <div
+                              onClick={() => {
+                                setShowSearchResults(false);
+                                setSearchQuery('');
+                                onNavigate('profile', { userId: user.id });
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                flex: 1,
+                                cursor: 'pointer',
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                            >
+                              <div style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #00d9ff, #00ff88)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '18px'
+                              }}>
+                                {isImageAvatar(user.avatar_url) ? (
+                                  <img src={resolveAssetURL(user.avatar_url, user.domain || user.instance_domain)} alt="User avatar" className="avatar-image-fill" />
+                                ) : (
+                                  user.avatar_url || '👤'
+                                )}
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ color: '#fff', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  {user.display_name || user.username}
+                                  {user.is_remote && (
+                                    <span style={{
+                                      fontSize: '10px',
+                                      padding: '1px 6px',
+                                      background: 'rgba(255,136,0,0.2)',
+                                      color: '#ff8800',
+                                      borderRadius: '4px',
+                                      border: '1px solid rgba(255,136,0,0.3)'
+                                    }}>🌐 {user.domain || 'Remote'}</span>
+                                  )}
+                                </div>
+                                <div style={{ color: '#666', fontSize: '12px' }}>
+                                  @{user.username}@{user.domain || user.instance_domain || 'local'}
+                                </div>
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('Follow button clicked for user:', user);
+                                handleFollowToggle(user.id, user);
+                              }}
+                              disabled={followLoading.has(user.id)}
+                              style={{
+                                padding: '6px 16px',
+                                background: followingUsers.has(user.id) ? 'rgba(0,255,136,0.2)' : 'rgba(0,217,255,0.2)',
+                                border: `1px solid ${followingUsers.has(user.id) ? '#00ff88' : '#00d9ff'}`,
+                                color: followingUsers.has(user.id) ? '#00ff88' : '#00d9ff',
                                 borderRadius: '4px',
-                                border: '1px solid rgba(255,136,0,0.3)'
-                              }}>🌐 {user.domain || 'Remote'}</span>
-                            )}
+                                cursor: followLoading.has(user.id) ? 'not-allowed' : 'pointer',
+                                fontSize: '12px',
+                                minWidth: '80px',
+                                opacity: followLoading.has(user.id) ? 0.6 : 1
+                              }}
+                            >
+                              {followLoading.has(user.id) ? '...' : followingUsers.has(user.id) ? '✓ Following' : 'Follow'}
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startDMWithUser(user);
+                              }}
+                              style={{
+                                padding: '6px 12px',
+                                background: 'rgba(0,217,255,0.2)',
+                                border: '1px solid #00d9ff',
+                                color: '#00d9ff',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              💬 DM
+                            </button>
                           </div>
-                          <div style={{ color: '#666', fontSize: '12px' }}>
-                            @{user.username}@{user.domain || user.instance_domain || 'local'}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log('Follow button clicked for user:', user);
-                          handleFollowToggle(user.id, user);
-                        }}
-                        disabled={followLoading.has(user.id)}
-                        style={{
-                          padding: '6px 16px',
-                          background: followingUsers.has(user.id) ? 'rgba(0,255,136,0.2)' : 'rgba(0,217,255,0.2)',
-                          border: `1px solid ${followingUsers.has(user.id) ? '#00ff88' : '#00d9ff'}`,
-                          color: followingUsers.has(user.id) ? '#00ff88' : '#00d9ff',
-                          borderRadius: '4px',
-                          cursor: followLoading.has(user.id) ? 'not-allowed' : 'pointer',
-                          fontSize: '12px',
-                          minWidth: '80px',
-                          opacity: followLoading.has(user.id) ? 0.6 : 1
-                        }}
-                      >
-                        {followLoading.has(user.id) ? '...' : followingUsers.has(user.id) ? '✓ Following' : 'Follow'}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          startDMWithUser(user);
-                        }}
-                        style={{
-                          padding: '6px 12px',
-                          background: 'rgba(0,217,255,0.2)',
-                          border: '1px solid #00d9ff',
-                          color: '#00d9ff',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        💬 DM
-                      </button>
-                    </div>
-                  ))}
+                        ))}
                       </div>
                     )}
                   </>
