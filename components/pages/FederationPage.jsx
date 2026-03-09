@@ -5,7 +5,20 @@ import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/FederationPage.css';
 import { adminApi } from '@/lib/api';
 
-export default function FederationPage({ onNavigate }) {
+export default function FederationPage({ onNavigate, userData }) {
+  if (userData?.role !== "admin" && userData?.role !== "moderator") {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }}>
+        <h2>⛔ Access Denied</h2>
+      </div>
+    );
+  }
+
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [isLoading, setIsLoading] = useState(true);
