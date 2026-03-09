@@ -736,3 +736,120 @@
     flex: 1;
   }
 }
+
+/* Stories Feature */
+.stories-bar {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-bottom: 1rem;
+}
+
+.stories-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.story-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  cursor: pointer;
+}
+
+.story-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--primary-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-item:hover .story-avatar {
+  transform: scale(1.05);
+}
+
+.story-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fallback-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--secondary-navy);
+  border: 2px solid var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.story-author-name {
+  font-size: 12px;
+  margin-top: 6px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.story-add-avatar {
+  background: var(--secondary-navy);
+  border: 2px dashed var(--border-color);
+}
+
+.plus-icon {
+  font-size: 2rem;
+  color: var(--text-muted);
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-item.story-add:hover .story-add-avatar {
+  border-color: var(--primary-cyan);
+}
+
+.story-item.story-add:hover .plus-icon {
+  color: var(--primary-cyan);
+}
+
+.story-prev,
+.story-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 24px;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.story-prev {
+  left: 10px;
+}
+
+.story-next {
+  right: 10px;
+}
+
+.story-avatar.unseen {
+  border: 3px solid #00d9ff;
+}
+
+.story-avatar.seen {
+  border: 3px solid #555;
+}

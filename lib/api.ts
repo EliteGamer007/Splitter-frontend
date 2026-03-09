@@ -963,6 +963,47 @@ export const hashtagApi = {
   }
 };
 
+export const storyApi = {
+  async getStories() {
+    const response = await fetch(`${apiBase()}/stories`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse<any[]>(response);
+  },
+
+  async createStory(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // We shouldn't set Content-Type to application/json, browser will set multipart/form-data
+    const headers = getAuthHeaders() as Record<string, string>;
+    delete headers['Content-Type'];
+
+    const response = await fetch(`${apiBase()}/stories`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+    return handleResponse<any>(response);
+  },
+
+  async deleteStory(storyId: string) {
+    const response = await fetch(`${apiBase()}/stories/${storyId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse<any>(response);
+  },
+
+  async viewStory(storyId: string) {
+    const response = await fetch(`${apiBase()}/stories/${storyId}/view`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse<any>(response);
+  }
+};
+
 export const api = {
   auth: authApi,
   user: userApi,
@@ -974,7 +1015,8 @@ export const api = {
   message: messageApi,
   admin: adminApi,
   federation: federationApi,
-  hashtag: hashtagApi
+  hashtag: hashtagApi,
+  story: storyApi
 };
 
 export default api;
