@@ -3,7 +3,7 @@ import { authApi, postApi, userApi } from '@/lib/api';
 // Mock global fetch
 global.fetch = jest.fn();
 
-const API_BASE = 'https://splitter-m0kv.onrender.com/api/v1';
+const API_BASE = 'http://localhost:8000/api/v1';
 
 describe('API Library', () => {
     beforeEach(() => {

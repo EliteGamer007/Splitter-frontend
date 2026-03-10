@@ -11,25 +11,29 @@ jest.mock('@/lib/api', () => ({
 
 // Provide a stable mocked FeedPage structure
 jest.mock('@/components/pages/HomePage', () => {
-    return function MockHomePage({ currentUser }) {
-        const [posts, setPosts] = React.useState([]);
+    return {
+        __esModule: true,
+        default: function MockHomePage({ currentUser }) {
+            const [posts, setPosts] = React.useState([]);
 
-        React.useEffect(() => {
-            postApi.getFeed().then(setPosts).catch(() => { });
-        }, []);
+            React.useEffect(() => {
+                const { postApi } = require('@/lib/api');
+                postApi.getFeed().then(setPosts).catch(() => { });
+            }, []);
 
-        return (
-            <div data-testid="feed-page">
-                <h1>{currentUser ? `Welcome ${currentUser.username}` : 'Global Feed'}</h1>
-                <div data-testid="feed-list">
-                    {posts.length > 0 ? (
-                        posts.map(p => <div key={p.id} data-testid="feed-item">{p.content}</div>)
-                    ) : (
-                        <span>No posts yet</span>
-                    )}
+            return (
+                <div data-testid="feed-page">
+                    <h1>{currentUser ? `Welcome ${currentUser.username}` : 'Global Feed'}</h1>
+                    <div data-testid="feed-list">
+                        {posts.length > 0 ? (
+                            posts.map(p => <div key={p.id} data-testid="feed-item">{p.content}</div>)
+                        ) : (
+                            <span>No posts yet</span>
+                        )}
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     };
 });
 

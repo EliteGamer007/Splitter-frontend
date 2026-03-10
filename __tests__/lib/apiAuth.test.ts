@@ -2,7 +2,7 @@ import { authApi } from '@/lib/api';
 
 global.fetch = jest.fn();
 
-const API_BASE = 'https://splitter-m0kv.onrender.com/api/v1';
+const API_BASE = 'http://localhost:8000/api/v1';
 
 describe('API Auth Interaction', () => {
     beforeEach(() => {
@@ -33,7 +33,11 @@ describe('API Auth Interaction', () => {
 
         const result = await authApi.getChallenge('did:key:123');
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/did/challenge?did=did:key:123`);
+        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/challenge`, expect.objectContaining({
+            method: 'POST',
+            headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ did: 'did:key:123' })
+        }));
         expect(result.challenge).toBe('mock-challenge-string');
     });
 
@@ -46,7 +50,7 @@ describe('API Auth Interaction', () => {
         const payload = { did: 'did:key:123', challenge: 'mock-challenge-string', signature: '0xabc123' };
         const result = await authApi.verifyChallenge(payload);
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/did/verify`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/verify`, expect.objectContaining({
             method: 'POST',
             body: JSON.stringify(payload)
         }));

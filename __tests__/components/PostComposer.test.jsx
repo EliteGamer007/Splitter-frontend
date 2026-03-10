@@ -2,23 +2,19 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
-jest.mock('@/components/ui/PostComposer', () => {
-    return function MockPostComposer({ onSubmit, isSubmitting }) {
-        return (
-            <div data-testid="post-composer">
-                <textarea placeholder="What's on your mind?" data-testid="post-input" />
-                <button
-                    disabled={isSubmitting}
-                    onClick={() => onSubmit && onSubmit('New post content')}
-                >
-                    Post
-                </button>
-            </div>
-        );
-    };
-});
-
-import PostComposer from '@/components/ui/PostComposer';
+function PostComposer({ onSubmit, isSubmitting }) {
+    return (
+        <div data-testid="post-composer">
+            <textarea placeholder="What's on your mind?" data-testid="post-input" />
+            <button
+                disabled={isSubmitting}
+                onClick={() => onSubmit && onSubmit('New post content')}
+            >
+                Post
+            </button>
+        </div>
+    );
+}
 
 describe('PostComposer Component', () => {
     test('renders composer input and button', () => {

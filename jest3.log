@@ -1,0 +1,252 @@
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+FAIL __tests__/pages/RegisterPage.test.jsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/components/pages/RegisterPage mapped as:
+    C:\Users\subsa\Desktop\Splitter-frontend\$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "C:\Users\subsa\Desktop\Splitter-frontend\$1"
+      },
+      "resolver": undefined
+    }
+
+    [0m [90m 11 |[39m
+     [90m 12 |[39m [90m// Provide a stable mocked RegisterPage structure for the test[39m
+    [31m[1m>[22m[39m[90m 13 |[39m jest[33m.[39mmock([32m'@/components/pages/RegisterPage'[39m[33m,[39m () [33m=>[39m {
+     [90m    |[39m      [31m[1m^[22m[39m
+     [90m 14 |[39m     [36mreturn[39m [36mfunction[39m [33mMockRegisterPage[39m({ onNavigate }) {
+     [90m 15 |[39m         [36mconst[39m [username[33m,[39m setUsername] [33m=[39m [33mReact[39m[33m.[39museState([32m''[39m)[33m;[39m
+     [90m 16 |[39m         [36mconst[39m [password[33m,[39m setPassword] [33m=[39m [33mReact[39m[33m.[39museState([32m''[39m)[33m;[39m[0m
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.mock (__tests__/pages/RegisterPage.test.jsx:13:6)
+
+FAIL __tests__/components/PostCard.test.jsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/components/ui/PostCard mapped as:
+    C:\Users\subsa\Desktop\Splitter-frontend\$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "C:\Users\subsa\Desktop\Splitter-frontend\$1"
+      },
+      "resolver": undefined
+    }
+
+    [0m [90m 4 |[39m
+     [90m 5 |[39m [90m// We mock the component to isolate its behavior in this test suite[39m
+    [31m[1m>[22m[39m[90m 6 |[39m jest[33m.[39mmock([32m'@/components/ui/PostCard'[39m[33m,[39m () [33m=>[39m {
+     [90m   |[39m      [31m[1m^[22m[39m
+     [90m 7 |[39m     [36mreturn[39m [36mfunction[39m [33mMockPostCard[39m({ post[33m,[39m onReply[33m,[39m onLike[33m,[39m onDelete }) {
+     [90m 8 |[39m         [36mreturn[39m (
+     [90m 9 |[39m             [33m<[39m[33mdiv[39m data[33m-[39mtestid[33m=[39m[32m"post-card"[39m[33m>[39m[0m
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.mock (__tests__/components/PostCard.test.jsx:6:6)
+
+FAIL __tests__/components/ReplyBox.test.jsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/components/ui/ReplyBox mapped as:
+    C:\Users\subsa\Desktop\Splitter-frontend\$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "C:\Users\subsa\Desktop\Splitter-frontend\$1"
+      },
+      "resolver": undefined
+    }
+
+    [0m [90m 4 |[39m
+     [90m 5 |[39m [90m// Simplified structural mock to satisfy the test runner without breaking on unknown imports[39m
+    [31m[1m>[22m[39m[90m 6 |[39m jest[33m.[39mmock([32m'@/components/ui/ReplyBox'[39m[33m,[39m () [33m=>[39m {
+     [90m   |[39m      [31m[1m^[22m[39m
+     [90m 7 |[39m     [36mreturn[39m [36mfunction[39m [33mMockReplyBox[39m({ onSubmit }) {
+     [90m 8 |[39m         [36mreturn[39m (
+     [90m 9 |[39m             [33m<[39m[33mdiv[39m data[33m-[39mtestid[33m=[39m[32m"reply-box"[39m[33m>[39m[0m
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.mock (__tests__/components/ReplyBox.test.jsx:6:6)
+
+FAIL __tests__/components/PostComposer.test.jsx
+  ● Test suite failed to run
+
+    Configuration error:
+
+    Could not locate module @/components/ui/PostComposer mapped as:
+    C:\Users\subsa\Desktop\Splitter-frontend\$1.
+
+    Please check your configuration for these entries:
+    {
+      "moduleNameMapper": {
+        "/^@\/(.*)$/": "C:\Users\subsa\Desktop\Splitter-frontend\$1"
+      },
+      "resolver": undefined
+    }
+
+    [0m [90m 3 |[39m [36mimport[39m [32m'@testing-library/jest-dom'[39m[33m;[39m
+     [90m 4 |[39m
+    [31m[1m>[22m[39m[90m 5 |[39m jest[33m.[39mmock([32m'@/components/ui/PostComposer'[39m[33m,[39m () [33m=>[39m {
+     [90m   |[39m      [31m[1m^[22m[39m
+     [90m 6 |[39m     [36mreturn[39m [36mfunction[39m [33mMockPostComposer[39m({ onSubmit[33m,[39m isSubmitting }) {
+     [90m 7 |[39m         [36mreturn[39m (
+     [90m 8 |[39m             [33m<[39m[33mdiv[39m data[33m-[39mtestid[33m=[39m[32m"post-composer"[39m[33m>[39m[0m
+
+      at createNoMappedModuleFoundError (node_modules/jest-resolve/build/index.js:1117:17)
+      at Object.mock (__tests__/components/PostComposer.test.jsx:5:6)
+
+PASS __tests__/lib/api.test.ts
+  ● Console
+
+    console.error
+      API Error Response: {
+        status: 400,
+        statusText: 'Bad Request',
+        url: 'http://localhost/api/auth/login',
+        body: '{"error":"Invalid credentials"}'
+      }
+
+    [0m [90m 110 |[39m   [36mif[39m ([33m![39mresponse[33m.[39mok) {
+     [90m 111 |[39m     [36mconst[39m errorText [33m=[39m [36mawait[39m response[33m.[39mtext()[33m;[39m
+    [31m[1m>[22m[39m[90m 112 |[39m     console[33m.[39merror([32m'API Error Response:'[39m[33m,[39m {
+     [90m     |[39m             [31m[1m^[22m[39m
+     [90m 113 |[39m       status[33m:[39m response[33m.[39mstatus[33m,[39m
+     [90m 114 |[39m       statusText[33m:[39m response[33m.[39mstatusText[33m,[39m
+     [90m 115 |[39m       url[33m:[39m response[33m.[39murl[33m,[39m[0m
+
+      at error (lib/api.ts:112:13)
+      at Object.login (lib/api.ts:193:20)
+      at Object.<anonymous> (__tests__/lib/api.test.ts:41:9)
+
+FAIL __tests__/lib/apiAuth.test.ts
+  ● API Auth Interaction › getChallenge requests DID auth successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://localhost:8000/api/v1/auth/did/challenge?did=did:key:123"
+    Received: "http://localhost:8000/api/v1/auth/challenge", {"body": "{\"did\":\"did:key:123\"}", "headers": {"Content-Type": "application/json"}, "method": "POST"}
+
+    Number of calls: 1
+
+    [0m [90m 34 |[39m         [36mconst[39m result [33m=[39m [36mawait[39m authApi[33m.[39mgetChallenge([32m'did:key:123'[39m)[33m;[39m
+     [90m 35 |[39m
+    [31m[1m>[22m[39m[90m 36 |[39m         expect(global[33m.[39mfetch)[33m.[39mtoHaveBeenCalledWith([32m`${API_BASE}/auth/did/challenge?did=did:key:123`[39m)[33m;[39m
+     [90m    |[39m                              [31m[1m^[22m[39m
+     [90m 37 |[39m         expect(result[33m.[39mchallenge)[33m.[39mtoBe([32m'mock-challenge-string'[39m)[33m;[39m
+     [90m 38 |[39m     })[33m;[39m
+     [90m 39 |[39m[0m
+
+      at Object.toHaveBeenCalledWith (__tests__/lib/apiAuth.test.ts:36:30)
+
+  ● API Auth Interaction › verifyChallenge submits signed payload
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://localhost:8000/api/v1/auth/did/verify", ObjectContaining {"body": "{\"did\":\"did:key:123\",\"challenge\":\"mock-challenge-string\",\"signature\":\"0xabc123\"}", "method": "POST"}
+    Received: "http://localhost:8000/api/v1/auth/verify", {"body": "{\"did\":\"did:key:123\",\"challenge\":\"mock-challenge-string\",\"signature\":\"0xabc123\"}", "headers": {"Content-Type": "application/json"}, "method": "POST"}
+
+    Number of calls: 1
+
+    [0m [90m 47 |[39m         [36mconst[39m result [33m=[39m [36mawait[39m authApi[33m.[39mverifyChallenge(payload)[33m;[39m
+     [90m 48 |[39m
+    [31m[1m>[22m[39m[90m 49 |[39m         expect(global[33m.[39mfetch)[33m.[39mtoHaveBeenCalledWith([32m`${API_BASE}/auth/did/verify`[39m[33m,[39m expect[33m.[39mobjectContaining({
+     [90m    |[39m                              [31m[1m^[22m[39m
+     [90m 50 |[39m             method[33m:[39m [32m'POST'[39m[33m,[39m
+     [90m 51 |[39m             body[33m:[39m [33mJSON[39m[33m.[39mstringify(payload)
+     [90m 52 |[39m         }))[33m;[39m[0m
+
+      at Object.toHaveBeenCalledWith (__tests__/lib/apiAuth.test.ts:49:30)
+
+PASS __tests__/security/authFlow.test.jsx
+PASS __tests__/pages/FeedPage.test.jsx
+PASS __tests__/validation/loginValidation.test.jsx
+PASS __tests__/validation/registerValidation.test.jsx
+PASS __tests__/pages/LoginPage.test.jsx
+  ● Console
+
+    console.log
+      Login successful: { token: 'fake-token' }
+
+      at log (components/pages/LoginPage.jsx:76:15)
+
+    console.log
+      Current user data: {
+        id: '1',
+        username: 'testuser',
+        role: 'user',
+        display_name: 'Test User',
+        instance_domain: 'localhost',
+        avatar_url: 'avatar.png',
+        email: 'test@example.com',
+        bio: 'Bio',
+        did: 'did:key:123',
+        moderation_requested: false,
+        followers_count: 10,
+        following_count: 5,
+        posts_count: 20
+      }
+
+      at log (components/pages/LoginPage.jsx:80:15)
+
+    console.log
+      User role: user
+
+      at log (components/pages/LoginPage.jsx:81:15)
+
+    console.error
+      Login error: Error: Invalid credentials
+          at Object.<anonymous> (C:\Users\subsa\Desktop\Splitter-frontend\__tests__\pages\LoginPage.test.jsx:104:41)
+          at Promise.finally.completed (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+          at _callCircusTest (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1007:40)
+          at _runTest (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:947:3)
+          at C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+          at _runTestsForDescribeBlock (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+          at _runTestsForDescribeBlock (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+          at run (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+          at runAndTransformResultsToJestFormat (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+          at jestAdapter (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-circus\build\runner.js:101:19)
+          at runTestInternal (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:275:16)
+          at runTest (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:343:7)
+          at Object.worker (C:\Users\subsa\Desktop\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:497:12)
+
+    [0m [90m 109 |[39m
+     [90m 110 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 111 |[39m       console[33m.[39merror([32m'Login error:'[39m[33m,[39m err)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 112 |[39m       setError(err[33m.[39mmessage [33m||[39m [32m'Login failed. Please check your credentials.'[39m)[33m;[39m
+     [90m 113 |[39m     } [36mfinally[39m {
+     [90m 114 |[39m       setIsLoading([36mfalse[39m)[33m;[39m[0m
+
+      at error (components/pages/LoginPage.jsx:111:15)
+
+
+Test Suites: 5 failed, 6 passed, 11 total
+Tests:       2 failed, 25 passed, 27 total
+Snapshots:   0 total
+Time:        2.719 s
+Ran all test suites.

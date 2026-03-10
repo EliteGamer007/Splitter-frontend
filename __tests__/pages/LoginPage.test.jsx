@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import LoginPage from '../../components/pages/LoginPage';
-import { authApi, userApi } from '@/lib/api';
+import { authApi, userApi, getCurrentInstance } from '@/lib/api';
 import { getStoredKeyPair, signChallenge, importRecoveryFile } from '@/lib/crypto';
 import { useTheme } from '@/components/ui/theme-provider';
 
@@ -23,6 +23,7 @@ describe('LoginPage', () => {
 
         // Default mock implementations
         useTheme.mockReturnValue({ theme: 'dark', toggleTheme: mockToggleTheme });
+        getCurrentInstance.mockReturnValue({ domain: 'splitter-1' });
         getStoredKeyPair.mockResolvedValue(null);
         authApi.login.mockResolvedValue({ token: 'fake-token' });
         userApi.getCurrentUser.mockResolvedValue({
