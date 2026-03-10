@@ -625,11 +625,11 @@ export const messageApi = {
     return handleResponse<{ messages: any[], thread: any }>(response);
   },
 
-  async sendMessage(recipientId: string, content: string, ciphertext?: string) {
+  async sendMessage(recipientId: string, content: string, ciphertext?: string, encrypted_keys?: Record<string, string>) {
     const response = await fetch(`${apiBase()}/messages/send`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ recipient_id: recipientId, content, ciphertext })
+      body: JSON.stringify({ recipient_id: recipientId, content, ciphertext, encrypted_keys })
     });
     return handleResponse<{ message: any, thread: any, recipient: any }>(response);
   },
@@ -639,6 +639,7 @@ export const messageApi = {
     recipient_id: string;
     content: string;
     ciphertext?: string;
+    encrypted_keys?: Record<string, string>;
     client_created_at?: string;
   }>) {
     const response = await fetch(`${apiBase()}/messages/sync`, {
