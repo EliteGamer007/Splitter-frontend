@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/LoginPage.css';
 import { authApi, userApi, setApiBase, getCurrentInstance } from '@/lib/api';
-import { getStoredKeyPair, signChallenge, importRecoveryFile } from '@/lib/crypto';
+import { getStoredKeyPair, signChallenge, importRecoveryFile, ensureEncryptionKeys } from '@/lib/crypto';
 
 export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticated }) {
   const { theme, toggleTheme } = useTheme();
@@ -79,6 +79,19 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
       const user = await userApi.getCurrentUser();
       console.log('Current user data:', user);
       console.log('User role:', user.role);
+
+      // Ensure encryption keys exist (generate if missing, upload if backend has none)
+      try {
+        const encKeys = await ensureEncryptionKeys();
+        if (encKeys && (!user.encryption_public_key || user.encryption_public_key === '')) {
+          await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+          console.log('Encryption keys generated and uploaded to backend after login');
+        } else {
+          console.log('Encryption keys already present');
+        }
+      } catch (encErr) {
+        console.warn('Failed to ensure encryption keys after login:', encErr);
+      }
 
       updateUserData({
         id: user.id,
@@ -159,6 +172,17 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
 
       // Get full user data
       const user = await userApi.getCurrentUser();
+
+      // Ensure encryption keys exist (generate if missing, upload if backend has none)
+      try {
+        const encKeys = await ensureEncryptionKeys();
+        if (encKeys && (!user.encryption_public_key || user.encryption_public_key === '')) {
+          await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+          console.log('Encryption keys generated and uploaded to backend after DID login');
+        }
+      } catch (encErr) {
+        console.warn('Failed to ensure encryption keys after DID login:', encErr);
+      }
 
       updateUserData({
         id: user.id,

@@ -505,3 +505,58 @@ export async function loadEncryptionKeys(): Promise<{ encryptionPrivateKey?: Cry
     return null;
   }
 }
+
+// Generate ONLY ECDH P-256 encryption keys (lightweight, no Ed25519/DID)
+export async function generateEncryptionKeyPair(): Promise<{
+  encryptionPrivateKey: CryptoKey;
+  encryptionPublicKey: CryptoKey;
+  encryptionPrivateKeyBase64: string;
+  encryptionPublicKeyBase64: string;
+}> {
+  const encKeyPair = await window.crypto.subtle.generateKey(
+    { name: 'ECDH', namedCurve: 'P-256' },
+    true,
+    ['deriveKey', 'deriveBits']
+  );
+
+  const publicKeyBuffer = await window.crypto.subtle.exportKey('spki', encKeyPair.publicKey);
+  const publicKeyBase64 = bufferToBase64(publicKeyBuffer);
+
+  const privateKeyBuffer = await window.crypto.subtle.exportKey('pkcs8', encKeyPair.privateKey);
+  const privateKeyBase64 = bufferToBase64(privateKeyBuffer);
+
+  return {
+    encryptionPrivateKey: encKeyPair.privateKey,
+    encryptionPublicKey: encKeyPair.publicKey,
+    encryptionPrivateKeyBase64: privateKeyBase64,
+    encryptionPublicKeyBase64: publicKeyBase64,
+  };
+}
+
+// Ensure encryption keys exist: load from localStorage or generate + store new ones
+export async function ensureEncryptionKeys(): Promise<{
+  encryptionPrivateKey: CryptoKey;
+  encryptionPublicKey: CryptoKey;
+  encryptionPrivateKeyBase64: string;
+  encryptionPublicKeyBase64: string;
+}> {
+  // Try loading existing keys first
+  const existing = await loadEncryptionKeys();
+  if (existing && existing.encryptionPrivateKey && existing.encryptionPublicKey) {
+    return existing as {
+      encryptionPrivateKey: CryptoKey;
+      encryptionPublicKey: CryptoKey;
+      encryptionPrivateKeyBase64: string;
+      encryptionPublicKeyBase64: string;
+    };
+  }
+
+  // Generate new ECDH P-256 keys
+  const generated = await generateEncryptionKeyPair();
+
+  // Store in localStorage
+  localStorage.setItem('encryption_private_key', generated.encryptionPrivateKeyBase64);
+  localStorage.setItem('encryption_public_key', generated.encryptionPublicKeyBase64);
+
+  return generated;
+}

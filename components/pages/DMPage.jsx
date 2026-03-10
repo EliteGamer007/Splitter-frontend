@@ -7,7 +7,7 @@ import { messageApi, searchApi, userApi, federationApi, getCurrentInstance, reso
 import {
   loadKeyPair,
   loadEncryptionKeys,
-  generateKeyPair,
+  ensureEncryptionKeys,
   deriveSharedSecret,
   importEncryptionPublicKey,
   encryptMessage,
@@ -159,9 +159,31 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
       if (keys && keys.encryptionPrivateKey) {
         setMyKeyPair(keys);
         console.log('Encryption keys loaded from localStorage (full keypair)');
-      } else {
+        return;
+      }
+
+      // NO keys found at all - AUTO-GENERATE encryption keys
+      console.log('No encryption keys found, auto-generating...');
+      try {
+        const generated = await ensureEncryptionKeys();
+        // Upload public key to backend
+        await userApi.updateEncryptionKey(generated.encryptionPublicKeyBase64);
+        console.log('Auto-generated encryption keys and uploaded to backend');
+
+        setMyKeyPair({
+          publicKey: null,
+          privateKey: null,
+          publicKeyBase64: '',
+          privateKeyBase64: '',
+          did: '',
+          encryptionPrivateKey: generated.encryptionPrivateKey,
+          encryptionPublicKey: generated.encryptionPublicKey,
+          encryptionPrivateKeyBase64: generated.encryptionPrivateKeyBase64,
+          encryptionPublicKeyBase64: generated.encryptionPublicKeyBase64,
+        });
+      } catch (err) {
+        console.error('Failed to auto-generate encryption keys:', err);
         setEncryptionStatus('missing_keys');
-        console.warn('No encryption keys found for current user');
       }
     }
     loadKeys();
@@ -436,27 +458,28 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
 
   const handleGenerateEncryptionKeys = async () => {
     try {
-      // Generate new key pair (includes both signing and encryption keys)
-      const keyPair = await generateKeyPair();
+      // Generate new ECDH P-256 encryption keys (lightweight, no Ed25519 dependency)
+      const generated = await ensureEncryptionKeys();
 
-      // Use the encryption keys from the generated keypair
-      const publicKeyBase64 = keyPair.encryptionPublicKeyBase64;
-      const privateKeyBase64 = keyPair.encryptionPrivateKeyBase64;
-
-      if (!publicKeyBase64 || !privateKeyBase64) {
+      if (!generated.encryptionPublicKeyBase64 || !generated.encryptionPrivateKeyBase64) {
         throw new Error('Failed to generate encryption keys');
       }
 
       // Update user's encryption key on backend
-      await userApi.updateEncryptionKey(publicKeyBase64);
+      await userApi.updateEncryptionKey(generated.encryptionPublicKeyBase64);
 
-      // Store in localStorage (use same keys as loadKeyPair expects)
-      localStorage.setItem('encryption_public_key', publicKeyBase64);
-      localStorage.setItem('encryption_private_key', privateKeyBase64);
-
-      // Reload the key pair to update state properly
-      const loadedKeyPair = await loadKeyPair();
-      setMyKeyPair(loadedKeyPair);
+      // Update state with the generated keys
+      setMyKeyPair({
+        publicKey: null,
+        privateKey: null,
+        publicKeyBase64: '',
+        privateKeyBase64: '',
+        did: '',
+        encryptionPrivateKey: generated.encryptionPrivateKey,
+        encryptionPublicKey: generated.encryptionPublicKey,
+        encryptionPrivateKeyBase64: generated.encryptionPrivateKeyBase64,
+        encryptionPublicKeyBase64: generated.encryptionPublicKeyBase64,
+      });
       setEncryptionStatus('ready');
 
       alert('✅ Encryption keys generated successfully! E2E encryption is now active.');
