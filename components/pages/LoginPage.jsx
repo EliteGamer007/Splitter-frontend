@@ -83,12 +83,11 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
       // Ensure encryption keys exist (generate if missing, upload if backend has none)
       try {
         const encKeys = await ensureEncryptionKeys();
-        if (encKeys && (!user.encryption_public_key || user.encryption_public_key === '')) {
-          await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
-          console.log('Encryption keys generated and uploaded to backend after login');
-        } else {
-          console.log('Encryption keys already present');
-        }
+        // Always upload the local public key to backend to ensure sync.
+        // If the backend was reset or has a stale key, this overwrites it.
+        // The private key stays in localStorage, so decrypt always matches.
+        await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+        console.log('Encryption keys synced to backend after login');
       } catch (encErr) {
         console.warn('Failed to ensure encryption keys after login:', encErr);
       }
@@ -176,10 +175,8 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
       // Ensure encryption keys exist (generate if missing, upload if backend has none)
       try {
         const encKeys = await ensureEncryptionKeys();
-        if (encKeys && (!user.encryption_public_key || user.encryption_public_key === '')) {
-          await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
-          console.log('Encryption keys generated and uploaded to backend after DID login');
-        }
+        await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+        console.log('Encryption keys synced to backend after DID login');
       } catch (encErr) {
         console.warn('Failed to ensure encryption keys after DID login:', encErr);
       }

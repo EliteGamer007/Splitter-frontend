@@ -5,8 +5,6 @@ import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/DMPage.css';
 import { messageApi, searchApi, userApi, federationApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
 import {
-  loadKeyPair,
-  loadEncryptionKeys,
   ensureEncryptionKeys,
   deriveSharedSecret,
   importEncryptionPublicKey,
@@ -128,47 +126,16 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
     }
   };
 
-  // Load my keys on mount
+  // Load my keys on mount — always ensure keys exist and are synced to backend
   useEffect(() => {
     async function loadKeys() {
-      // Try loading full keypair first (for DID users with signing keys)
-      let keys = await loadKeyPair();
-
-      // Fallback to loading only encryption keys (for username/password users)
-      if (!keys || !keys.encryptionPrivateKey) {
-        const encKeys = await loadEncryptionKeys();
-        if (encKeys && encKeys.encryptionPrivateKey) {
-          // Convert to KeyPair format for compatibility
-          keys = {
-            publicKey: null,
-            privateKey: null,
-            publicKeyBase64: '',
-            privateKeyBase64: '',
-            did: '',
-            encryptionPrivateKey: encKeys.encryptionPrivateKey,
-            encryptionPublicKey: encKeys.encryptionPublicKey,
-            encryptionPrivateKeyBase64: encKeys.encryptionPrivateKeyBase64,
-            encryptionPublicKeyBase64: encKeys.encryptionPublicKeyBase64,
-          };
-          setMyKeyPair(keys);
-          console.log('Encryption keys loaded from localStorage (encryption-only mode)');
-          return;
-        }
-      }
-
-      if (keys && keys.encryptionPrivateKey) {
-        setMyKeyPair(keys);
-        console.log('Encryption keys loaded from localStorage (full keypair)');
-        return;
-      }
-
-      // NO keys found at all - AUTO-GENERATE encryption keys
-      console.log('No encryption keys found, auto-generating...');
       try {
-        const generated = await ensureEncryptionKeys();
-        // Upload public key to backend
-        await userApi.updateEncryptionKey(generated.encryptionPublicKeyBase64);
-        console.log('Auto-generated encryption keys and uploaded to backend');
+        // ensureEncryptionKeys: loads from localStorage if present, generates if not
+        const encKeys = await ensureEncryptionKeys();
+
+        // Always upload to backend to ensure backend key matches our private key
+        await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+        console.log('Encryption keys ready and synced to backend');
 
         setMyKeyPair({
           publicKey: null,
@@ -176,13 +143,13 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
           publicKeyBase64: '',
           privateKeyBase64: '',
           did: '',
-          encryptionPrivateKey: generated.encryptionPrivateKey,
-          encryptionPublicKey: generated.encryptionPublicKey,
-          encryptionPrivateKeyBase64: generated.encryptionPrivateKeyBase64,
-          encryptionPublicKeyBase64: generated.encryptionPublicKeyBase64,
+          encryptionPrivateKey: encKeys.encryptionPrivateKey,
+          encryptionPublicKey: encKeys.encryptionPublicKey,
+          encryptionPrivateKeyBase64: encKeys.encryptionPrivateKeyBase64,
+          encryptionPublicKeyBase64: encKeys.encryptionPublicKeyBase64,
         });
       } catch (err) {
-        console.error('Failed to auto-generate encryption keys:', err);
+        console.error('Failed to load/generate encryption keys:', err);
         setEncryptionStatus('missing_keys');
       }
     }
@@ -309,14 +276,14 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
             content = parsed.c;
           } catch (e) {
             console.error("Invalid ciphertext format", e);
-            return { ...msg, content: '🔒 Encrypted message', decrypted: true, error: true };
+            return { ...msg, content: '🔒 Old encrypted message (keys changed)', decrypted: true, error: true };
           }
 
           const decryptedText = await decryptMessage(content, iv, sharedSecret);
           return { ...msg, content: decryptedText, decrypted: true };
         } catch (err) {
           console.error('Failed to decrypt message:', msg.id, err);
-          return { ...msg, content: '🔒 Decryption failed', decrypted: true, error: true };
+          return { ...msg, content: '🔒 Old encrypted message (keys changed)', decrypted: true, error: true };
         }
       }));
 
@@ -359,7 +326,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
           newPreviews[thread.id] = decryptedText.substring(0, 30) + (decryptedText.length > 30 ? '...' : '');
         } catch (err) {
           console.error('Failed to decrypt preview for thread', thread.id, err);
-          newPreviews[thread.id] = '🔒 Encrypted message';
+          newPreviews[thread.id] = '🔒 Old encrypted message';
         }
       }
 
