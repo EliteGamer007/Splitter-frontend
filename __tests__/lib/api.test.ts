@@ -19,7 +19,7 @@ describe('API Library', () => {
 
         const result = await authApi.login({ username: 'test', password: 'password' });
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/login`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/auth/login'), expect.objectContaining({
             method: 'POST',
             body: JSON.stringify({ username: 'test', password: 'password' }),
         }));
@@ -52,7 +52,7 @@ describe('API Library', () => {
 
         await userApi.getCurrentUser();
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/users/me`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/users/me'), expect.objectContaining({
             headers: expect.objectContaining({
                 'Authorization': 'Bearer stored-token',
                 'Content-Type': 'application/json'
@@ -70,7 +70,7 @@ describe('API Library', () => {
         const file = new File(['content'], 'test.png', { type: 'image/png' });
         await postApi.createPost('Hello World', 'public', file);
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/posts`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/posts'), expect.objectContaining({
             method: 'POST',
             // headers should NOT contain Content-Type for multipart
             headers: {

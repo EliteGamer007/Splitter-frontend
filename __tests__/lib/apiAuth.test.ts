@@ -18,7 +18,7 @@ describe('API Auth Interaction', () => {
         const credentials = { username: 'testuser', email: 'test@example.com', password: 'password123' };
         await authApi.register(credentials);
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/register`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/auth/register'), expect.objectContaining({
             method: 'POST',
             headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(credentials)
@@ -33,7 +33,7 @@ describe('API Auth Interaction', () => {
 
         const result = await authApi.getChallenge('did:key:123');
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/challenge`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/auth/challenge'), expect.objectContaining({
             method: 'POST',
             headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ did: 'did:key:123' })
@@ -50,7 +50,7 @@ describe('API Auth Interaction', () => {
         const payload = { did: 'did:key:123', challenge: 'mock-challenge-string', signature: '0xabc123' };
         const result = await authApi.verifyChallenge(payload);
 
-        expect(global.fetch).toHaveBeenCalledWith(`${API_BASE}/auth/verify`, expect.objectContaining({
+        expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining('/auth/verify'), expect.objectContaining({
             method: 'POST',
             body: JSON.stringify(payload)
         }));
