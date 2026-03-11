@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import '../styles/HomePage.css';
-import { postApi, interactionApi, adminApi, searchApi, messageApi, federationApi, hashtagApi, getCurrentInstance } from '@/lib/api';
 import HomePageWalkthrough from '@/components/ui/HomePageWalkthrough';
 import StoriesBar from '@/components/ui/StoriesBar';
+import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 
 // Sample posts for demo when no backend posts available
 const SAMPLE_POSTS = [
@@ -1442,7 +1442,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     style={{ cursor: 'pointer' }}
                     onClick={() => onNavigate('thread', { postId: post.id, postData: post.instanceUrl ? post : undefined })}
                   >
-                    {post.content}
+                    <SafeHTMLDisplay html={post.content} onHashtagClick={(tag) => onNavigate('hashtag', { hashtag: tag })} />
                     {post.imageUrl && (
                       <div style={{ marginTop: '10px' }}>
                         <img

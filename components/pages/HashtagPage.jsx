@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { hashtagApi } from '@/lib/api';
+import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 import '../styles/HashtagPage.css';
 
 export default function HashtagPage({ hashtag, onNavigate }) {
@@ -40,28 +41,7 @@ export default function HashtagPage({ hashtag, onNavigate }) {
     return date.toLocaleDateString();
   };
 
-  const renderContent = (content) => {
-    if (!content) return null;
-    const parts = content.split(/(#[A-Za-z0-9_]+)/g);
-    return parts.map((part, i) => {
-      if (part.match(/^#[A-Za-z0-9_]+$/)) {
-        const tag = part.slice(1);
-        return (
-          <span
-            key={i}
-            className="hashtag-link"
-            onClick={(e) => {
-              e.stopPropagation();
-              onNavigate('hashtag', { hashtag: tag });
-            }}
-          >
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
-  };
+  // We no longer need the manual renderContent since SafeHTMLDisplay handles hashtags natively via event delegation
 
   return (
     <div className="hashtag-page">
@@ -120,7 +100,7 @@ export default function HashtagPage({ hashtag, onNavigate }) {
                 </div>
               </div>
               <div className="hashtag-post-content">
-                {renderContent(post.content)}
+                <SafeHTMLDisplay html={post.content} onHashtagClick={(tag) => onNavigate('hashtag', { hashtag: tag })} />
               </div>
               {post.media && post.media.length > 0 && (
                 <div className="hashtag-post-media">
