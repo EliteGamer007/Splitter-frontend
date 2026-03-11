@@ -1,4 +1,6 @@
-import DOMPurify from 'isomorphic-dompurify';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 export default function SafeHTMLDisplay({ html, className = '', onHashtagClick = null }) {
   const [cleanHtml, setCleanHtml] = useState('');
