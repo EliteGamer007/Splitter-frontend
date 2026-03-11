@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/ProfilePage.css';
 import { followApi, userApi, postApi, circleApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
+import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 
 export default function ProfilePage({ onNavigate, userData, updateUserData, viewingUserId = null }) {
   const { theme, toggleTheme } = useTheme();
@@ -48,9 +49,10 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
 
     setIsLoadingFollows(true);
     try {
-      const [followers, following] = await Promise.all([
-        followApi.getFollowers(targetId, 200, 0),
-        followApi.getFollowing(targetId, 200, 0),
+      const [followers, following, statsObj] = await Promise.all([
+        followApi.getFollowers(targetId, 200, 0).catch(() => []),
+        followApi.getFollowing(targetId, 200, 0).catch(() => []),
+        followApi.getFollowStats(targetId).catch(() => null)
       ]);
 
       setFollowersList(followers || []);
@@ -58,8 +60,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
 
       setStats(prev => ({
         ...prev,
-        followers: (followers || []).length,
-        following: (following || []).length,
+        followers: statsObj !== null ? statsObj.followers : (followers || []).length,
+        following: statsObj !== null ? statsObj.following : (following || []).length,
       }));
     } catch (err) {
       console.error('Failed to fetch follower/following lists:', err);
@@ -163,12 +165,23 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
       if (isFollowing) {
         await followApi.unfollowUser(viewingUserId);
         setIsFollowing(false);
+        // Instantly update stats
+        setStats(prev => ({ ...prev, followers: Math.max(0, prev.followers - 1) }));
+        if (userData?.id) {
+          setFollowersList(prev => prev.filter(u => u.id !== userData.id));
+        }
       } else {
         await followApi.followUser(viewingUserId);
         setIsFollowing(true);
+        // Instantly update stats
+        setStats(prev => ({ ...prev, followers: prev.followers + 1 }));
+        if (userData) {
+          setFollowersList(prev => [...prev, userData]);
+        }
       }
 
-      await refreshFollowData(viewingUserId);
+      // Still fetch the canonical data in the background
+      refreshFollowData(viewingUserId);
     } catch (err) {
       console.error('Follow operation failed:', err);
       alert(`Failed to ${isFollowing ? 'unfollow' : 'follow'} user: ${err.message}`);
@@ -329,16 +342,9 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           <button className="nav-badge">Federated</button>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
-          {!viewingUserId && (
-            <button onClick={() => onNavigate('thread')} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>💬 Threads</button>
-          )}
-          {viewingUserId ? (
-            <button onClick={() => onNavigate('dm', { selectedUser: { id: viewingUserId, username: displayData.username, display_name: displayData.displayName } })} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>💬 Message User</button>
-          ) : (
-            <button onClick={() => onNavigate('dm')} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>📨 Messages</button>
-          )}
-          <button onClick={() => onNavigate('security')} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>🔐 Security</button>
-          <button onClick={toggleTheme} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>{isDarkMode ? '🌙' : '☀️'}</button>
+          <button onClick={toggleTheme} className="nav-button theme-toggle" style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
         </div>
       </div>
 
@@ -537,7 +543,9 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                       <span className="followers-badge" title="Only close circle can see this post">🔒 Circle</span>
                     )}
                   </div>
-                  <div className="post-content">{post.content}</div>
+                  <div className="post-content">
+                    <SafeHTMLDisplay html={post.content} onHashtagClick={(tag) => onNavigate('hashtag', { hashtag: tag })} />
+                  </div>
                   <div className="post-timestamp">{formatTimestamp(post.created_at)}</div>
                 </div>
               ))

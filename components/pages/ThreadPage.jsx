@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import { postApi } from '@/lib/api';
+import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 import '../styles/ThreadPage.css';
 
 // Helper to format timestamp
@@ -327,7 +328,9 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
                     Replying to @{post.parent_context.post.username || 'remote-user'}
                   </span>
                   <p className="parent-context-content">
-                    {post.parent_context.post.content || '(No content)'}
+                    {post.parent_context.post.content ? (
+                      <SafeHTMLDisplay html={post.parent_context.post.content} onHashtagClick={(tag) => onNavigate('hashtag', { hashtag: tag })} />
+                    ) : '(No content)'}
                   </p>
                 </div>
               )}
@@ -348,7 +351,9 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
                 </div>
               </div>
 
-              <div className="root-post-body">{post.content}</div>
+              <div className="root-post-body">
+                <SafeHTMLDisplay html={post.content} onHashtagClick={(tag) => onNavigate('hashtag', { hashtag: tag })} />
+              </div>
 
               {post.image_url && (
                 <div className="root-post-image">
