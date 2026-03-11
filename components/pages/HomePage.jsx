@@ -495,7 +495,6 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
         }
 
         const following = await followApi.getFollowing(userData?.id, 200, 0);
-        const followedLocalIds = new Set((following || []).map(u => u.id).filter(Boolean));
         const followedHandles = new Set(
           (following || [])
             .map(u => {
@@ -506,16 +505,9 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             .filter(Boolean)
         );
 
-        // Pull the authenticated feed first (can include local and some remote cache)
+        // Pull the authenticated feed first.
+        // Backend already enforces "following + own" semantics for /posts/feed.
         feedPosts = await postApi.getFeed(100, 0);
-        feedPosts = (feedPosts || []).filter((p) => {
-          const authorId = p.author_id || p.user_id;
-          if (authorId && followedLocalIds.has(authorId)) return true;
-
-          const remoteIdentity = parseRemoteIdentity(p, getCurrentInstance().domain);
-          const remoteHandle = `${remoteIdentity.username || p.username || ''}@${remoteIdentity.domain || p.domain || ''}`.toLowerCase();
-          return followedHandles.has(remoteHandle);
-        });
 
         // Ensure remote followed accounts are included from federated timeline too
         if (followedHandles.size > 0) {
