@@ -487,42 +487,50 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
 
       if (activeTab === 'home') {
-        // Home tab: authenticated feed
-        if (token) {
+        // Home tab: strict followed-only feed (local + federated)
+        if (!token) {
+          setPosts([]);
+          setIsLoading(false);
+          return;
+        }
+
+        const following = await followApi.getFollowing(userData?.id, 200, 0);
+        const followedLocalIds = new Set((following || []).map(u => u.id).filter(Boolean));
+        const followedHandles = new Set(
+          (following || [])
+            .map(u => {
+              const domain = u.instance_domain || u.domain || '';
+              if (!u.username || !domain) return '';
+              return `${u.username}@${domain}`.toLowerCase();
+            })
+            .filter(Boolean)
+        );
+
+        // Pull the authenticated feed first (can include local and some remote cache)
+        feedPosts = await postApi.getFeed(100, 0);
+        feedPosts = (feedPosts || []).filter((p) => {
+          const authorId = p.author_id || p.user_id;
+          if (authorId && followedLocalIds.has(authorId)) return true;
+
+          const remoteIdentity = parseRemoteIdentity(p, getCurrentInstance().domain);
+          const remoteHandle = `${remoteIdentity.username || p.username || ''}@${remoteIdentity.domain || p.domain || ''}`.toLowerCase();
+          return followedHandles.has(remoteHandle);
+        });
+
+        // Ensure remote followed accounts are included from federated timeline too
+        if (followedHandles.size > 0) {
           try {
-            feedPosts = await postApi.getFeed(20, 0);
-
-            // Ensure followed remote posts are included from federated timeline
-            try {
-              const { followApi } = await import('@/lib/api');
-              const following = await followApi.getFollowing(userData?.id, 200, 0);
-              const followedHandles = new Set(
-                (following || [])
-                  .filter(u => {
-                    const domain = u.instance_domain || u.domain || '';
-                    return domain && domain !== 'localhost' && domain !== getCurrentInstance().domain;
-                  })
-                  .map(u => `${u.username}@${u.instance_domain || u.domain}`.toLowerCase())
-              );
-
-              if (followedHandles.size > 0) {
-                const fedResult = await federationApi.getTimeline(100);
-                const followedRemotePosts = (fedResult.posts || []).filter(p => {
-                  if (!p.is_remote) return false;
-                  const domain = p.domain || (typeof p.author_did === 'string' && (p.author_did.includes('localhost:8001') || p.author_did.includes('splitter-2.onrender.com')) ? 'splitter-2' : (p.author_did?.includes('localhost:8000') || p.author_did?.includes('splitter-m0kv.onrender.com')) ? 'splitter-1' : '');
-                  const handle = `${p.username || ''}@${domain}`.toLowerCase();
-                  return followedHandles.has(handle);
-                });
-                feedPosts = [...(feedPosts || []), ...followedRemotePosts];
-              }
-            } catch (mergeErr) {
-              console.log('Followed remote merge skipped:', mergeErr);
-            }
-          } catch (authErr) {
-            feedPosts = await postApi.getPublicFeed(20, 0, false);
+            const fedResult = await federationApi.getTimeline(120);
+            const followedRemotePosts = (fedResult.posts || []).filter(p => {
+              if (!p.is_remote) return false;
+              const identity = parseRemoteIdentity(p, getCurrentInstance().domain);
+              const handle = `${identity.username || p.username || ''}@${identity.domain || p.domain || ''}`.toLowerCase();
+              return followedHandles.has(handle);
+            });
+            feedPosts = [...(feedPosts || []), ...followedRemotePosts];
+          } catch (mergeErr) {
+            console.log('Followed remote merge skipped:', mergeErr);
           }
-        } else {
-          feedPosts = await postApi.getPublicFeed(20, 0, false);
         }
       } else if (activeTab === 'local') {
         // Local tab: local_only = true
