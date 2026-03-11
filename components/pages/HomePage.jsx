@@ -462,7 +462,12 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
         const transformedPosts = feedPosts.map(post => {
           const identity = parseRemoteIdentity(post, instanceInfo.domain);
           const derivedDomain = identity.domain || instanceInfo.domain;
-          const derivedUsername = identity.username || post.author_did?.split(':').pop() || 'unknown';
+          // For remote posts with a plain UUID author_did, don't use it as username
+          const didLooksLikeUrl = post.author_did?.startsWith('http');
+          const derivedUsername = identity.username ||
+            (didLooksLikeUrl ? post.author_did?.split('/').pop() : null) ||
+            post.display_name?.toLowerCase().replace(/\s+/g, '_') ||
+            'user';
 
           return {
             id: post.id,
