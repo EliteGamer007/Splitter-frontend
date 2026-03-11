@@ -1,3 +1,5 @@
+'use client';
+
 import DOMPurify from 'isomorphic-dompurify';
 
 export default function SafeHTMLDisplay({ html, className = '', onHashtagClick = null }) {
