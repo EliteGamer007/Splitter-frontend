@@ -1082,6 +1082,40 @@ export const storyApi = {
   }
 };
 
+// Circle API - close friends / restricted visibility
+export const circleApi = {
+  async getCircle(): Promise<any[]> {
+    const response = await fetch(`${apiBase()}/users/me/circle`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse<any[]>(response);
+  },
+
+  async addToCircle(userId: string): Promise<{ message: string }> {
+    const response = await fetch(`${apiBase()}/users/me/circle/${userId}`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse<{ message: string }>(response);
+  },
+
+  async removeFromCircle(userId: string): Promise<{ message: string }> {
+    const response = await fetch(`${apiBase()}/users/me/circle/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse<{ message: string }>(response);
+  },
+
+  async isInCircle(userId: string): Promise<boolean> {
+    const response = await fetch(`${apiBase()}/users/me/circle/${userId}/check`, {
+      headers: getAuthHeaders()
+    });
+    const data = await handleResponse<{ in_circle: boolean }>(response);
+    return data.in_circle;
+  }
+};
+
 export const api = {
   auth: authApi,
   user: userApi,
@@ -1094,7 +1128,8 @@ export const api = {
   admin: adminApi,
   federation: federationApi,
   hashtag: hashtagApi,
-  story: storyApi
+  story: storyApi,
+  circle: circleApi
 };
 
 export default api;
