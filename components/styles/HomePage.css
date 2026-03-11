@@ -31,7 +31,7 @@
 }
 
 .nav-logo {
-  font-size: 1.5rem;
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
   font-weight: 700;
   margin: 0;
   background: linear-gradient(135deg, var(--primary-cyan), var(--accent-magenta));
@@ -720,6 +720,8 @@
 
 .story-ring-active {
   background: linear-gradient(135deg, var(--primary-cyan), var(--accent-magenta), #ffd700);
+  border: 1px solid var(--story-ring-active-border);
+  box-shadow: 0 0 10px var(--story-ring-glow);
   animation: storyRingPulse 3s ease-in-out infinite;
 }
 
@@ -910,11 +912,11 @@
 
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 217, 255, 0.3);
+    box-shadow: 0 0 0 0 var(--story-ring-glow);
   }
 
   50% {
-    box-shadow: 0 0 12px 2px rgba(0, 217, 255, 0.2);
+    box-shadow: 0 0 12px 3px var(--story-ring-glow);
   }
 }
 
@@ -986,7 +988,10 @@
   }
 
   .nav-search {
-    display: none;
+    display: block;
+    width: 120px;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.6rem;
   }
 
   .nav-btn-profile {
@@ -1021,6 +1026,46 @@
 
   .story-username {
     font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .home-nav {
+    padding: 0.4rem 0.75rem;
+    gap: 0.5rem;
+  }
+  .nav-logo {
+    font-size: clamp(0.95rem, 5vw, 1.1rem);
+  }
+  .nav-btn-profile {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  .composer-card {
+    padding: 0.75rem;
+  }
+  .composer-input {
+    font-size: 0.9rem;
+  }
+  .post-card {
+    padding: 0.75rem;
+  }
+  .post-content {
+    font-size: 0.9rem;
+  }
+  .post-actions {
+    gap: 0.5rem;
+  }
+  .action-btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  .story-ring {
+    width: 42px;
+    height: 42px;
+  }
+  .story-item {
+    min-width: 48px;
   }
 }
 

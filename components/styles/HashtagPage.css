@@ -195,3 +195,37 @@
   color: var(--text-muted);
   font-size: 13px;
 }
+
+@media (max-width: 480px) {
+  .hashtag-page {
+    padding: 12px;
+  }
+  .hashtag-page-header h1 {
+    font-size: 20px;
+  }
+  .hashtag-post-card {
+    padding: 12px;
+  }
+  .hashtag-post-content {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hashtag-page {
+    padding: 8px;
+  }
+  .hashtag-page-header h1 {
+    font-size: clamp(1.1rem, 5vw, 1.25rem);
+  }
+  .hashtag-post-card {
+    padding: 10px;
+  }
+  .hashtag-post-content {
+    font-size: 0.85rem;
+  }
+  .hashtag-post-stats {
+    gap: 12px;
+    font-size: 11px;
+  }
+}

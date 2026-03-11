@@ -486,3 +486,64 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 480px) {
+  .federation-navbar .navbar-title {
+    font-size: 18px;
+  }
+  .section-title {
+    font-size: 16px;
+  }
+  .metric-card {
+    padding: 16px;
+  }
+  .metric-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+  .table-row, .table-header {
+    font-size: 13px;
+  }
+  .status-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .reputation-tag {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+  .advanced-btn {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .federation-navbar {
+    padding: 8px 10px;
+  }
+  .federation-navbar .navbar-title {
+    font-size: clamp(0.9rem, 4vw, 1rem);
+  }
+  .section-title {
+    font-size: clamp(0.85rem, 4vw, 1rem);
+  }
+  .metric-card {
+    padding: 12px;
+  }
+  .metric-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+  .table-row, .table-header {
+    font-size: 11px;
+    padding: 8px;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .col-domain, .col-status, .col-reputation, .col-lastseen, .col-activities {
+    font-size: 11px;
+  }
+}

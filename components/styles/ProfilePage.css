@@ -444,3 +444,71 @@
     justify-content: space-around;
   }
 }
+
+@media (max-width: 480px) {
+  .profile-content {
+    padding: 12px;
+  }
+  .profile-avatar-section {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 60px;
+    height: 60px;
+  }
+  .profile-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    background: color-mix(in srgb, var(--accent-1) 5%, transparent);
+    border-radius: 8px;
+  }
+  .tab-button {
+    padding: 10px 12px;
+    font-size: 13px;
+    flex: 1;
+  }
+  .post-badges {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 360px) {
+  .profile-content {
+    padding: 8px;
+  }
+  .profile-navbar {
+    padding: 8px;
+  }
+  .navbar-title {
+    font-size: clamp(0.95rem, 4vw, 1.1rem);
+  }
+  .profile-avatar {
+    width: 50px;
+    height: 50px;
+  }
+  .profile-username {
+    font-size: clamp(0.8rem, 3.5vw, 0.95rem);
+  }
+  .follow-button, .message-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .tab-button {
+    font-size: 11px;
+    padding: 8px 6px;
+  }
+  .stat-number {
+    font-size: 18px;
+  }
+  .stat-label {
+    font-size: 11px;
+  }
+}

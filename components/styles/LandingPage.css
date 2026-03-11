@@ -378,3 +378,77 @@
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .landing-nav {
+    padding: 1rem;
+  }
+  .landing-logo {
+    font-size: 1.25rem;
+  }
+  .landing-hero {
+    padding: 2rem 1rem;
+  }
+  .landing-hero-title {
+    font-size: 1.75rem;
+  }
+  .landing-hero-subtitle {
+    font-size: 1.1rem;
+  }
+  .landing-features {
+    padding: 3rem 1rem;
+  }
+  .landing-section-title {
+    font-size: 1.5rem;
+  }
+  .landing-feature-card {
+    padding: 1.5rem;
+  }
+  .landing-federation {
+    padding: 3rem 1rem;
+  }
+  .landing-cta {
+    padding: 3rem 1rem;
+  }
+  .landing-cta h2 {
+    font-size: 1.75rem;
+  }
+  .landing-footer {
+    padding: 2rem 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .landing-nav {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  .landing-logo {
+    font-size: clamp(1rem, 4vw, 1.25rem);
+  }
+  .landing-nav-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  .landing-hero-title {
+    font-size: clamp(1.4rem, 7vw, 1.75rem);
+  }
+  .landing-hero-subtitle {
+    font-size: clamp(0.9rem, 4vw, 1.1rem);
+  }
+  .landing-btn-primary,
+  .landing-btn-secondary {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+  .landing-feature-card {
+    padding: 1rem;
+  }
+  .landing-section-title {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+  }
+  .landing-features-grid {
+    grid-template-columns: 1fr;
+  }
+}

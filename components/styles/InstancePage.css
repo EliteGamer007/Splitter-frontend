@@ -345,9 +345,69 @@
 
   .instance-filters {
     flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .filter-chip {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .instance-header {
+    margin-bottom: 2rem;
+  }
+  .instance-title {
+    font-size: 1.4rem;
+  }
+  .instance-subtitle {
+    font-size: 0.95rem;
+  }
+  .instance-card-stats {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .stat {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+  }
+  .stat:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .instance-container {
+    padding: 0.75rem;
+  }
+  .instance-title {
+    font-size: clamp(1.1rem, 5vw, 1.4rem);
+  }
+  .instance-subtitle {
+    font-size: 0.85rem;
+  }
+  .instance-card {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  .instance-card-name {
+    font-size: clamp(0.9rem, 4vw, 1rem);
+  }
+  .instance-card-desc {
+    font-size: 0.8rem;
+  }
+  .back-button, .connect-btn {
+    padding: 6px 10px;
+    font-size: 0.85rem;
   }
 }

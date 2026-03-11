@@ -426,7 +426,7 @@
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .signup-box {
     padding: 1.5rem;
   }
@@ -439,7 +439,8 @@
     flex-direction: column;
   }
 
-  .form-buttons button {
+  .form-buttons .btn-primary,
+  .form-buttons .btn-secondary {
     width: 100%;
   }
 
@@ -449,6 +450,70 @@
   }
 
   .copy-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .signup-container {
+    padding: 1rem;
+  }
+  .signup-box {
+    padding: 1rem;
+  }
+  .progress-steps {
+    gap: 0.5rem;
+  }
+  .step {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+  .step-title {
+    font-size: 1.25rem;
+  }
+  .form-input, .form-select, .form-textarea {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+  .btn-generate, .btn-primary, .btn-secondary {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  .radio-option {
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .signup-container {
+    padding: 0.75rem;
+  }
+  .signup-box {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+  }
+  .signup-title {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+  }
+  .signup-subtitle {
+    font-size: 0.85rem;
+  }
+  .step {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+  .step-title {
+    font-size: clamp(1rem, 4vw, 1.25rem);
+  }
+  .form-input, .form-select, .form-textarea {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .btn-generate, .btn-primary, .btn-secondary {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.85rem;
     width: 100%;
   }
 }

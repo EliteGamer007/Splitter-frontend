@@ -506,3 +506,91 @@
     padding: 12px 16px;
   }
 }
+
+@media (max-width: 480px) {
+  .thread-navbar {
+    padding: 8px 10px;
+  }
+  .nav-title {
+    font-size: 15px;
+  }
+  .thread-content {
+    padding: 10px;
+  }
+  .root-post-card {
+    padding: 12px;
+  }
+  .root-post-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  .root-post-name {
+    font-size: 14px;
+  }
+  .root-post-body {
+    font-size: 14px;
+  }
+  .root-post-stats {
+    gap: 12px;
+  }
+  .stat-item {
+    font-size: 12px;
+  }
+  .composer-avatar {
+    display: none;
+  }
+  .reply-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  .reply-nested {
+    margin-left: 10px;
+  }
+  .reply-thread-line {
+    left: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .thread-navbar {
+    padding: 6px 8px;
+  }
+  .nav-title {
+    font-size: clamp(0.85rem, 4vw, 1rem);
+  }
+  .thread-content {
+    padding: 8px;
+  }
+  .root-post-card {
+    padding: 10px;
+  }
+  .root-post-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  .root-post-name {
+    font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+  }
+  .root-post-body {
+    font-size: clamp(0.85rem, 3.5vw, 0.95rem);
+  }
+  .reply-input {
+    font-size: 0.85rem;
+  }
+  .reply-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+  .reply-avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+  }
+  .root-post-stats {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

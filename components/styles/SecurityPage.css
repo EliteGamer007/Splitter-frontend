@@ -432,3 +432,61 @@
     width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .security-card, .status-card, .key-info-card, .actions-card, .security-tips-card {
+    padding: 16px;
+  }
+  .card-title {
+    font-size: 14px;
+  }
+  .status-item {
+    gap: 8px;
+  }
+  .tips-list li {
+    font-size: 13px;
+  }
+  .security-navbar .navbar-title {
+    font-size: 18px;
+  }
+  .security-navbar .nav-button, .security-navbar .nav-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .action-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .security-navbar {
+    padding: 8px 10px;
+  }
+  .security-navbar .navbar-title {
+    font-size: clamp(0.85rem, 4vw, 1rem);
+  }
+  .security-navbar .nav-button, .security-navbar .nav-btn {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  .security-card, .status-card, .key-info-card, .actions-card, .security-tips-card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+  .card-title {
+    font-size: 12px;
+  }
+  .status-label {
+    font-size: 12px;
+  }
+  .action-btn {
+    padding: 8px 10px;
+    font-size: 12px;
+    width: 100%;
+  }
+  .key-value {
+    font-size: 10px;
+    word-break: break-all;
+  }
+}

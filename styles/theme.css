@@ -42,6 +42,10 @@
 
   --secondary-navy: #fcf2ec;
 
+  /* Story Highlight */
+  --story-ring-glow: rgba(15, 124, 123, 0.4);
+  --story-ring-active-border: #0f7c7b;
+
   /* COMPATIBILITY MATCHING */
   --bg-dark: var(--bg-primary);
   --text-light: var(--text-primary);
@@ -86,4 +90,8 @@
   --accent-gradient: linear-gradient(135deg, #00d9ff, #00ff88);
 
   --cyan-glow: rgba(0, 217, 255, 0.25);
+
+  /* Story Highlight */
+  --story-ring-glow: rgba(0, 217, 255, 0.4);
+  --story-ring-active-border: transparent;
 }

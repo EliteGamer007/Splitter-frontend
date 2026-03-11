@@ -144,3 +144,44 @@
 .trending-item:hover .trending-arrow {
   color: var(--primary-cyan);
 }
+
+@media (max-width: 480px) {
+  .trending-page {
+    padding: 12px;
+  }
+  .trending-page-header h1 {
+    font-size: 22px;
+  }
+  .trending-item {
+    padding: 12px 16px;
+  }
+  .trending-tag {
+    font-size: 16px;
+  }
+  .trending-rank {
+    min-width: 32px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .trending-page {
+    padding: 8px;
+  }
+  .trending-page-header h1 {
+    font-size: clamp(1.2rem, 5vw, 1.4rem);
+  }
+  .trending-item {
+    padding: 10px 12px;
+  }
+  .trending-tag {
+    font-size: 14px;
+  }
+  .trending-rank {
+    min-width: 28px;
+    font-size: 14px;
+  }
+  .trending-meta {
+    font-size: 11px;
+  }
+}
