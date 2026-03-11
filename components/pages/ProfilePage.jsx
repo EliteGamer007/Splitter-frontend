@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/ProfilePage.css';
-import { followApi, userApi, postApi, circleApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
+import { followApi, userApi, postApi, circleApi, federationApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
 import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 import LockIcon from '@/components/ui/LockIcon';
 
-export default function ProfilePage({ onNavigate, userData, updateUserData, viewingUserId = null }) {
+export default function ProfilePage({ onNavigate, userData, updateUserData, viewingUserId = null, viewingRemoteUser = null }) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [activeTab, setActiveTab] = useState('posts');
@@ -29,6 +29,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
   const [isLoadingCircle, setIsLoadingCircle] = useState(false);
   const [isInMyCircle, setIsInMyCircle] = useState(false);
   const [isCircleLoading, setIsCircleLoading] = useState(false);
+  const hasExternalProfile = !!viewingRemoteUser;
+  const profileTargetId = viewingUserId || viewingRemoteUser?.id || null;
 
   const isImageURL = (value) => typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/'));
 
@@ -74,7 +76,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
   // Fetch user profile and stats
   useEffect(() => {
     const fetchProfileAndStats = async () => {
-      const targetId = viewingUserId || userData?.id;
+      const targetId = profileTargetId || userData?.id;
       if (!targetId) {
         setProfileData(userData);
         return;
@@ -106,16 +108,43 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
               console.error('Failed to check follow status:', err);
             }
           }
+        } else if (hasExternalProfile) {
+          const remote = viewingRemoteUser;
+          setProfileData({
+            username: remote.username,
+            server: remote.domain || remote.instance_domain || 'remote',
+            displayName: remote.display_name || remote.username,
+            avatar: remote.avatar_url || '👤',
+            bio: remote.bio || 'Remote account',
+            email: remote.actor_uri || '',
+            did: remote.did || remote.actor_uri || `@${remote.username}@${remote.domain || 'remote'}`,
+            isRemote: true,
+          });
+          if (userData?.id) {
+            try {
+              const following = await followApi.getFollowing(userData.id);
+              const handleKey = `${remote.username}@${remote.domain || remote.instance_domain || ''}`.toLowerCase();
+              const isCurrentlyFollowing = (following || []).some(u => {
+                const domain = (u.instance_domain || u.domain || '').toLowerCase();
+                return (u.id && remote.id && u.id === remote.id) || (`${u.username}@${domain}`.toLowerCase() === handleKey);
+              });
+              setIsFollowing(isCurrentlyFollowing);
+            } catch (err) {
+              console.error('Failed to check remote follow status:', err);
+            }
+          }
         } else {
           // Viewing own profile
           setProfileData(userData);
         }
 
-        await refreshFollowData(targetId);
+        if (!hasExternalProfile) {
+          await refreshFollowData(targetId);
+        }
 
         // Fetch post count (get user's posts)
         try {
-          const targetDid = viewingUserId ? profile?.did : userData?.did;
+          const targetDid = viewingUserId ? profile?.did : hasExternalProfile ? viewingRemoteUser?.did : userData?.did;
           if (targetDid) {
             const posts = await postApi.getUserPosts(targetDid);
             setStats(prev => ({
@@ -130,9 +159,9 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
 
         // Load circle members (own profile) or circle membership status (other's profile)
         try {
-          if (viewingUserId) {
+          if (profileTargetId) {
             // Check if this person is in MY circle
-            const inCircle = await circleApi.isInCircle(viewingUserId);
+            const inCircle = await circleApi.isInCircle(profileTargetId);
             setIsInMyCircle(inCircle);
           } else {
             // Own profile — load circle members
@@ -155,16 +184,19 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
     };
 
     fetchProfileAndStats();
-  }, [viewingUserId, userData]);
+  }, [viewingUserId, viewingRemoteUser, userData]);
 
   // Handle follow/unfollow
   const handleFollowToggle = async () => {
-    if (!viewingUserId) return; // Can't follow yourself
+    if (!profileTargetId && !hasExternalProfile) return; // Can't follow yourself
 
     setIsFollowLoading(true);
     try {
       if (isFollowing) {
-        await followApi.unfollowUser(viewingUserId);
+        if (!profileTargetId) {
+          throw new Error('Remote profile is not cached locally yet. Search and follow once from Home to create a local link.');
+        }
+        await followApi.unfollowUser(profileTargetId);
         setIsFollowing(false);
         // Instantly update stats
         setStats(prev => ({ ...prev, followers: Math.max(0, prev.followers - 1) }));
@@ -172,7 +204,12 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           setFollowersList(prev => prev.filter(u => u.id !== userData.id));
         }
       } else {
-        await followApi.followUser(viewingUserId);
+        if (hasExternalProfile && viewingRemoteUser?.username && (viewingRemoteUser?.domain || viewingRemoteUser?.instance_domain)) {
+          const domain = viewingRemoteUser.domain || viewingRemoteUser.instance_domain;
+          await federationApi.followRemoteUser(`@${viewingRemoteUser.username}@${domain}`);
+        } else {
+          await followApi.followUser(profileTargetId);
+        }
         setIsFollowing(true);
         // Instantly update stats
         setStats(prev => ({ ...prev, followers: prev.followers + 1 }));
@@ -182,7 +219,9 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
       }
 
       // Still fetch the canonical data in the background
-      refreshFollowData(viewingUserId);
+      if (!hasExternalProfile) {
+        refreshFollowData(profileTargetId);
+      }
     } catch (err) {
       console.error('Follow operation failed:', err);
       alert(`Failed to ${isFollowing ? 'unfollow' : 'follow'} user: ${err.message}`);
@@ -193,14 +232,14 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
 
   // Handle add/remove from circle (when viewing another user's profile)
   const handleCircleToggle = async () => {
-    if (!viewingUserId) return;
+    if (!profileTargetId) return;
     setIsCircleLoading(true);
     try {
       if (isInMyCircle) {
-        await circleApi.removeFromCircle(viewingUserId);
+        await circleApi.removeFromCircle(profileTargetId);
         setIsInMyCircle(false);
       } else {
-        await circleApi.addToCircle(viewingUserId);
+        await circleApi.addToCircle(profileTargetId);
         setIsInMyCircle(true);
       }
     } catch (err) {
@@ -283,13 +322,13 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
   const displayData = profileData || userData;
   const profile = {
     username: displayData?.username || 'unknown',
-    server: displayData?.server || 'splitter-1',
+    server: displayData?.server || displayData?.instance_domain || 'splitter-1',
     displayName: displayData?.displayName || displayData?.display_name || displayData?.username || 'Unknown User',
     did: displayData?.did || 'did:key:...',
     avatar: displayData?.avatar || '👤',
     bio: displayData?.bio || 'No bio yet',
     email: displayData?.email,
-    isLocal: true,
+    isLocal: !displayData?.isRemote,
     followers: stats.followers,
     following: stats.following,
     posts: stats.posts,
@@ -375,15 +414,15 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
               <button
                 className={`follow-button ${isFollowing ? 'following' : ''}`}
                 onClick={handleFollowToggle}
-                disabled={isFollowLoading || !viewingUserId}
+                disabled={isFollowLoading || (!profileTargetId && !hasExternalProfile)}
                 style={{
                   opacity: isFollowLoading ? 0.6 : 1,
-                  cursor: isFollowLoading || !viewingUserId ? 'not-allowed' : 'pointer'
+                  cursor: isFollowLoading || (!profileTargetId && !hasExternalProfile) ? 'not-allowed' : 'pointer'
                 }}
               >
                 {isFollowLoading ? '...' : isFollowing ? '✓ Following' : 'Follow'}
               </button>
-              {viewingUserId && (
+              {profileTargetId && (
                 <button
                   onClick={handleCircleToggle}
                   disabled={isCircleLoading}

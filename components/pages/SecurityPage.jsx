@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/SecurityPage.css';
 import { userApi, authApi } from '@/lib/api';
-import { generateKeyPair } from '@/lib/ed25519-browser';
+import { generateKeyPair, sign } from '@/lib/ed25519-browser';
 import LockIcon, { UnlockIcon } from '@/components/ui/LockIcon';
 
 export default function SecurityPage({ onNavigate, userData, updateUserData }) {
@@ -49,6 +49,19 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
   }, []);
 
   const hasPublicKey = !!livePublicKey;
+
+  const decodeHexSecretKey = (hex) => {
+    if (!hex || hex.length !== 128) return null;
+    try {
+      const bytes = new Uint8Array(64);
+      for (let i = 0; i < 64; i++) {
+        bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+      }
+      return bytes;
+    } catch {
+      return null;
+    }
+  };
 
   // ─── Initialize Key Handler (for accounts with no key yet) ──────────────
   const handleInitializeKey = async () => {
@@ -103,7 +116,25 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
       const newKP = await generateKeyPair();
       const newPubKeyB64 = btoa(String.fromCharCode(...newKP.publicKey));
 
-      const result = await authApi.rotateKey({ new_public_key: newPubKeyB64 });
+      const storedSecretKeyHex = localStorage.getItem('private_key');
+      const currentSecretKey = decodeHexSecretKey(storedSecretKeyHex);
+      if (!currentSecretKey) {
+        throw new Error('Current private key not found in browser storage. Please initialize your key again.');
+      }
+
+      const nonce = crypto.randomUUID();
+      const timestamp = Math.floor(Date.now() / 1000);
+      const payload = `${newPubKeyB64}|${nonce}|${timestamp}`;
+      const payloadBytes = new TextEncoder().encode(payload);
+      const sigBytes = await sign(payloadBytes, currentSecretKey);
+      const signature = btoa(String.fromCharCode(...sigBytes));
+
+      const result = await authApi.rotateKey({
+        new_public_key: newPubKeyB64,
+        signature,
+        nonce,
+        timestamp,
+      });
 
       // Store new 64-byte secretKey as 128-char hex
       const newSkHex = Array.from(newKP.secretKey).map(b => b.toString(16).padStart(2, '0')).join('');

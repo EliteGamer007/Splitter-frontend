@@ -467,6 +467,14 @@ export const postApi = {
     return handleResponse<any>(response);
   },
 
+  async fetchThreadContext(postId: string) {
+    const response = await fetch(`${apiBase()}/posts/${postId}/fetch-context`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse<{ message: string; post: any; parent_context: any }>(response);
+  },
+
   async reportPost(postId: string, reason: string) {
     // Report a post for moderation
     const response = await fetch(`${apiBase()}/posts/${postId}/report`, {
@@ -963,6 +971,14 @@ export const federationApi = {
   async searchUsers(query: string) {
     const response = await fetch(
       `${apiBase()}/federation/users?q=${encodeURIComponent(query)}`
+    );
+    return handleResponse<{ users: any[]; total: number }>(response);
+  },
+
+  async searchExternalHandle(handle: string) {
+    const normalized = handle.startsWith('@') ? handle : `@${handle}`;
+    const response = await fetch(
+      `${apiBase()}/federation/users?q=${encodeURIComponent(normalized)}`
     );
     return handleResponse<{ users: any[]; total: number }>(response);
   },

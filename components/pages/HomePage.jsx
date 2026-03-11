@@ -76,6 +76,8 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [externalHandleSuggestion, setExternalHandleSuggestion] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [hashtagSearchResults, setHashtagSearchResults] = useState([]);
   const [trendingHashtags, setTrendingHashtags] = useState([]);
   const [followingUsers, setFollowingUsers] = useState(new Set());
@@ -162,6 +164,17 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     }
 
     return { username, domain };
+  };
+
+  const parseExternalHandle = (raw) => {
+    const trimmed = (raw || '').trim();
+    const match = trimmed.match(/^@?([a-z0-9_.-]{1,64})@([a-z0-9.-]+\.[a-z]{2,})$/i);
+    if (!match) return null;
+    return {
+      username: match[1],
+      domain: match[2].toLowerCase(),
+      handle: `@${match[1]}@${match[2].toLowerCase()}`,
+    };
   };
 
   // Fetch posts on mount and when tab changes
@@ -353,12 +366,38 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     }
   };
 
+  const handleExternalHandleSearch = async (handle) => {
+    if (!handle) return;
+
+    setIsSearching(true);
+    try {
+      const result = await federationApi.searchExternalHandle(handle);
+      const remoteUsers = (result.users || []).filter((u) => u.is_remote);
+      setSearchResults(remoteUsers);
+      setHashtagSearchResults([]);
+      setShowSearchResults(true);
+    } catch (err) {
+      console.error('External handle search failed:', err);
+      setSearchResults([]);
+      setHashtagSearchResults([]);
+      setShowSearchResults(true);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Debounced search
   useEffect(() => {
     if (searchQuery.length >= 2) {
+      const parsed = parseExternalHandle(searchQuery);
+      setExternalHandleSuggestion(parsed?.handle || '');
+      if (parsed) {
+        setShowSearchResults(true);
+      }
       const timer = setTimeout(handleSearch, 300);
       return () => clearTimeout(timer);
     } else {
+      setExternalHandleSuggestion('');
       setShowSearchResults(false);
       setSearchResults([]);
     }
@@ -837,16 +876,21 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
           </button>
         </div>
         <div className="nav-right">
-          <div style={{ position: 'relative' }}>
+          <div className="nav-search-wrap" style={{ position: 'relative' }}>
             <input
               type="text"
               placeholder="Search users or #hashtags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
+              onFocus={() => {
+                setIsSearchFocused(true);
+                searchQuery.length >= 2 && setShowSearchResults(true);
+              }}
+              onBlur={() => setIsSearchFocused(false)}
               className="nav-search"
               style={{
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                width: (isSearchFocused || searchQuery.length >= 2) ? 'min(460px, 42vw)' : undefined
               }}
             />
             {/* Search Results Dropdown */}
@@ -865,6 +909,26 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                 zIndex: 1000,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
               }}>
+                {externalHandleSuggestion && (
+                  <div style={{ padding: '10px 12px', borderBottom: '1px solid #333' }}>
+                    <button
+                      onClick={() => handleExternalHandleSearch(externalHandleSuggestion)}
+                      style={{
+                        width: '100%',
+                        textAlign: 'left',
+                        border: '1px solid rgba(0,217,255,0.45)',
+                        background: 'rgba(0,217,255,0.08)',
+                        color: '#9beeff',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                      }}
+                    >
+                      🔍 Search external network for {externalHandleSuggestion}
+                    </button>
+                  </div>
+                )}
                 {isSearching ? (
                   <div style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
                     Searching...
@@ -931,7 +995,19 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                               onClick={() => {
                                 setShowSearchResults(false);
                                 setSearchQuery('');
-                                onNavigate('profile', { userId: user.id });
+                                onNavigate('profile', {
+                                  userId: user.id || null,
+                                  remoteUser: user.is_remote ? {
+                                    id: user.id || null,
+                                    username: user.username,
+                                    display_name: user.display_name,
+                                    avatar_url: user.avatar_url,
+                                    domain: user.domain || user.instance_domain,
+                                    did: user.did || user.actor_uri || '',
+                                    actor_uri: user.actor_uri || '',
+                                    is_remote: true,
+                                  } : null,
+                                });
                               }}
                               style={{
                                 display: 'flex',

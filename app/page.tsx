@@ -40,6 +40,7 @@ export default function App() {
     postsCount: 0
   });
   const [viewingUserId, setViewingUserId] = useState(null);
+  const [viewingRemoteUser, setViewingRemoteUser] = useState<any>(null);
   const [selectedDMUser, setSelectedDMUser] = useState(null);
   const [selectedThreadPostId, setSelectedThreadPostId] = useState(null);
   const [selectedThreadPostData, setSelectedThreadPostData] = useState(null);
@@ -135,27 +136,37 @@ export default function App() {
     if (page === 'dm' && params?.selectedUser) {
       setSelectedDMUser(params.selectedUser);
       setViewingUserId(null);
+      setViewingRemoteUser(null);
     } else if (page === 'profile' && params?.userId) {
       // Handle profile navigation with userId
       setViewingUserId(params.userId);
+      setViewingRemoteUser(params?.remoteUser || null);
+      setSelectedDMUser(null);
+    } else if (page === 'profile' && params?.remoteUser) {
+      setViewingUserId(params.remoteUser?.id || null);
+      setViewingRemoteUser(params.remoteUser);
       setSelectedDMUser(null);
     } else if (page === 'thread' && params?.postId) {
       setSelectedThreadPostId(params.postId);
       setSelectedThreadPostData(params.postData || null);
       setSelectedDMUser(null);
       setViewingUserId(null);
+      setViewingRemoteUser(null);
       setSelectedHashtag(null);
     } else if (page === 'hashtag' && params?.hashtag) {
       setSelectedHashtag(params.hashtag);
       setSelectedDMUser(null);
       setViewingUserId(null);
+      setViewingRemoteUser(null);
     } else if (page === 'trending') {
       setSelectedDMUser(null);
       setViewingUserId(null);
+      setViewingRemoteUser(null);
       setSelectedHashtag(null);
     } else {
       setSelectedDMUser(null);
       setViewingUserId(null);
+      setViewingRemoteUser(null);
     }
 
     setCurrentPage(page);
@@ -236,7 +247,7 @@ export default function App() {
       {currentPage === 'signup' && <SignupPage {...sharedProps} />}
       {currentPage === 'login' && <LoginPage {...sharedProps} />}
       {currentPage === 'home' && <HomePage {...sharedProps} />}
-      {currentPage === 'profile' && <ProfilePage {...sharedProps} viewingUserId={viewingUserId} />}
+      {currentPage === 'profile' && <ProfilePage {...sharedProps} viewingUserId={viewingUserId} viewingRemoteUser={viewingRemoteUser} />}
       {currentPage === 'thread' && <ThreadPage {...sharedProps} postId={selectedThreadPostId} postData={selectedThreadPostData} />}
       {currentPage === 'dm' && <DMPage {...sharedProps} userData={userData} selectedUser={selectedDMUser} />}
       {currentPage === 'security' && <SecurityPage {...sharedProps} />}

@@ -90,6 +90,10 @@
   transition: all 0.3s ease;
 }
 
+.nav-search-wrap {
+  min-width: 0;
+}
+
 .nav-search:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -1027,7 +1031,7 @@
   .nav-search {
     width: 100%;
     min-width: 0 !important;
-    max-width: 200px;
+    max-width: 220px;
   }
 
   .home-nav {
@@ -1125,7 +1129,7 @@
   }
 
   .nav-search {
-    max-width: 140px;
+    max-width: 170px;
     font-size: 0.8rem;
     padding: 0.4rem 0.6rem;
   }
@@ -1190,7 +1194,7 @@
     height: 28px !important;
   }
   .nav-search {
-    max-width: 100px;
+    max-width: 130px;
     font-size: 0.75rem;
   }
   .nav-btn-profile {

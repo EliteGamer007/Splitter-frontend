@@ -143,6 +143,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
   const [mainReplyText, setMainReplyText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingToId, setReplyingToId] = useState(null);
+  const [isFetchingContext, setIsFetchingContext] = useState(false);
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' ? !navigator.onLine : false
   );
@@ -284,6 +285,25 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
 
   const replyCount = post?.total_reply_count || repliesTree.length || 0;
 
+  const handleFetchFullThreadContext = async () => {
+    if (!post?.id || isFetchingContext) return;
+
+    setIsFetchingContext(true);
+    try {
+      const refreshed = await postApi.fetchThreadContext(post.id);
+      if (refreshed?.post) {
+        setPost(refreshed.post);
+      }
+      const replies = await postApi.getReplies(post.id);
+      setRepliesTree(buildReplyTree(replies));
+    } catch (err) {
+      console.error('Failed to fetch remote thread context:', err);
+      setError('Failed to fetch full thread context from original instance.');
+    } finally {
+      setIsFetchingContext(false);
+    }
+  };
+
   return (
     <div className="thread-container">
       {/* Top Bar */}
@@ -337,7 +357,16 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
 
               {post.parent_context?.status === 'missing' && (
                 <div className="parent-context-missing">
-                  ⚠️ Parent post unavailable. {post.parent_context?.message || 'It may be deleted or unreachable.'}
+                  <div style={{ marginBottom: '8px' }}>
+                    {post.parent_context?.message || 'Parent post is not cached yet.'}
+                  </div>
+                  <button
+                    onClick={handleFetchFullThreadContext}
+                    disabled={isFetchingContext || isOffline}
+                    className="retry-btn"
+                  >
+                    {isFetchingContext ? 'Fetching...' : 'Fetch full thread from original instance'}
+                  </button>
                 </div>
               )}
 
