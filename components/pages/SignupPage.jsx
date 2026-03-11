@@ -6,6 +6,7 @@ import '../styles/SignupPage.css';
 import { authApi, setApiBase } from '@/lib/api';
 import { generateKeyPair, storeKeyPair, exportRecoveryFile } from '@/lib/crypto';
 import WalkthroughTooltip from '@/components/ui/WalkthroughTooltip';
+import LockIcon from '@/components/ui/LockIcon';
 
 // Real Splitter server instances
 const SERVERS = [
@@ -829,7 +830,7 @@ This is optional - you can always add it later. If you generate it now, download
                       alignItems: 'center'
                     }}>
                       <code>••••••••••••••••••••••••••••••••</code>
-                      <span className="lock-icon">🔒 Stored Securely</span>
+                      <span className="lock-icon"><LockIcon size={12} style={{ marginRight: '4px' }} />Stored Securely</span>
                     </div>
                   </div>
 

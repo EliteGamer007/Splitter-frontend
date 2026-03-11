@@ -5,6 +5,7 @@ import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/LoginPage.css';
 import { authApi, userApi, setApiBase, getCurrentInstance } from '@/lib/api';
 import { getStoredKeyPair, signChallenge, importRecoveryFile, ensureEncryptionKeys } from '@/lib/crypto';
+import LockIcon from '@/components/ui/LockIcon';
 
 export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticated }) {
   const { theme, toggleTheme } = useTheme();
@@ -597,7 +598,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
         maxWidth: '600px'
       }}>
         <div className="feature-item" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔒</div>
+          <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}><LockIcon size={32} /></div>
           <h4 style={{ color: '#00d9ff', margin: '0 0 4px 0', fontSize: '14px' }}>Secure</h4>
           <p style={{ color: '#666', fontSize: '12px', margin: 0 }}>Your data is encrypted</p>
         </div>

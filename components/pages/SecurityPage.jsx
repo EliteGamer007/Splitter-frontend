@@ -5,6 +5,7 @@ import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/SecurityPage.css';
 import { userApi, authApi } from '@/lib/api';
 import { generateKeyPair } from '@/lib/ed25519-browser';
+import LockIcon, { UnlockIcon } from '@/components/ui/LockIcon';
 
 export default function SecurityPage({ onNavigate, userData, updateUserData }) {
   const { theme, toggleTheme } = useTheme();
@@ -280,7 +281,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
 
         {/* Privacy Settings Card - NEW */}
         <div className="status-card" style={{ marginBottom: '24px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
-          <h3 className="card-title" style={{ color: 'var(--text-primary)' }}>🔒 Privacy Settings</h3>
+          <h3 className="card-title" style={{ color: 'var(--text-primary)' }}><LockIcon size={16} style={{ marginRight: '6px' }} />Privacy Settings</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
 
             {/* Default Post Visibility */}
@@ -304,7 +305,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
               >
                 <option value="public" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}>🌐 Public</option>
                 <option value="followers" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}>👥 Followers Only</option>
-                <option value="circle" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}>🔒 Circle Only</option>
+                <option value="circle" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}>Circle Only</option>
               </select>
             </div>
 
@@ -352,7 +353,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
                   minWidth: '100px'
                 }}
               >
-                {accountLocked ? '🔒 Locked' : '🔓 Open'}
+                {accountLocked ? <><LockIcon size={14} style={{ marginRight: '4px' }} />Locked</> : <><UnlockIcon size={14} style={{ marginRight: '4px' }} />Open</>}
               </button>
             </div>
 

@@ -5,7 +5,7 @@ import '../styles/HomePage.css';
 import HomePageWalkthrough from '@/components/ui/HomePageWalkthrough';
 import StoriesBar from '@/components/ui/StoriesBar';
 import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
-import { postApi, authApi, userApi, healthApi, messageApi, federationApi, hashtagApi, followApi, getCurrentInstance } from '@/lib/api';
+import { postApi, authApi, userApi, healthApi, messageApi, federationApi, hashtagApi, followApi, searchApi, getCurrentInstance } from '@/lib/api';
 
 // Sample posts for demo when no backend posts available
 const SAMPLE_POSTS = [
@@ -1365,7 +1365,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                   >
                     <option value="public">🌐 Public</option>
                     <option value="followers">👥 Followers</option>
-                    <option value="circle">🔒 Circle</option>
+                    <option value="circle">Circle</option>
                   </select>
                   <select
                     value={newPostExpiryMinutes}

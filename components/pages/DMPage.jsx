@@ -11,6 +11,7 @@ import {
   encryptMessage,
   decryptMessage
 } from '@/lib/crypto';
+import LockIcon from '@/components/ui/LockIcon';
 
 
 export default function DMPage({ onNavigate, userData, selectedUser }) {
@@ -723,7 +724,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
         >
           ← Back
         </button>
-        <h1 className="navbar-title">Messages 🔒</h1>
+        <h1 className="navbar-title">Messages <LockIcon size={18} style={{ marginLeft: '6px' }} /></h1>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
           <button onClick={() => onNavigate('profile')} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>Profile</button>
           <button onClick={() => onNavigate('security')} style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>🔐 Security</button>
@@ -884,7 +885,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                         {thread.unread_count}
                       </div>
                     )}
-                    <div className="encryption-badge" title="End-to-end encrypted conversation">🔒</div>
+                    <div className="encryption-badge" title="End-to-end encrypted conversation"><LockIcon size={12} /></div>
                   </div>
                 );
               })
@@ -922,7 +923,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                         <span className="status-text">🌐 Remote • </span>
                       )}
 
-                      {encryptionStatus === 'ready' && <span className="status-text" style={{ color: '#00ff88' }}>🔒 Encrypted With Signal Protocol (ECDH)</span>}
+                      {encryptionStatus === 'ready' && <span className="status-text" style={{ color: '#00ff88' }}><LockIcon size={13} style={{ marginRight: '4px', color: '#00ff88' }} />Encrypted With Signal Protocol (ECDH)</span>}
                       {encryptionStatus === 'loading' && <span className="status-text">🔄 Verifying Keys...</span>}
                       {encryptionStatus === 'recipient_missing_keys' && <span className="status-text" style={{ color: '#ffaa00' }}>⚠️ Recipient has no keys</span>}
                       {encryptionStatus === 'missing_keys' && (
@@ -959,7 +960,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                 borderColor: encryptionStatus === 'ready' ? '#00ff88' : '#ffaa00'
               }}>
                 {encryptionStatus === 'ready'
-                  ? '🔒 Messages are end-to-end encrypted. Only you and the recipient can read them.'
+                  ? <><LockIcon size={13} style={{ marginRight: '4px' }} />Messages are end-to-end encrypted. Only you and the recipient can read them.</>
                   : '⚠️ End-to-end encryption is not active. Keys may be missing.'}
               </div>
 
@@ -1059,7 +1060,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                               <span className="message-timestamp">
                                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
-                              {msg.ciphertext && <span className="message-encryption" title="End-to-end encrypted">🔒</span>}
+                              {msg.ciphertext && <span className="message-encryption" title="End-to-end encrypted"><LockIcon size={11} /></span>}
                             </div>
                             {canModify && !isDeleted && (
                               <div style={{ display: 'flex', gap: '6px', marginTop: '8px', fontSize: '11px' }}>
@@ -1128,7 +1129,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                     background: encryptionStatus === 'ready' ? 'linear-gradient(135deg, #00d9ff, #00ff88)' : undefined
                   }}
                 >
-                  {isSending ? 'Sending...' : (encryptionStatus === 'ready' ? 'Send 🔒' : 'Send')}
+                  {isSending ? 'Sending...' : (encryptionStatus === 'ready' ? <><LockIcon size={13} style={{ marginRight: '4px' }} />Send</> : 'Send')}
                 </button>
               </div>
             </>

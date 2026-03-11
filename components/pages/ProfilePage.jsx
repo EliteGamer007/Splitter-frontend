@@ -5,6 +5,7 @@ import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/ProfilePage.css';
 import { followApi, userApi, postApi, circleApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
 import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
+import LockIcon from '@/components/ui/LockIcon';
 
 export default function ProfilePage({ onNavigate, userData, updateUserData, viewingUserId = null }) {
   const { theme, toggleTheme } = useTheme();
@@ -397,11 +398,11 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                     fontSize: '13px',
                   }}
                 >
-                  {isCircleLoading ? '...' : isInMyCircle ? '🔒 In Circle' : '+ Circle'}
+                  {isCircleLoading ? '...' : isInMyCircle ? <><LockIcon style={{ marginRight: '4px' }} />In Circle</> : '+ Circle'}
                 </button>
               )}
               <button className="message-button" title="DMs available on /dm page">
-                Message 🔒
+                Message <LockIcon style={{ marginLeft: '4px' }} />
               </button>
             </div>
           </div>
@@ -510,7 +511,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
               className={`tab-button ${activeTab === 'circle' ? 'active' : ''}`}
               onClick={() => setActiveTab('circle')}
             >
-              🔒 My Circle
+              <LockIcon style={{ marginRight: '4px' }} />My Circle
             </button>
           )}
         </div>
@@ -540,7 +541,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                       <span className="followers-badge" title="Only followers can see this post">👥 Followers Only</span>
                     )}
                     {post.visibility === 'circle' && (
-                      <span className="followers-badge" title="Only close circle can see this post">🔒 Circle</span>
+                      <span className="followers-badge" title="Only close circle can see this post"><LockIcon style={{ marginRight: '3px' }} />Circle</span>
                     )}
                   </div>
                   <div className="post-content">
@@ -617,7 +618,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
               <div style={{ textAlign: 'center', color: '#666', padding: '24px' }}>Loading circle...</div>
             ) : circleMembers.length === 0 ? (
               <div style={{ textAlign: 'center', color: '#666', padding: '24px' }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔒</div>
+                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><LockIcon size={32} /></div>
                 <div>Your circle is empty.</div>
                 <div style={{ fontSize: '13px', marginTop: '8px', color: '#555' }}>
                   Visit someone's profile and click "+ Circle" to add them.
