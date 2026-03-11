@@ -57,7 +57,7 @@
 
 [data-theme="dark"] {
 
-  /* DARK MODE (EXACT current UI colors — DO NOT MODIFY) */
+  /* DARK MODE */
 
   --bg-dark: #0f0f1a;
   --bg-card: #1a1a2e;
@@ -66,24 +66,25 @@
   --bg-primary: #0f0f1a;
   --bg-secondary: #1a1a2e;
   --card-bg: #1a1a2e;
-  --btn-bg: #00d9ff;
+  --btn-bg: #22d3ee;
   --btn-text: #0f0f1a;
-  --accent-1: #00d9ff;
-  --accent-2: #00ff88;
+  --accent-1: #22d3ee;
+  --accent-2: #7c3aed;
 
   --text-light: #e8eaed;
   --text-primary: #e8eaed;
   --text-secondary: #8a8a99;
   --text-muted: #8a8a99;
 
-  --primary-cyan: #00d9ff;
-  --accent-magenta: #ff006e;
-  --success-green: #00ff88;
+  --primary-cyan: #22d3ee;
+  --accent-magenta: #ec4899;
+  --accent-purple: #7c3aed;
+  --success-green: #22c55e;
   --disabled-yellow: #d4af37;
 
   --border-color: #2d2d44;
 
-  --accent-gradient: linear-gradient(135deg, #00d9ff, #00ff88);
+  --accent-gradient: linear-gradient(135deg, #22d3ee, #7c3aed);
 
-  --cyan-glow: rgba(0, 217, 255, 0.25);
+  --cyan-glow: rgba(34, 211, 238, 0.25);
 }

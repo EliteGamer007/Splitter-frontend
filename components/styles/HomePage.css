@@ -34,7 +34,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, var(--primary-cyan), var(--accent-magenta));
+  background: linear-gradient(135deg, var(--primary-cyan), var(--accent-purple, #7c3aed));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -61,12 +61,12 @@
 
 .nav-item:hover {
   color: var(--text-primary);
-  background: rgba(30, 41, 59, 0.5);
+  background: color-mix(in srgb, var(--primary-cyan) 10%, transparent);
 }
 
 .nav-item.active {
-  background: #1e293b;
-  color: #fff;
+  background: color-mix(in srgb, var(--primary-cyan) 15%, transparent);
+  color: var(--primary-cyan);
   font-weight: 600;
   border-bottom-color: var(--primary-cyan);
 }
@@ -208,7 +208,7 @@
 }
 
 .sidebar-link:hover {
-  background: #1e293b;
+  background: var(--secondary-navy);
   color: var(--primary-cyan);
   transform: translateX(3px);
 }
@@ -420,7 +420,7 @@
 .composer-btn-media:hover {
   color: var(--primary-cyan);
   border-color: var(--primary-cyan);
-  background: rgba(0, 217, 255, 0.08);
+  background: rgba(34, 211, 238, 0.08);
 }
 
 .composer-btn-media:disabled {
@@ -429,12 +429,12 @@
 }
 
 .composer-btn-post {
-  background: linear-gradient(135deg, #00d4ff, #7c3aed);
-  color: #fff;
+  background: var(--primary-cyan, #22d3ee);
+  color: var(--bg-dark, #0f0f1a);
 }
 
 .composer-btn-post:not(.disabled):hover {
-  box-shadow: 0 0 24px rgba(0, 212, 255, 0.4), 0 0 48px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.35);
   transform: translateY(-1px);
 }
 
@@ -1192,7 +1192,7 @@
 }
 
 .story-item:hover .story-ring {
-  box-shadow: 0 0 12px rgba(0, 217, 255, 0.3);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
 }
 
 /* ─── Trend Card Hover Elevation ─── */
@@ -1224,5 +1224,5 @@
 
 .nav-btn-profile:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
 }
