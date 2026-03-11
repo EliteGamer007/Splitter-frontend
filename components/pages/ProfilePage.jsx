@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/ProfilePage.css';
-import { followApi, userApi, postApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
+import { followApi, userApi, postApi, circleApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
 import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 
 export default function ProfilePage({ onNavigate, userData, updateUserData, viewingUserId = null }) {
