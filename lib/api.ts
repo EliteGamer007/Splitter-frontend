@@ -44,6 +44,11 @@ export function setApiBase(serverDomain: string): void {
   const fallbackUrl = process.env.NEXT_PUBLIC_INSTANCE_1_URL || `https://splitter-m0kv.onrender.com/api/v1`;
   const url = normalizeApiBaseUrl(INSTANCE_URLS[serverDomain] || fallbackUrl);
   if (typeof window !== 'undefined') {
+    const prevDomain = localStorage.getItem('splitter_instance');
+    if (prevDomain && prevDomain !== serverDomain) {
+      console.log(`🔄 Instance changed from ${prevDomain} to ${serverDomain}. Clearing token.`);
+      localStorage.removeItem('jwt_token');
+    }
     localStorage.setItem('splitter_api_base', url);
     localStorage.setItem('splitter_instance', serverDomain);
     console.log(`🌐 API base set to: ${url} (instance: ${serverDomain})`);

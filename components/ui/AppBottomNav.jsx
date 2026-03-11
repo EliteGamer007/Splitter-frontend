@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 
-export default function AppBottomNav({ currentPage, onNavigate }) {
+export default function AppBottomNav({ currentPage, onNavigate, hasUnread = false }) {
   const { theme } = useTheme();
   
   if (['landing', 'login', 'signup', 'instances'].includes(currentPage)) {
@@ -11,7 +11,7 @@ export default function AppBottomNav({ currentPage, onNavigate }) {
   const navItems = [
     { id: 'home', icon: '🏠', label: 'Home' },
     { id: 'trending', icon: '🔍', label: 'Explore' },
-    { id: 'dm', icon: '✉️', label: 'Messages' },
+    { id: 'dm', icon: '✉️', label: 'Messages', hasNotification: hasUnread },
     { id: 'profile', icon: '👤', label: 'Profile' },
   ];
 
@@ -55,7 +55,7 @@ export default function AppBottomNav({ currentPage, onNavigate }) {
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className="flex flex-col items-center justify-center w-full h-full transition-colors"
+                className="flex flex-col items-center justify-center w-full h-full transition-colors relative"
                 style={{
                   color: isActive ? '#00d9ff' : 'var(--text-secondary, #888)',
                   background: 'none',
@@ -63,8 +63,22 @@ export default function AppBottomNav({ currentPage, onNavigate }) {
                   cursor: 'pointer'
                 }}
               >
-                <span style={{ fontSize: '20px', marginBottom: '2px', filter: isActive ? 'drop-shadow(0 0 5px rgba(0,217,255,0.5))' : 'none' }}>{item.icon}</span>
-                <span style={{ fontSize: '10px', fontWeight: isActive ? 'bold' : 'normal' }}>{item.label}</span>
+                <div className="relative flex flex-col items-center">
+                  <span style={{ fontSize: '20px', marginBottom: '2px', filter: isActive ? 'drop-shadow(0 0 5px rgba(0,217,255,0.5))' : 'none' }}>{item.icon}</span>
+                  {item.hasNotification && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '0',
+                      right: '-4px',
+                      width: '8px',
+                      height: '8px',
+                      background: '#ffd700',
+                      borderRadius: '50%',
+                      boxShadow: '0 0 8px #ffd700'
+                    }} />
+                  )}
+                  <span style={{ fontSize: '10px', fontWeight: isActive ? 'bold' : 'normal' }}>{item.label}</span>
+                </div>
               </button>
             )
         })}

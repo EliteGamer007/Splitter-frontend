@@ -16,7 +16,7 @@ import AdminPage from '@/components/pages/AdminPage';
 import TrendingPage from '@/components/pages/TrendingPage';
 import HashtagPage from '@/components/pages/HashtagPage';
 import AppBottomNav from '@/components/ui/AppBottomNav';
-import { userApi, healthApi } from '@/lib/api';
+import { userApi, healthApi, messageApi } from '@/lib/api';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -44,6 +44,7 @@ export default function App() {
   const [selectedThreadPostId, setSelectedThreadPostId] = useState(null);
   const [selectedThreadPostData, setSelectedThreadPostData] = useState(null);
   const [selectedHashtag, setSelectedHashtag] = useState(null);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
   // Check backend connection and auth state on mount
   useEffect(() => {
@@ -92,6 +93,33 @@ export default function App() {
 
     initializeApp();
   }, []);
+
+  useEffect(() => {
+    const checkUnread = async () => {
+      // Prevent calls if unauthenticated or no token
+      const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
+      if (!isAuthenticated || !token || !userData?.id) return;
+
+      try {
+        const data = await messageApi.getThreads();
+        const hasUnread = (data.threads || []).some((thread: any) => (thread.unread_count || 0) > 0);
+        setHasUnreadMessages(hasUnread);
+      } catch (err: any) {
+        // If 401, handle it gracefully
+        if (err.message?.includes('401') || err.message?.includes('authorization')) {
+          console.log('Unread check: session invalid or expired');
+          // Optional: handleLogout(); if we want to be aggressive
+          return;
+        }
+        console.log('Failed to check unread messages:', err);
+      }
+    };
+    if (isAuthenticated && userData?.id) {
+      checkUnread();
+      const interval = setInterval(checkUnread, 30000); // Check every 30s
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, userData?.id]);
 
   const navigateTo = (page: string, params?: any) => {
     // Redirect to login if trying to access protected pages without auth
@@ -175,7 +203,8 @@ export default function App() {
     isAuthenticated,
     setIsAuthenticated,
     handleLogout,
-    backendConnected
+    backendConnected,
+    hasUnreadMessages
   };
 
   if (isLoading) {
@@ -218,7 +247,7 @@ export default function App() {
       {currentPage === 'hashtag' && <HashtagPage {...sharedProps} hashtag={selectedHashtag} />}
 
       {isAuthenticated && (
-        <AppBottomNav currentPage={currentPage} onNavigate={navigateTo} />
+        <AppBottomNav currentPage={currentPage} onNavigate={navigateTo} hasUnread={hasUnreadMessages} />
       )}
     </div>
   );

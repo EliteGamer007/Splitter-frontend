@@ -181,10 +181,14 @@ export async function encryptMessage(text: string, sharedKey: CryptoKey): Promis
 
 // Decrypt Message
 export async function decryptMessage(ciphertext: string, iv: string, sharedKey: CryptoKey): Promise<string> {
-  const ciphertextBuffer = base64ToBuffer(ciphertext);
-  const ivBuffer = base64ToBuffer(iv);
+  if (!ciphertext || !iv || !sharedKey) {
+    throw new Error('Missing parameters for decryption');
+  }
 
   try {
+    const ciphertextBuffer = base64ToBuffer(ciphertext);
+    const ivBuffer = base64ToBuffer(iv);
+
     const decryptedBuffer = await window.crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
@@ -197,7 +201,11 @@ export async function decryptMessage(ciphertext: string, iv: string, sharedKey: 
     const decoder = new TextDecoder();
     return decoder.decode(decryptedBuffer);
   } catch (error) {
-    console.error('Decryption failed:', error);
+    if (error instanceof Error && error.name === 'OperationError') {
+      console.warn('Decryption failed (OperationError): Likely key mismatch or corrupted data.');
+    } else {
+      console.error('Decryption failed:', error);
+    }
     throw new Error('Failed to decrypt message');
   }
 }
