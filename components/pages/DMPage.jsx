@@ -274,15 +274,19 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
             const parsed = JSON.parse(msg.ciphertext);
             iv = parsed.iv;
             content = parsed.c;
+            
+            if (!iv || !content) {
+               throw new Error('Missing fields in ciphertext');
+            }
           } catch (e) {
-            console.error("Invalid ciphertext format", e);
-            return { ...msg, content: '🔒 Old encrypted message (keys changed)', decrypted: true, error: true };
+            console.error("Malformed ciphertext JSON", e, msg.id);
+            return { ...msg, content: '🔒 Malformed encrypted message', decrypted: true, error: true };
           }
 
           const decryptedText = await decryptMessage(content, iv, sharedSecret);
           return { ...msg, content: decryptedText, decrypted: true };
         } catch (err) {
-          console.error('Failed to decrypt message:', msg.id, err);
+          // If it's a known decryption failure, don't spam console with full error
           return { ...msg, content: '🔒 Old encrypted message (keys changed)', decrypted: true, error: true };
         }
       }));
@@ -318,14 +322,17 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
         if (!otherUser.encryption_public_key) continue;
 
         try {
-          const importedPublicKey = await importEncryptionPublicKey(otherUser.encryption_public_key);
-          const secret = await deriveSharedSecret(myKeyPair.encryptionPrivateKey, importedPublicKey);
-
           const parsed = JSON.parse(thread.last_message.ciphertext);
-          const decryptedText = await decryptMessage(parsed.c, parsed.iv, secret);
-          newPreviews[thread.id] = decryptedText.substring(0, 30) + (decryptedText.length > 30 ? '...' : '');
+          if (parsed.c && parsed.iv) {
+            const importedPublicKey = await importEncryptionPublicKey(otherUser.encryption_public_key);
+            const secret = await deriveSharedSecret(myKeyPair.encryptionPrivateKey, importedPublicKey);
+
+            const decryptedText = await decryptMessage(parsed.c, parsed.iv, secret);
+            newPreviews[thread.id] = decryptedText.substring(0, 30) + (decryptedText.length > 30 ? '...' : '');
+          } else {
+            newPreviews[thread.id] = '🔒 Encrypted';
+          }
         } catch (err) {
-          console.error('Failed to decrypt preview for thread', thread.id, err);
           newPreviews[thread.id] = '🔒 Old encrypted message';
         }
       }

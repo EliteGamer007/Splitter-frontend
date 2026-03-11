@@ -54,7 +54,7 @@ const SAMPLE_POSTS = [
 
 import { useTheme } from '@/components/ui/theme-provider';
 
-export default function HomePage({ onNavigate, userData, updateUserData, handleLogout }) {
+export default function HomePage({ onNavigate, userData, updateUserData, handleLogout, isAuthenticated, backendConnected, hasUnreadMessages }) {
   const { theme, toggleTheme } = useTheme();
 
 
@@ -78,6 +78,10 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
   const [trendingHashtags, setTrendingHashtags] = useState([]);
   const [followingUsers, setFollowingUsers] = useState(new Set());
   const [followLoading, setFollowLoading] = useState(new Set());
+  const [followingData, setFollowingData] = useState([]); // Store fuller user objects for tagging
+  const [tagSuggestions, setTagSuggestions] = useState([]);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
 
   // Helper: check if a user is followed (supports both local ID and remote username@domain)
   const isUserFollowed = (user) => {
@@ -206,12 +210,12 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
         const followingIds = new Set();
         (following || []).forEach(user => {
           followingIds.add(user.id);
-          // Also add username@domain key for remote user matching
           if (user.username && user.instance_domain) {
             followingIds.add(`${user.username}@${user.instance_domain}`);
           }
         });
         setFollowingUsers(followingIds);
+        setFollowingData(following || []);
         console.log('Loaded following list:', followingIds);
 
         // Fetch and update follower/following counts
@@ -233,6 +237,42 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
 
     loadFollowingListAndCounts();
   }, [userData?.id]);
+
+  const handleComposerChange = (e) => {
+    const text = e.target.value;
+    const pos = e.target.selectionStart;
+    setNewPostText(text);
+    setCursorPosition(pos);
+
+    // Tag detection logic
+    const lastAt = text.lastIndexOf('@', pos - 1);
+    if (lastAt !== -1 && (lastAt === 0 || /\s/.test(text[lastAt - 1]))) {
+      const query = text.substring(lastAt + 1, pos);
+      if (!/\s/.test(query)) {
+        const filtered = followingData.filter(user => 
+            user.username.toLowerCase().startsWith(query.toLowerCase()) ||
+            user.display_name?.toLowerCase().startsWith(query.toLowerCase())
+        );
+        setTagSuggestions(filtered);
+        setShowTagSuggestions(filtered.length > 0);
+      } else {
+        setShowTagSuggestions(false);
+      }
+    } else {
+      setShowTagSuggestions(false);
+    }
+  };
+
+  const selectTag = (user) => {
+    const text = newPostText;
+    const pos = cursorPosition;
+    const lastAt = text.lastIndexOf('@', pos - 1);
+    const beforeAt = text.substring(0, lastAt);
+    const afterPos = text.substring(pos);
+    const handle = `@${user.username}@${user.instance_domain || user.domain || 'local'} `;
+    setNewPostText(beforeAt + handle + afterPos);
+    setShowTagSuggestions(false);
+  };
 
   // Search users and hashtags
   const handleSearch = async () => {
@@ -1072,9 +1112,21 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
               <button
                 className="sidebar-link messages-btn"
                 onClick={() => onNavigate('dm')}
-                style={{ textAlign: 'left', width: '100%' }}
+                style={{ textAlign: 'left', width: '100%', position: 'relative' }}
               >
                 <span>Messages 🔒</span>
+                {hasUnreadMessages && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    width: '10px',
+                    height: '10px',
+                    background: '#ffd700',
+                    borderRadius: '50%',
+                    boxShadow: '0 0 10px #ffd700'
+                  }} />
+                )}
               </button>
               <button
                 className="sidebar-link security-btn"
@@ -1179,12 +1231,67 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             <div className="composer-header">
               <h2>What's happening? 🌐</h2>
             </div>
-            <div className="composer-body">
+            <div className="composer-body" style={{ position: 'relative' }}>
+              {showTagSuggestions && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: 0,
+                  right: 0,
+                  background: '#1a1a2e',
+                  border: '1px solid #00d9ff',
+                  borderRadius: '8px',
+                  marginBottom: '8px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  zIndex: 1000,
+                  boxShadow: '0 0 20px rgba(0, 217, 255, 0.2)'
+                }}>
+                  {tagSuggestions.map(user => (
+                    <div
+                      key={user.id}
+                      onClick={() => selectTag(user)}
+                      style={{
+                        padding: '10px 16px',
+                        borderBottom: '1px solid #333',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#2a2a4a'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #00d9ff, #00ff88)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px'
+                      }}>
+                        {isImageAvatar(user.avatar_url) ? (
+                          <img src={resolveAssetURL(user.avatar_url, user.instance_domain)} alt="" className="avatar-image-fill" />
+                        ) : (
+                          user.avatar_url || '👤'
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ color: '#fff', fontWeight: '600', fontSize: '14px' }}>{user.display_name || user.username}</div>
+                        <div style={{ color: '#666', fontSize: '12px' }}>@{user.username}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <textarea
                 className="composer-textarea"
                 placeholder="Share your thoughts with the federated network..."
                 value={newPostText}
-                onChange={(e) => setNewPostText(e.target.value)}
+                onChange={handleComposerChange}
                 maxLength="500"
                 disabled={isPosting || isOffline}
               />

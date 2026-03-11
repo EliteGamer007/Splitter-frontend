@@ -7,7 +7,7 @@ import { authApi, setApiBase } from '@/lib/api';
 import { generateKeyPair, storeKeyPair, exportRecoveryFile } from '@/lib/crypto';
 import WalkthroughTooltip from '@/components/ui/WalkthroughTooltip';
 
-// Real federated server instances
+// Real Splitter server instances
 const SERVERS = [
   {
     id: 1,
@@ -389,7 +389,7 @@ Don't worry - you can always move later.`}
             <div className="signup-form">
               <h2 className="step-title">Select Your Server 🧭</h2>
               <p style={{ color: isDarkMode ? '#888' : '#555', marginBottom: '16px', fontSize: '14px' }}>
-                Choose a federated server aligned with your interests and region
+                Choose a Splitter server aligned with your interests and region
               </p>
               <p style={{ color: isDarkMode ? '#777' : '#666', marginBottom: '14px', fontSize: '12px' }}>
                 {isRefreshingServers ? 'Syncing live instance user counts…' : 'User counts are live from each instance'}
@@ -560,7 +560,7 @@ Don't worry - you can always move later.`}
                       gap: '6px'
                     }}>
                       <span>{server.moderation === 'Strict' ? '🛡️' : server.moderation === 'Moderate' ? '⚖️' : '🌿'}</span>
-                      {server.moderation} Moderation • {server.federation} Federation
+                      {server.moderation} Moderation • {server.federation} Network
                     </div>
                   </div>
                 ))}

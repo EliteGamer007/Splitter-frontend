@@ -165,7 +165,7 @@ export default function FederationPage({ onNavigate, userData }) {
         >
           &larr; Back
         </button>
-        <h1 className="navbar-title">Federation Inspector</h1>
+        <h1 className="navbar-title">Splitter Moderation</h1>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
           <button
             className="nav-btn-profile"
@@ -232,7 +232,7 @@ export default function FederationPage({ onNavigate, userData }) {
 
         {/* Health Metrics */}
         <div className="health-section">
-          <h2 className="section-title">Federation Health</h2>
+          <h2 className="section-title">Network Health</h2>
 
           <div className="metrics-grid">
             <div className="metric-card">

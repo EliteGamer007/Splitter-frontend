@@ -603,7 +603,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
         </div>
         <div className="feature-item" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🌐</div>
-          <h4 style={{ color: '#00d9ff', margin: '0 0 4px 0', fontSize: '14px' }}>Federated</h4>
+          <h4 style={{ color: '#00d9ff', margin: '0 0 4px 0', fontSize: '14px' }}>Splitter</h4>
           <p style={{ color: '#666', fontSize: '12px', margin: 0 }}>Connect anywhere</p>
         </div>
         <div className="feature-item" style={{ textAlign: 'center' }}>
