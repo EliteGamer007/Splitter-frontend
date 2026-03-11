@@ -55,12 +55,14 @@ export default function ModerationPage({ onNavigate, userData }) {
   const handleAction = async (id, action, item) => {
     setActionLoading(id + action);
     try {
-      if (action === 'remove') { await adminApi.removeContent(id); setQueue(queue.filter(q => q.id !== id)); }
-      else if (action === 'dismiss') { await adminApi.approveContent(id); setQueue(queue.filter(q => q.id !== id)); }
-      else if (action === 'warn') { await adminApi.warnUser(item.author_id, item.reason); setQueue(queue.filter(q => q.id !== id)); }
-      else if (action === 'suspend') { await adminApi.suspendUser(item.author_id); setQueue(queue.filter(q => q.id !== id)); }
-      else if (action === 'ban') { await adminApi.banUser(item.author_id, 'Banned via moderation panel'); setQueue(queue.filter(q => q.id !== id)); }
-      else if (action === 'block_domain') { await adminApi.blockDomain(item.server); setQueue(queue.filter(q => q.id !== id)); }
+      if (action === 'remove') { await adminApi.removeContent(id); }
+      else if (action === 'dismiss') { await adminApi.approveContent(id); }
+      else if (action === 'warn') { await adminApi.warnUser(item.author_id, item.reason); }
+      else if (action === 'suspend') { await adminApi.suspendUser(item.author_id); }
+      else if (action === 'ban') { await adminApi.banUser(item.author_id, 'Banned via moderation panel'); }
+      else if (action === 'block_domain') { await adminApi.blockDomain(item.server); }
+      // Use functional update to avoid stale closure — always works with latest state
+      setQueue(prev => prev.filter(q => q.id !== id));
     } catch (err) {
       setError('Action failed: ' + err.message);
     } finally {
@@ -72,7 +74,7 @@ export default function ModerationPage({ onNavigate, userData }) {
     setActionLoading(appealId + decision);
     try {
       await adminApi.resolveAppeal(appealId, decision);
-      setAppeals(appeals.filter(a => a.id !== appealId));
+      setAppeals(prev => prev.filter(a => a.id !== appealId));
     } catch (err) {
       setError('Failed to resolve appeal: ' + err.message);
     } finally {

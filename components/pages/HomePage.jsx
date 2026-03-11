@@ -487,39 +487,58 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
 
       if (activeTab === 'home') {
-        // Home tab: strict followed-only feed (local + federated)
-        if (!token) {
-          setPosts([]);
-          setIsLoading(false);
-          return;
+        // Home tab: same structure as local/federated but filtered to followed users + own posts
+        // Fetch all public posts (same source as other tabs)
+        feedPosts = await postApi.getPublicFeed(50, 0, false);
+
+        // Build the set of followed user IDs and username@domain keys
+        // (reuse the followingUsers state that was already loaded on mount)
+        let followSet = followingUsers;
+        if ((!followSet || followSet.size === 0) && userData?.id && token) {
+          try {
+            const following = await followApi.getFollowing(userData.id, 200, 0);
+            followSet = new Set();
+            (following || []).forEach(u => {
+              if (u.id) followSet.add(u.id);
+              if (u.username && u.instance_domain) {
+                followSet.add(`${u.username}@${u.instance_domain}`.toLowerCase());
+              }
+            });
+          } catch (e) {
+            console.log('Could not load following list:', e);
+            followSet = new Set();
+          }
         }
 
-        const following = await followApi.getFollowing(userData?.id, 200, 0);
-        const followedHandles = new Set(
-          (following || [])
-            .map(u => {
-              const domain = u.instance_domain || u.domain || '';
-              if (!u.username || !domain) return '';
-              return `${u.username}@${domain}`.toLowerCase();
-            })
-            .filter(Boolean)
-        );
+        if (token && followSet && followSet.size > 0) {
+          // Filter to only posts by people we follow OR our own posts
+          feedPosts = (feedPosts || []).filter(p => {
+            // Own posts always pass
+            if (p.author_id === userData?.id || p.user_id === userData?.id || p.author_did === userData?.did) return true;
+            // Check by author ID
+            if (p.author_id && followSet.has(p.author_id)) return true;
+            if (p.user_id && followSet.has(p.user_id)) return true;
+            // Check by username@domain for remote users
+            const uname = p.author_username || p.username || '';
+            const domain = p.instance_domain || p.author_instance_domain || '';
+            if (uname && domain) {
+              if (followSet.has(`${uname}@${domain}`.toLowerCase())) return true;
+            }
+            return false;
+          });
+        }
 
-        // Pull the authenticated feed first.
-        // Backend already enforces "following + own" semantics for /posts/feed.
-        feedPosts = await postApi.getFeed(100, 0);
-
-        // Ensure remote followed accounts are included from federated timeline too
-        if (followedHandles.size > 0) {
+        // Also merge followed remote posts from federated timeline
+        if (token && followSet && followSet.size > 0) {
           try {
-            const fedResult = await federationApi.getTimeline(120);
-            const followedRemotePosts = (fedResult.posts || []).filter(p => {
+            const fedResult = await federationApi.getTimeline(80);
+            const followedRemote = (fedResult.posts || []).filter(p => {
               if (!p.is_remote) return false;
               const identity = parseRemoteIdentity(p, getCurrentInstance().domain);
               const handle = `${identity.username || p.username || ''}@${identity.domain || p.domain || ''}`.toLowerCase();
-              return followedHandles.has(handle);
+              return followSet.has(handle);
             });
-            feedPosts = [...(feedPosts || []), ...followedRemotePosts];
+            feedPosts = [...(feedPosts || []), ...followedRemote];
           } catch (mergeErr) {
             console.log('Followed remote merge skipped:', mergeErr);
           }

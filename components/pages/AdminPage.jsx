@@ -163,8 +163,20 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
   };
 
   const fetchPosts = async () => {
-    const feedPosts = await postApi.getPublicFeed(20, 0, false);
-    setPosts(feedPosts || []);
+    const feedPosts = await postApi.getPublicFeed(40, 0, false);
+    // Deduplicate: same post may appear as local + cached-remote copy
+    const seen = new Set();
+    const unique = (feedPosts || []).filter(p => {
+      const key = p.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      // Also dedup by content+author fingerprint for cross-server copies
+      const fp = `${(p.content || '').slice(0, 80)}|${p.author_username || p.author_did || ''}`;
+      if (seen.has(fp)) return false;
+      seen.add(fp);
+      return true;
+    });
+    setPosts(unique);
   };
 
   const fetchModerationRequests = async () => {
