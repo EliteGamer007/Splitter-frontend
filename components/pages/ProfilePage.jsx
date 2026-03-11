@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/ProfilePage.css';
-import { followApi, userApi, postApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
+import { followApi, userApi, postApi, circleApi, getCurrentInstance, resolveMediaUrl } from '@/lib/api';
 
 export default function ProfilePage({ onNavigate, userData, updateUserData, viewingUserId = null }) {
   const { theme, toggleTheme } = useTheme();
@@ -23,6 +23,10 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
   const [followersList, setFollowersList] = useState([]);
   const [followingList, setFollowingList] = useState([]);
   const [isLoadingFollows, setIsLoadingFollows] = useState(false);
+  const [circleMembers, setCircleMembers] = useState([]);
+  const [isLoadingCircle, setIsLoadingCircle] = useState(false);
+  const [isInMyCircle, setIsInMyCircle] = useState(false);
+  const [isCircleLoading, setIsCircleLoading] = useState(false);
 
   const isImageURL = (value) => typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/'));
 
@@ -121,6 +125,24 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           console.error('Failed to fetch user posts:', err);
         }
 
+        // Load circle members (own profile) or circle membership status (other's profile)
+        try {
+          if (viewingUserId) {
+            // Check if this person is in MY circle
+            const inCircle = await circleApi.isInCircle(viewingUserId);
+            setIsInMyCircle(inCircle);
+          } else {
+            // Own profile — load circle members
+            setIsLoadingCircle(true);
+            const members = await circleApi.getCircle();
+            setCircleMembers(members || []);
+          }
+        } catch (err) {
+          console.error('Failed to load circle data:', err);
+        } finally {
+          setIsLoadingCircle(false);
+        }
+
       } catch (err) {
         console.error('Failed to load profile:', err);
         setProfileData(userData);
@@ -152,6 +174,37 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
       alert(`Failed to ${isFollowing ? 'unfollow' : 'follow'} user: ${err.message}`);
     } finally {
       setIsFollowLoading(false);
+    }
+  };
+
+  // Handle add/remove from circle (when viewing another user's profile)
+  const handleCircleToggle = async () => {
+    if (!viewingUserId) return;
+    setIsCircleLoading(true);
+    try {
+      if (isInMyCircle) {
+        await circleApi.removeFromCircle(viewingUserId);
+        setIsInMyCircle(false);
+      } else {
+        await circleApi.addToCircle(viewingUserId);
+        setIsInMyCircle(true);
+      }
+    } catch (err) {
+      console.error('Circle operation failed:', err);
+      alert(`Failed to update circle: ${err.message}`);
+    } finally {
+      setIsCircleLoading(false);
+    }
+  };
+
+  // Handle removing a member from own circle (in the "My Circle" tab)
+  const handleRemoveFromMyCircle = async (memberId) => {
+    try {
+      await circleApi.removeFromCircle(memberId);
+      setCircleMembers(prev => prev.filter(m => m.id !== memberId));
+    } catch (err) {
+      console.error('Failed to remove from circle:', err);
+      alert(`Failed to remove from circle: ${err.message}`);
     }
   };
 
@@ -323,6 +376,24 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
               >
                 {isFollowLoading ? '...' : isFollowing ? '✓ Following' : 'Follow'}
               </button>
+              {viewingUserId && (
+                <button
+                  onClick={handleCircleToggle}
+                  disabled={isCircleLoading}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    border: `1px solid ${isInMyCircle ? '#ff6b6b' : '#00d9ff'}`,
+                    background: isInMyCircle ? 'rgba(255,107,107,0.1)' : 'rgba(0,217,255,0.1)',
+                    color: isInMyCircle ? '#ff6b6b' : '#00d9ff',
+                    cursor: isCircleLoading ? 'not-allowed' : 'pointer',
+                    opacity: isCircleLoading ? 0.6 : 1,
+                    fontSize: '13px',
+                  }}
+                >
+                  {isCircleLoading ? '...' : isInMyCircle ? '🔒 In Circle' : '+ Circle'}
+                </button>
+              )}
               <button className="message-button" title="DMs available on /dm page">
                 Message 🔒
               </button>
@@ -428,6 +499,14 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           >
             Following
           </button>
+          {!viewingUserId && (
+            <button
+              className={`tab-button ${activeTab === 'circle' ? 'active' : ''}`}
+              onClick={() => setActiveTab('circle')}
+            >
+              🔒 My Circle
+            </button>
+          )}
         </div>
 
         {/* Posts Tab */}
@@ -517,6 +596,46 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                   {!viewingUserId && (
                     <button className="unfollow-button" onClick={() => handleUnfollowFromFollowing(user.id)}>Unfollow</button>
                   )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* My Circle Tab — own profile only */}
+        {activeTab === 'circle' && !viewingUserId && (
+          <div className="profile-list">
+            {isLoadingCircle ? (
+              <div style={{ textAlign: 'center', color: '#666', padding: '24px' }}>Loading circle...</div>
+            ) : circleMembers.length === 0 ? (
+              <div style={{ textAlign: 'center', color: '#666', padding: '24px' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔒</div>
+                <div>Your circle is empty.</div>
+                <div style={{ fontSize: '13px', marginTop: '8px', color: '#555' }}>
+                  Visit someone's profile and click "+ Circle" to add them.
+                </div>
+              </div>
+            ) : (
+              circleMembers.map((user) => (
+                <div className="list-item" key={`circle-${user.id}`}>
+                  <div className="follower-avatar">
+                    {isImageURL(user.avatar_url) ? (
+                      <img src={resolveURL(user.avatar_url)} alt="Circle member avatar" className="profile-avatar-image" />
+                    ) : (
+                      user.avatar_url || '👤'
+                    )}
+                  </div>
+                  <div className="follower-info">
+                    <div className="follower-name">@{user.username}@{user.instance_domain || 'local'}</div>
+                    <div className="follower-status">{user.display_name || user.username}</div>
+                  </div>
+                  <button
+                    className="unfollow-button"
+                    onClick={() => handleRemoveFromMyCircle(user.id)}
+                    style={{ background: 'rgba(255,107,107,0.1)', borderColor: '#ff6b6b', color: '#ff6b6b' }}
+                  >
+                    Remove
+                  </button>
                 </div>
               ))
             )}

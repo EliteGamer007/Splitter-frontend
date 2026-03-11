@@ -1,0 +1,1740 @@
+﻿
+> my-v0-project@0.1.0 test
+> jest --watchAll=false --forceExit --verbose
+
+npm : [baseline-browser
+-mapping] The data in 
+this module is over 
+two months old.  To 
+ensure accurate 
+Baseline data, please 
+update: `npm i baseline
+-browser-mapping@latest
+ -D`
+At line:1 char:1
++ npm test -- 
+--watchAll=false 
+--forceExit --verbose 
+2>&1 | Out-File -F ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([baseline-bro   
+ ws...ping@latest -    
+D`:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+[baseline-browser-mappi
+ng] The data in this 
+module is over two 
+months old.  To ensure 
+accurate Baseline 
+data, please update: 
+`npm i baseline-browser
+-mapping@latest -D`
+  console.error
+    Received `false` for a non-boolean attribute `initial`.
+    
+    If you want to write it to the DOM, pass a string instead: initial="false" or initial={value.toString()}.
+    
+    If you used to conditionally omit it with initial={condition && value}, pass initial={condition ? value : undefined} instead.
+
+    [0m [90m 57 |[39m describe([32m'LandingPage'[39m[33m,[39m () [33m=>[39m {
+     [90m 58 |[39m     test([32m'1∩╕ÅΓâú Renders Hero and Intro Text'[39m[33m,[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 59 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 60 |[39m         expect(screen[33m.[39mgetByText([35m/Splitter/i[39m))[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 61 |[39m     })[33m;[39m
+     [90m 62 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3078:27)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/pages/LandingPage.test.jsx:59:15)
+
+  console.error
+    React does not recognize the `whileHover` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whilehover` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m 57 |[39m describe([32m'LandingPage'[39m[33m,[39m () [33m=>[39m {
+     [90m 58 |[39m     test([32m'1∩╕ÅΓâú Renders Hero and Intro Text'[39m[33m,[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 59 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 60 |[39m         expect(screen[33m.[39mgetByText([35m/Splitter/i[39m))[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 61 |[39m     })[33m;[39m
+     [90m 62 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/pages/LandingPage.test.jsx:59:15)
+
+  console.error
+    React does not recognize the `whileTap` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whiletap` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m 57 |[39m describe([32m'LandingPage'[39m[33m,[39m () [33m=>[39m {
+     [90m 58 |[39m     test([32m'1∩╕ÅΓâú Renders Hero and Intro Text'[39m[33m,[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 59 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 60 |[39m         expect(screen[33m.[39mgetByText([35m/Splitter/i[39m))[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 61 |[39m     })[33m;[39m
+     [90m 62 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/pages/LandingPage.test.jsx:59:15)
+
+  console.error
+    React does not recognize the `whileInView` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whileinview` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m 57 |[39m describe([32m'LandingPage'[39m[33m,[39m () [33m=>[39m {
+     [90m 58 |[39m     test([32m'1∩╕ÅΓâú Renders Hero and Intro Text'[39m[33m,[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 59 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 60 |[39m         expect(screen[33m.[39mgetByText([35m/Splitter/i[39m))[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 61 |[39m     })[33m;[39m
+     [90m 62 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/pages/LandingPage.test.jsx:59:15)
+
+  console.log
+    Failed to fetch stories: TypeError: Cannot read properties of undefined (reading 'getStoryFeed')
+        at getStoryFeed (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\ui\StoriesBar.jsx:27:41)
+        at fetchStories (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\ui\StoriesBar.jsx:22:9)
+        at Object.react_stack_bottom_frame (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:25989:20)
+        at runWithFiberInDEV (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+        at commitHookEffectListMount (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:13249:29)
+        at commitHookPassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:13336:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15484:13)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15718:11)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15718:11)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15718:11)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15476:11)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15519:11)
+        at flushPassiveEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:18432:9)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:17923:15
+        at flushActQueue (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react\cjs\react.development.js:590:34)
+        at process.env.NODE_ENV.exports.act (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react\cjs\react.development.js:884:10)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\act-compat.js:46:25
+        at renderRoot (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\pure.js:189:26)
+        at render (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\pure.js:291:10)
+        at Object.<anonymous> (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\__tests__\pages\HomePage.test.jsx:39:15)
+        at Promise.finally.completed (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+        at _callCircusTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1007:40)
+        at processTicksAndRejections (node:internal/process/task_queues:95:5)
+        at _runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:947:3)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+        at run (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+        at runAndTransformResultsToJestFormat (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+        at jestAdapter (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\runner.js:101:19)
+        at runTestInternal (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:275:16)
+        at runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:343:7)
+        at Object.worker (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:497:12)
+
+      at log (components/ui/StoriesBar.jsx:30:21)
+
+PASS __tests__/security
+/authFlow.test.jsx
+  Authentication Flow 
+& Security
+    ΓêÜ redirects 
+unauthorized users 
+away from protected 
+routes (117 ms)
+    ΓêÜ allows 
+authorized users to 
+access protected 
+routes (11 ms)
+    ΓêÜ clearing token 
+behaves as a logout 
+and locks route (18 ms)
+
+  console.error
+    Failed to fetch posts: TypeError: _api.postApi.getPublicFeed is not a function
+        at getPublicFeed (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\pages\HomePage.jsx:444:37)
+        at fetchPosts (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\pages\HomePage.jsx:163:5)
+        at Object.react_stack_bottom_frame (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:25989:20)
+        at runWithFiberInDEV (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+        at commitHookEffectListMount (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:13249:29)
+        at commitHookPassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:13336:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15484:13)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15519:11)
+        at flushPassiveEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:18432:9)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:17923:15
+        at flushActQueue (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react\cjs\react.development.js:590:34)
+        at process.env.NODE_ENV.exports.act (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react\cjs\react.development.js:884:10)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\act-compat.js:46:25
+        at renderRoot (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\pure.js:189:26)
+        at render (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\pure.js:291:10)
+        at Object.<anonymous> (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\__tests__\pages\HomePage.test.jsx:39:15)
+        at Promise.finally.completed (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+        at _callCircusTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1007:40)
+        at processTicksAndRejections (node:internal/process/task_queues:95:5)
+        at _runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:947:3)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+        at run (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+        at runAndTransformResultsToJestFormat (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+        at jestAdapter (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\runner.js:101:19)
+        at runTestInternal (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:275:16)
+        at runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:343:7)
+        at Object.worker (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:497:12)
+
+    [0m [90m 518 |[39m       }
+     [90m 519 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 520 |[39m       console[33m.[39merror([32m'Failed to fetch posts:'[39m[33m,[39m err)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 521 |[39m       [36mif[39m (activeTab [33m===[39m [32m'home'[39m) {
+     [90m 522 |[39m         setPosts([33mSAMPLE_POSTS[39m)[33m;[39m
+     [90m 523 |[39m       } [36melse[39m {[0m
+
+      at error (components/pages/HomePage.jsx:520:15)
+      at fetchPosts (components/pages/HomePage.jsx:163:5)
+      at Object.react_stack_bottom_frame (node_modules/react-dom/cjs/react-dom-client.development.js:25989:20)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom-client.development.js:13249:29)
+      at commitHookPassiveMountEffects (node_modules/react-dom/cjs/react-dom-client.development.js:13336:11)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:15484:13)
+      at recursivelyTraversePassiveMountEffects (node_modules/react-dom/cjs/react-dom-client.development.js:15439:11)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:15519:11)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom-client.development.js:18432:9)
+      at node_modules/react-dom/cjs/react-dom-client.development.js:17923:15
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/pages/HomePage.test.jsx:39:15)
+
+  console.log
+    Failed to fetch trending hashtags: TypeError: _api.hashtagApi.getTrending is not a function
+        at getTrending (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\pages\HomePage.jsx:170:39)
+        at fetchTrending (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\pages\HomePage.jsx:176:5)
+        at Object.react_stack_bottom_frame (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:25989:20)
+        at runWithFiberInDEV (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+        at commitHookEffectListMount (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:13249:29)
+        at commitHookPassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:13336:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15484:13)
+        at recursivelyTraversePassiveMountEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15439:11)
+        at commitPassiveMountOnFiber (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:15519:11)
+        at flushPassiveEffects (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:18432:9)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react-dom\cjs\react-dom-client.development.js:17923:15
+        at flushActQueue (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react\cjs\react.development.js:590:34)
+        at process.env.NODE_ENV.exports.act (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\react\cjs\react.development.js:884:10)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\act-compat.js:46:25
+        at renderRoot (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\pure.js:189:26)
+        at render (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\@testing-library\react\dist\pure.js:291:10)
+        at Object.<anonymous> (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\__tests__\pages\HomePage.test.jsx:39:15)
+        at Promise.finally.completed (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+        at _callCircusTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1007:40)
+        at processTicksAndRejections (node:internal/process/task_queues:95:5)
+        at _runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:947:3)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+        at run (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+        at runAndTransformResultsToJestFormat (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+        at jestAdapter (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\runner.js:101:19)
+        at runTestInternal (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:275:16)
+        at runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:343:7)
+        at Object.worker (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:497:12)
+
+      at log (components/pages/HomePage.jsx:173:17)
+
+  console.error
+    Received `false` for a non-boolean attribute `initial`.
+    
+    If you want to write it to the DOM, pass a string instead: initial="false" or initial={value.toString()}.
+    
+    If you used to conditionally omit it with initial={condition && value}, pass initial={condition ? value : undefined} instead.
+
+    [0m [90m  96 |[39m   test([32m'1∩╕ÅΓâú Renders at 360px (micro-mobile) without crashing'[39m[33m,[39m () [33m=>[39m {
+     [90m  97 |[39m     setViewportWidth([35m360[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  98 |[39m     [36mconst[39m { container } [33m=[39m render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m     |[39m                                 [31m[1m^[22m[39m
+     [90m  99 |[39m     expect(container[33m.[39mfirstChild)[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 100 |[39m   })[33m;[39m
+     [90m 101 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3078:27)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/regression/responsiveness.test.jsx:98:33)
+
+  console.error
+    Received `false` for a non-boolean attribute `initial`.
+    
+    If you want to write it to the DOM, pass a string instead: initial="false" or initial={value.toString()}.
+    
+    If you used to conditionally omit it with initial={condition && value}, pass initial={condition ? value : undefined} instead.
+
+    [0m [90m 58 |[39m     test([32m'1∩╕ÅΓâú Verifies Landing Page correctly delegates instance navigation'[39m[33m,[39m () [33m=>[39m {
+     [90m 59 |[39m         [36mconst[39m mockNavigate [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 60 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{mockNavigate} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 61 |[39m         
+     [90m 62 |[39m         [36mconst[39m buttons [33m=[39m screen[33m.[39mgetAllByRole([32m'button'[39m)[33m;[39m
+     [90m 63 |[39m         [36mconst[39m startBtn [33m=[39m buttons[33m.[39mfind(b [33m=>[39m [0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3078:27)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/integration/NavigationFlow.test.jsx:60:15)
+
+  console.error
+    React does not recognize the `whileHover` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whilehover` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m 58 |[39m     test([32m'1∩╕ÅΓâú Verifies Landing Page correctly delegates instance navigation'[39m[33m,[39m () [33m=>[39m {
+     [90m 59 |[39m         [36mconst[39m mockNavigate [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 60 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{mockNavigate} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 61 |[39m         
+     [90m 62 |[39m         [36mconst[39m buttons [33m=[39m screen[33m.[39mgetAllByRole([32m'button'[39m)[33m;[39m
+     [90m 63 |[39m         [36mconst[39m startBtn [33m=[39m buttons[33m.[39mfind(b [33m=>[39m [0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/integration/NavigationFlow.test.jsx:60:15)
+
+  console.error
+    React does not recognize the `whileTap` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whiletap` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m 58 |[39m     test([32m'1∩╕ÅΓâú Verifies Landing Page correctly delegates instance navigation'[39m[33m,[39m () [33m=>[39m {
+     [90m 59 |[39m         [36mconst[39m mockNavigate [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 60 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{mockNavigate} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 61 |[39m         
+     [90m 62 |[39m         [36mconst[39m buttons [33m=[39m screen[33m.[39mgetAllByRole([32m'button'[39m)[33m;[39m
+     [90m 63 |[39m         [36mconst[39m startBtn [33m=[39m buttons[33m.[39mfind(b [33m=>[39m [0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/integration/NavigationFlow.test.jsx:60:15)
+
+PASS __tests__/validati
+on/loginValidation.test
+.jsx
+  Login Validation
+    ΓêÜ submit button 
+is disabled when 
+fields are empty (241 
+ms)
+    ΓêÜ shows 
+validation error if 
+password is too short 
+on submit (53 ms)
+    ΓêÜ submits 
+successfully with 
+valid input (42 ms)
+
+  console.error
+    React does not recognize the `whileInView` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whileinview` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m 58 |[39m     test([32m'1∩╕ÅΓâú Verifies Landing Page correctly delegates instance navigation'[39m[33m,[39m () [33m=>[39m {
+     [90m 59 |[39m         [36mconst[39m mockNavigate [33m=[39m jest[33m.[39mfn()[33m;[39m
+    [31m[1m>[22m[39m[90m 60 |[39m         render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{mockNavigate} [33m/[39m[33m>[39m)[33m;[39m
+     [90m    |[39m               [31m[1m^[22m[39m
+     [90m 61 |[39m         
+     [90m 62 |[39m         [36mconst[39m buttons [33m=[39m screen[33m.[39mgetAllByRole([32m'button'[39m)[33m;[39m
+     [90m 63 |[39m         [36mconst[39m startBtn [33m=[39m buttons[33m.[39mfind(b [33m=>[39m [0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/integration/NavigationFlow.test.jsx:60:15)
+
+  console.error
+    React does not recognize the `whileHover` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whilehover` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m  96 |[39m   test([32m'1∩╕ÅΓâú Renders at 360px (micro-mobile) without crashing'[39m[33m,[39m () [33m=>[39m {
+     [90m  97 |[39m     setViewportWidth([35m360[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  98 |[39m     [36mconst[39m { container } [33m=[39m render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m     |[39m                                 [31m[1m^[22m[39m
+     [90m  99 |[39m     expect(container[33m.[39mfirstChild)[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 100 |[39m   })[33m;[39m
+     [90m 101 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/regression/responsiveness.test.jsx:98:33)
+
+  console.error
+    React does not recognize the `whileTap` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whiletap` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m  96 |[39m   test([32m'1∩╕ÅΓâú Renders at 360px (micro-mobile) without crashing'[39m[33m,[39m () [33m=>[39m {
+     [90m  97 |[39m     setViewportWidth([35m360[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  98 |[39m     [36mconst[39m { container } [33m=[39m render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m     |[39m                                 [31m[1m^[22m[39m
+     [90m  99 |[39m     expect(container[33m.[39mfirstChild)[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 100 |[39m   })[33m;[39m
+     [90m 101 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/regression/responsiveness.test.jsx:98:33)
+
+PASS __tests__/validati
+on/registerValidation.t
+est.jsx
+  Register Validation
+    ΓêÜ disables 
+button when fields are 
+empty (393 ms)
+    ΓêÜ shows 
+validation error if 
+passwords do not match 
+(65 ms)
+    ΓêÜ shows 
+validation error if 
+password is too short 
+(94 ms)
+    ΓêÜ submits 
+successfully with 
+valid matching input 
+(35 ms)
+
+  console.error
+    Failed to load following list: TypeError: Cannot read properties of undefined (reading 'getFollowing')
+        at getFollowing (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\pages\HomePage.jsx:202:43)
+        at processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+    [0m [90m 228 |[39m         }
+     [90m 229 |[39m       } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 230 |[39m         console[33m.[39merror([32m'Failed to load following list:'[39m[33m,[39m err)[33m;[39m
+     [90m     |[39m                 [31m[1m^[22m[39m
+     [90m 231 |[39m       }
+     [90m 232 |[39m     }[33m;[39m
+     [90m 233 |[39m[0m
+
+      at error (components/pages/HomePage.jsx:230:17)
+
+  console.error
+    Each child in a list should have a unique "key" prop.
+    
+    Check the render method of `ProfilePage`. See https://react.dev/link/warning-keys for more information.
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:26084:21
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at warnForMissingKey (node_modules/react-dom/cjs/react-dom-client.development.js:26083:11)
+      at warnOnInvalidKey (node_modules/react-dom/cjs/react-dom-client.development.js:6591:13)
+      at reconcileChildrenArray (node_modules/react-dom/cjs/react-dom-client.development.js:6672:31)
+      at reconcileChildFibersImpl (node_modules/react-dom/cjs/react-dom-client.development.js:6993:30)
+      at node_modules/react-dom/cjs/react-dom-client.development.js:7098:33
+      at reconcileChildren (node_modules/react-dom/cjs/react-dom-client.development.js:9701:13)
+      at beginWork (node_modules/react-dom/cjs/react-dom-client.development.js:12049:13)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17641:22)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at performWorkUntilDeadline (node_modules/scheduler/cjs/scheduler.development.js:45:48)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:579:19)
+
+PASS __tests__/pages/Ho
+mePage.test.jsx
+  HomePage Feed 
+Architecture
+    ΓêÜ 1∩╕ÅΓâú 
+Renders 3-Column 
+Layout Containers (828 
+ms)
+
+  console.error
+    React does not recognize the `whileInView` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whileinview` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+
+    [0m [90m  96 |[39m   test([32m'1∩╕ÅΓâú Renders at 360px (micro-mobile) without crashing'[39m[33m,[39m () [33m=>[39m {
+     [90m  97 |[39m     setViewportWidth([35m360[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m  98 |[39m     [36mconst[39m { container } [33m=[39m render([33m<[39m[33mLandingPage[39m onNavigate[33m=[39m{jest[33m.[39mfn()} [33m/[39m[33m>[39m)[33m;[39m
+     [90m     |[39m                                 [31m[1m^[22m[39m
+     [90m  99 |[39m     expect(container[33m.[39mfirstChild)[33m.[39mtoBeInTheDocument()[33m;[39m
+     [90m 100 |[39m   })[33m;[39m
+     [90m 101 |[39m[0m
+
+      at validateProperty (node_modules/react-dom/cjs/react-dom-client.development.js:3001:19)
+      at warnUnknownProperties (node_modules/react-dom/cjs/react-dom-client.development.js:3146:9)
+      at validatePropertiesInDevelopment (node_modules/react-dom/cjs/react-dom-client.development.js:19868:9)
+      at setInitialProperties (node_modules/react-dom/cjs/react-dom-client.development.js:20491:7)
+      at completeWork (node_modules/react-dom/cjs/react-dom-client.development.js:12662:18)
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:874:13)
+      at completeUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17777:19)
+      at performUnitOfWork (node_modules/react-dom/cjs/react-dom-client.development.js:17658:11)
+      at workLoopSync (node_modules/react-dom/cjs/react-dom-client.development.js:17469:41)
+      at renderRootSync (node_modules/react-dom/cjs/react-dom-client.development.js:17450:11)
+      at performWorkOnRoot (node_modules/react-dom/cjs/react-dom-client.development.js:16504:11)
+      at performWorkOnRootViaSchedulerTask (node_modules/react-dom/cjs/react-dom-client.development.js:18957:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:590:34)
+      at process.env.NODE_ENV.exports.act (node_modules/react/cjs/react.development.js:884:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:46:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:189:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:291:10)
+      at Object.<anonymous> (__tests__/regression/responsiveness.test.jsx:98:33)
+
+PASS __tests__/pages/Pr
+ofilePage.test.jsx
+  ProfilePage Stats 
+rendering
+    ΓêÜ 1∩╕ÅΓâú 
+Displays accurate user 
+counts and profile 
+metadata (542 ms)
+
+PASS __tests__/pages/Re
+gisterPage.test.jsx
+  RegisterPage 
+Interaction
+    ΓêÜ renders 
+registration form (303 
+ms)
+    ΓêÜ handles 
+successful 
+registration and 
+navigation (259 ms)
+    ΓêÜ navigates to 
+login on back click 
+(20 ms)
+
+PASS __tests__/integrat
+ion/NavigationFlow.test
+.jsx
+  Integration: 
+Navigation Flow
+    ΓêÜ 1∩╕ÅΓâú 
+Verifies Landing Page 
+correctly delegates 
+instance navigation 
+(651 ms)
+
+  console.log
+    Login successful: { token: 'mock-jwt-token' }
+
+      at log (components/pages/LoginPage.jsx:76:15)
+
+  console.log
+    Current user data: { id: '1', username: 'integration_user' }
+
+      at log (components/pages/LoginPage.jsx:80:15)
+
+  console.log
+    User role: undefined
+
+      at log (components/pages/LoginPage.jsx:81:15)
+
+  console.log
+    Encryption keys synced to backend after login
+
+      at log (components/pages/LoginPage.jsx:90:17)
+
+PASS __tests__/integrat
+ion/AuthFlow.test.jsx
+  Integration: 
+Authentication Flow
+    ΓêÜ 1∩╕ÅΓâú 
+Simulates complete 
+login integration with 
+API and State (916 ms)
+
+FAIL __tests__/pages/La
+ndingPage.test.jsx
+  LandingPage
+    ├ù 1∩╕ÅΓâú Renders 
+Hero and Intro Text 
+(791 ms)
+    ΓêÜ 2∩╕ÅΓâú 
+Navigates to Signup on 
+interaction (367 ms)
+
+  ΓùÅ LandingPage ΓÇ║ 
+1∩╕ÅΓâú Renders Hero 
+and Intro Text
+
+    TestingLibraryEleme
+ntError: Found 
+multiple elements with 
+the text: /Splitter/i
+
+    Here are the 
+matching elements:
+
+    Ignored nodes: 
+comments, script, style
+    [36m<span[39m
+      [33mclass[39m=
+[32m"text-2xl 
+font-bold 
+tracking-tight"[39m
+      [33mstyle[39m=
+[32m"background: linear
+-gradient(135deg, 
+var(--primary-cyan), va
+r(--accent-magenta)); -
+webkit-text-fill-color:
+ transparent; 
+background-clip: text; 
+display: 
+inline-block;"[39m
+    [36m>[39m
+      [0mSPLITTER[0m
+    [36m</span>[39m
+
+    Ignored nodes: 
+comments, script, style
+    [36m<strong[39m
+      [33mclass[39m=
+[32m"text-foreground 
+block mt-3 text-xl 
+font-normal"[39m
+    [36m>[39m
+      [0mSplitter is 
+different by 
+design.[0m
+    [36m</strong>[39m
+
+    Ignored nodes: 
+comments, script, style
+    [36m<p>[39m
+      [0m┬⌐ 2026 
+Splitter Protocol. 
+Open Source.[0m
+    [36m</p>[39m
+
+    (If this is 
+intentional, then use 
+the `*AllBy*` variant 
+of the query (like 
+`queryAllByText`, 
+`getAllByText`, or 
+`findAllByText`)).
+
+    Ignored nodes: 
+comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mclass[3
+9m=[32m"min-h-screen 
+bg-background 
+text-foreground 
+overflow-x-hidden selec
+tion:bg-primary/30 sele
+ction:text-primary-fore
+ground relative 
+font-sans"[39m
+        [36m>[39m
+          
+[36m<div[39m
+            [33mclass
+[39m=[32m"fixed 
+inset-0 
+pointer-events-none 
+z-[50] opacity-[0.035] 
+mix-blend-overlay"[39m
+          [36m/>[39m
+          
+[36m<nav[39m
+            [33manimat
+e[39m=[32m"[object 
+Object]"[39m
+            [33mclass
+[39m=[32m"fixed top-0 
+left-0 right-0 z-50 
+flex items-center 
+justify-between px-6 
+py-4 backdrop-blur-xl 
+bg-background/60 
+border-b 
+border-white/5 supports
+-[backdrop-filter]:bg-b
+ackground/20"[39m
+            [33minitia
+l[39m=[32m"[object 
+Object]"[39m
+            [33mtransi
+tion[39m=[32m"[object
+ Object]"[39m
+          [36m>[39m
+            
+[36m<div[39m
+              [33mclas
+s[39m=[32m"flex 
+items-center space-x-2 
+group 
+cursor-pointer"[39m
+            [36m>[39m
+              
+[36m<div[39m
+                [33mst
+yle[39m=[32m"display:
+ flex; align-items: 
+center; gap: 
+12px;"[39m
+              
+[36m>[39m
+                
+[36m<img[39m
+                  [33m
+alt[39m=[32m"Logo"[3
+9m
+                  [33m
+src[39m=[32m"/logo.pn
+g"[39m
+                  [33m
+style[39m=[32m"height
+: 66px; width: auto; 
+object-fit: contain; 
+filter: invert(1) hue-r
+otate(180deg);"[39m
+                
+[36m/>[39m
+                
+[36m<span[39m
+                  [33m
+class[39m=[32m"text-2
+xl font-bold 
+tracking-tight"[39m
+                  [33m
+style[39m=[32m"backgr
+ound: linear-gradient(1
+35deg, 
+var(--primary-cyan), va
+r(--accent-magenta)); -
+webkit-text-fill-color:
+ transparent; 
+background-clip: text; 
+display: 
+inline-block;"[39m
+                
+[36m>[39m
+                  
+[0mSPLITTER[0m
+                
+[36m</span>[39m
+              
+[36m</div>[39m
+            
+[36m</div>[39m
+            
+[36m<div[39m
+              [33mclas
+s[39m=[32m"flex 
+items-center 
+space-x-4"[39m
+            [36m>[39m
+              
+[36m<button[39m
+                [33mcl
+ass[39m=[32m"p-2 
+rounded-full 
+hover:bg-white/5 
+transition-colors 
+text-muted-foreground 
+hover:text-foreground 
+relative w-10 h-10 
+flex items-center 
+justify-center"[39m
+              
+[36m>[39m
+                
+[36m<span[39m
+                  [33m
+animate[39m=[32m"[obj
+ect Object]"[39m
+                  [33m
+class[39m=[32m"absolu
+te inset-0 flex 
+items-center 
+justify-center"[39m
+                
+[36m>[39m
+                  
+[0m≡ƒîÖ[0m
+                
+[36m</span>[39m
+                
+[36m<span[39m
+                  [33m
+animate[39m=[32m"[obj
+ect Object]"[39m
+                  [33m
+class[39m=[32m"absolu
+te inset-0 flex 
+items-center 
+justify-center"[39m
+                
+[36m>[39m
+                  
+[0mΓÿÇ∩╕Å[0m
+                
+[36m</span>[39m
+              
+[36m</button>[39m
+              
+[36m<div[39m
+                [33mcl
+ass[39m=[32m"hidden 
+md:flex space-x-3"[39m
+              
+[36m>[39m
+                
+[36m<button[39m
+                  [33m
+class[39m=[32m"px-5 
+py-2 text-sm 
+font-medium 
+text-muted-foreground 
+hover:text-foreground 
+transition-colors 
+hover:bg-white/5 
+rounded-full"[39m
+                  [33m
+transition[39m=[32m"[
+object Object]"[39m
+                  [33m
+whilehover[39m=[32m"[
+object Object]"[39m
+                  [33m
+whiletap[39m=[32m"[ob
+ject Object]"[39m
+                
+[36m>[39m
+                  
+[36m<span[39m
+                    [3
+3mclass[39m=[32m"rela
+tive z-10 flex 
+items-center 
+justify-center gap-2 po
+inter-events-none"[39m
+                  
+[36m>[39m
+                    
+[0mLog in[0m
+                  
+[36m</span>[39m
+                
+[36m</button>[39m
+                
+[36m<button[39m
+                  [33m
+class[39m=[32m"px-6 
+py-2.5 text-sm 
+font-semibold 
+text-white 
+rounded-full 
+bg-primary/90 
+hover:bg-primary 
+shadow-lg 
+shadow-primary/25 
+overflow-hidden 
+relative"[39m
+                  [33m
+transition[39m=[32m"[
+object Object]"[39m
+                  [33m
+whilehover[39m=[32m"[
+object Object]"[39m
+                  [33m
+whiletap[39m=[32m"[ob
+ject Object]"[39m
+                
+[36m>[39m
+                  
+[36m<span[39m
+                    [3
+3mclass[39m=[32m"rela
+tive z-10 flex 
+items-center 
+justify-center gap-2 po
+inter-events-none"[39m
+                  
+[36m>[39m
+                    
+[0mStart Building[0m
+                  
+[36m</span>[39m
+                
+[36m</button>[39m
+              
+[36m</div>[39m
+            
+[36m</div>[39m
+          
+[36m</nav>[39m
+          
+[36m<section[39m
+            [33mclass
+[39m=[32m"relative 
+h-[110vh] flex 
+items-center 
+justify-center 
+overflow-hidden"[39m
+          [36m>[39m
+            
+[36m<div[39m
+              [33mclas
+s[39m=[32m"absolute 
+inset-0 
+overflow-hidden pointer
+-events-none"[39m
+            [36m>[39m
+              
+[36m<div[39m
+                [33man
+imate[39m=[32m"[objec
+t Object]"[39m
+                [33mcl
+ass[39m=[32m"absolute
+ top-1/2 left-1/2 
+-translate-x-1/2 
+-translate-y-1/2 
+w-[60vw] h-[60vw] 
+rounded-full 
+bg-gradient-to-r 
+from-primary/20 
+via-purple-500/20 
+to-blue-500/20 
+blur-[120px] 
+mix-blend-screen 
+opacity-30 
+dark:opacity-40"[39m
+                [33mtr
+ansition[39m=[32m"[ob
+ject Object]"[39m
+              
+[36m/>[39m
+              
+[36m<div[39m
+                [33man
+imate[39m=[32m"[objec
+t Object]"[39m
+                [33mcl
+ass[39m=[32m"absolute
+ top-1/3 left-1/3 
+w-[40vw] h-[40vw] 
+rounded-full 
+bg-indigo-500/10 
+blur-[100px] 
+mix-blend-plus-lighter 
+opacity-30 
+dark:opacity-40"[39m
+                [33mtr
+ansition[39m=[32m"[ob
+ject Object]"[39m
+              
+[36m/>[39m
+            
+[36m</div>[39m
+            
+[36m<div[39m
+              [33mclas
+s[39m=[32m"container 
+px-4 md:px-6 relative 
+z-10 max-w-5xl mx-auto 
+text-center flex 
+flex-col items-center 
+justify-center h-full 
+pb-20"[39m
+              [33mstyl
+e[39m=[32m"opacity: 
+0; scale: 0;"[39m
+            [36m>[39m
+              
+[36m<div[39m
+                [33man
+imate[39m=[32m"[objec
+t Object]"[39m
+                [33mcl
+ass[39m=[32m"space-y-
+8"[39m
+                [33min
+itial[39m=[32m"[objec
+t Object]"[39m
+                [33mtr
+ansition[39m=[32m"[ob
+ject Object]"[39m
+              
+[36m>[39m
+                
+[36m<div[39m
+                  [33m
+animate[39m=[32m"[obj
+ect Object]"[39m
+                  [33m
+class[39m=[32m"inline
+-flex items-center 
+gap-2 px-4 py-2 
+rounded-full 
+bg-white/5 border 
+border-white/10 
+backdrop-blur-md 
+shadow-2xl 
+hover:bg-white/10 
+transition-colors 
+cursor-default"[39m
+                  [33m
+initial[39m=[32m"[obj
+ect Object]"[39m
+                  [33m
+transition[39m=[32m"[
+object Object]"[39m
+                
+[36m>[39m
+                  
+[36m<span[39m
+                    [3
+3mclass[39m=[32m"rela
+tive flex h-2 w-2"[39m
+                  
+[36m>[39m
+                    
+[36m<span[39m
+                      
+[33mclass[39m=[32m"an
+imate-ping absolute 
+inline-flex h-full 
+w-full rounded-full 
+bg-green-400 
+opacity-75"[39m
+                    
+[36m/>[39m
+                    
+[36m<span[39m
+                      
+[33mclass[39m=[32m"re
+lative inline-flex 
+rounded-full h-2 w-2 
+bg-green-500"[39m
+                    
+[36m/>[39m
+                  
+[36m</span>[39m
+                  
+[36m<span[39m
+                    [3
+3mclass[39m=[32m"text
+-xs font-semibold 
+tracking-widest 
+uppercase text-muted-fo
+reground/80"[39m
+                  
+[36m>[39m
+                  ...
+
+    [0m [90m 58 
+|[39m     
+test([32m'1∩╕ÅΓâú 
+Renders Hero and Intro 
+Text'[39m[33m,[39m 
+() [33m=>[39m {
+     [90m 59 |[39m   
+      render([33m<[39
+m[33mLandingPage[39m 
+onNavigate[33m=[39m{j
+est[33m.[39mfn()} [3
+3m/[39m[33m>[39m)[3
+3m;[39m
+    [31m[1m>[22m[39
+m[90m 60 |[39m       
+  expect(screen[33m.[
+39mgetByText([35m/Spli
+tter/i[39m))[33m.[39
+mtoBeInTheDocument()[3
+3m;[39m
+     [90m    |[39m   
+                    
+[31m[1m^[22m[39m
+     [90m 61 |[39m   
+  })[33m;[39m
+     [90m 62 |[39m
+     [90m 63 |[39m   
+  test([32m'2∩╕ÅΓâú 
+Navigates to Signup on 
+interaction'[39m[33m,
+[39m () [33m=>[39m 
+{[0m
+
+      at 
+Object.getElementError 
+(node_modules/@testing-
+library/dom/dist/config
+.js:37:19)
+      at 
+getElementError (node_m
+odules/@testing-library
+/dom/dist/query-helpers
+.js:20:35)
+      at getMultipleEle
+mentsFoundError (node_m
+odules/@testing-library
+/dom/dist/query-helpers
+.js:23:10)
+      at node_modules/@
+testing-library/dom/dis
+t/query-helpers.js:55:1
+3
+      at node_modules/@
+testing-library/dom/dis
+t/query-helpers.js:95:1
+9
+      at 
+Object.getByText (__tes
+ts__/pages/LandingPage.
+test.jsx:60:23)
+
+  console.log
+    Login successful: { token: 'fake-token' }
+
+      at log (components/pages/LoginPage.jsx:76:15)
+
+  console.log
+    Current user data: {
+      id: '1',
+      username: 'testuser',
+      role: 'user',
+      display_name: 'Test User',
+      instance_domain: 'localhost',
+      avatar_url: 'avatar.png',
+      email: 'test@example.com',
+      bio: 'Bio',
+      did: 'did:key:123',
+      moderation_requested: false,
+      followers_count: 10,
+      following_count: 5,
+      posts_count: 20
+    }
+
+      at log (components/pages/LoginPage.jsx:80:15)
+
+  console.log
+    User role: user
+
+      at log (components/pages/LoginPage.jsx:81:15)
+
+  console.warn
+    Failed to ensure encryption keys after login: TypeError: Cannot read properties of undefined (reading 'encryptionPublicKeyBase64')
+        at encryptionPublicKeyBase64 (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\components\pages\LoginPage.jsx:89:51)
+
+    [0m [90m 90 |[39m         console[33m.[39mlog([32m'Encryption keys synced to backend after login'[39m)[33m;[39m
+     [90m 91 |[39m       } [36mcatch[39m (encErr) {
+    [31m[1m>[22m[39m[90m 92 |[39m         console[33m.[39mwarn([32m'Failed to ensure encryption keys after login:'[39m[33m,[39m encErr)[33m;[39m
+     [90m    |[39m                 [31m[1m^[22m[39m
+     [90m 93 |[39m       }
+     [90m 94 |[39m
+     [90m 95 |[39m       updateUserData({[0m
+
+      at warn (components/pages/LoginPage.jsx:92:17)
+
+  console.error
+    Login error: Error: Invalid credentials
+        at Object.<anonymous> (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\__tests__\pages\LoginPage.test.jsx:104:41)
+        at Promise.finally.completed (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+        at _callCircusTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1007:40)
+        at _runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:947:3)
+        at C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+        at _runTestsForDescribeBlock (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+        at run (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+        at runAndTransformResultsToJestFormat (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+        at jestAdapter (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-circus\build\runner.js:101:19)
+        at runTestInternal (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:275:16)
+        at runTest (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:343:7)
+        at Object.worker (C:\Users\jaswi\OneDrive\Desktop\ALL\SEM_6\SE\Splitter-frontend\node_modules\jest-runner\build\testWorker.js:497:12)
+
+    [0m [90m 121 |[39m
+     [90m 122 |[39m     } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 123 |[39m       console[33m.[39merror([32m'Login error:'[39m[33m,[39m err)[33m;[39m
+     [90m     |[39m               [31m[1m^[22m[39m
+     [90m 124 |[39m       setError(err[33m.[39mmessage [33m||[39m [32m'Login failed. Please check your credentials.'[39m)[33m;[39m
+     [90m 125 |[39m     } [36mfinally[39m {
+     [90m 126 |[39m       setIsLoading([36mfalse[39m)[33m;[39m[0m
+
+      at error (components/pages/LoginPage.jsx:123:15)
+
+PASS __tests__/componen
+ts/ReplyBox.test.jsx
+  ReplyBox Component
+    ΓêÜ renders input 
+and submit button (198 
+ms)
+    ΓêÜ calls onSubmit 
+when reply button is 
+clicked (70 ms)
+
+PASS __tests__/lib/apiA
+uth.test.ts
+  API Auth Interaction
+    ΓêÜ register calls 
+correct endpoint with 
+correct payload (9 ms)
+    ΓêÜ getChallenge 
+requests DID auth 
+successfully (37 ms)
+    ΓêÜ 
+verifyChallenge 
+submits signed payload 
+(25 ms)
+
+PASS __tests__/regressi
+on/UIComponents.test.js
+x
+  Regression: Core UI 
+Components
+    ΓêÜ 1∩╕ÅΓâú Button 
+rendering remains 
+stable (125 ms)
+    ΓêÜ 2∩╕ÅΓâú Input 
+rendering remains 
+stable (15 ms)
+
+  console.error
+    API Error Response: {
+      status: 400,
+      statusText: 'Bad Request',
+      url: 'http://localhost/api/auth/login',
+      body: '{"error":"Invalid credentials"}'
+    }
+
+    [0m [90m 110 |[39m   [36mif[39m ([33m![39mresponse[33m.[39mok) {
+     [90m 111 |[39m     [36mconst[39m errorText [33m=[39m [36mawait[39m response[33m.[39mtext()[33m;[39m
+    [31m[1m>[22m[39m[90m 112 |[39m     console[33m.[39merror([32m'API Error Response:'[39m[33m,[39m {
+     [90m     |[39m             [31m[1m^[22m[39m
+     [90m 113 |[39m       status[33m:[39m response[33m.[39mstatus[33m,[39m
+     [90m 114 |[39m       statusText[33m:[39m response[33m.[39mstatusText[33m,[39m
+     [90m 115 |[39m       url[33m:[39m response[33m.[39murl[33m,[39m[0m
+
+      at error (lib/api.ts:112:13)
+      at Object.login (lib/api.ts:193:20)
+      at Object.<anonymous> (__tests__/lib/api.test.ts:41:9)
+
+PASS __tests__/componen
+ts/PostCard.test.jsx
+  PostCard Component
+    ΓêÜ renders post 
+content correctly (64 
+ms)
+    ΓêÜ triggers like 
+handler on click (21 
+ms)
+    ΓêÜ triggers reply 
+handler on click (11 
+ms)
+
+PASS __tests__/lib/api.
+test.ts
+  API Library
+    ΓêÜ 1∩╕ÅΓâú 
+Successful Login API 
+(12 ms)
+    ΓêÜ 2∩╕ÅΓâú Failed 
+Response Handling (392 
+ms)
+    ΓêÜ 3∩╕ÅΓâú 
+getAuthHeaders 
+Behavior (3 ms)
+    ΓêÜ 4∩╕ÅΓâú 
+createPost (multipart) 
+(8 ms)
+    ΓêÜ 5∩╕ÅΓâú 
+logout() (5 ms)
+
+PASS __tests__/componen
+ts/PostComposer.test.js
+x
+  PostComposer 
+Component
+    ΓêÜ renders 
+composer input and 
+button (234 ms)
+    ΓêÜ disables 
+submit button when 
+isSubmitting is true 
+(20 ms)
+    ΓêÜ triggers 
+onSubmit handler with 
+content (34 ms)
+
+PASS __tests__/pages/Fe
+edPage.test.jsx
+  FeedPage Interaction
+    ΓêÜ renders feed 
+and fetches posts on 
+mount (102 ms)
+    ΓêÜ displays empty 
+state when no posts 
+are returned (59 ms)
+
+FAIL __tests__/e2e/feed
+.spec.ts
+  ΓùÅ Test suite 
+failed to run
+
+    Cannot find module 
+'@playwright/test' 
+from '__tests__/e2e/fee
+d.spec.ts'
+
+    [0m [90m 3 
+|[39m test[33m.[39md
+escribe([32m'E2E: 
+Home Feed & Social feat
+ures'[39m[33m,[39m 
+() [33m=>[39m {
+     [90m 4 |[39m    
+ test([32m'1∩╕ÅΓâú 
+Validates Feed 
+structure and composer 
+for logged in 
+user'[39m[33m,[39m 
+[36masync[39m ({ 
+page }) [33m=>[39m {
+    [31m[1m>[22m[39
+m[90m 5 |[39m        
+ [90m// Hooking into 
+browser environment to 
+simulate active JWT 
+token session[39m
+     [90m   |[39m    
+           
+[31m[1m^[22m[39m
+     [90m 6 |[39m    
+     [36mawait[39m pa
+ge[33m.[39maddInitScr
+ipt(() [33m=>[39m {
+     [90m 7 |[39m    
+         window[33m.[
+39mlocalStorage[33m.[
+39msetItem([32m'jwt_to
+ken'[39m[33m,[39m [
+32m'mock_e2e_token'[39
+m)[33m;[39m
+     [90m 8 |[39m    
+         window[33m.[
+39mlocalStorage[33m.[
+39msetItem([32m'user'
+[39m[33m,[39m [33mJS
+ON[39m[33m.[39mstrin
+gify({ 
+username[33m:[39m [3
+2m'e2e_tester'[39m[33
+m,[39m id[33m:[39m 
+[32m'999'[39m 
+}))[33m;[39m[0m
+
+      at Resolver._thro
+wModNotFoundError (node
+_modules/jest-resolve/b
+uild/index.js:863:11)
+      at 
+Object.<anonymous> (__t
+ests__/e2e/feed.spec.ts
+:5:15)
+
+PASS __tests__/regressi
+on/responsiveness.test.
+jsx
+  Responsive Layout 
+ΓÇö LandingPage
+    ΓêÜ 1∩╕ÅΓâú 
+Renders at 360px 
+(micro-mobile) without 
+crashing (570 ms)
+    ΓêÜ 2∩╕ÅΓâú 
+Renders at 480px 
+(small mobile) without 
+crashing (76 ms)
+    ΓêÜ 3∩╕ÅΓâú 
+Renders at 768px 
+(tablet/large phone) 
+without crashing (112 
+ms)
+    ΓêÜ 4∩╕ÅΓâú Logo 
+text is present at all 
+widths (378 ms)
+    ΓêÜ 5∩╕ÅΓâú 
+Navigation buttons are 
+in the DOM at 480px 
+(258 ms)
+  Responsive Layout 
+ΓÇö LoginPage
+    ΓêÜ 6∩╕ÅΓâú 
+Renders login form at 
+360px (116 ms)
+    ΓêÜ 7∩╕ÅΓâú 
+Username and password 
+inputs accessible at 
+480px (56 ms)
+    ΓêÜ 8∩╕ÅΓâú Sign 
+In button visible and 
+clickable at 360px 
+(117 ms)
+  Responsive Layout 
+ΓÇö Structural Scaling
+    ΓêÜ 9∩╕ÅΓâú 
+window.innerWidth can 
+be set to 320px 
+(ultra-narrow) (3 ms)
+    ΓêÜ ≡ƒöƒ 
+window.innerWidth can 
+be set back to 1280px 
+(desktop) (2 ms)
+    ΓêÜ 1∩╕ÅΓâú1∩╕ÅΓâú 
+Renders LandingPage at 
+ultra-narrow 320px 
+without errors (65 ms)
+
+FAIL __tests__/e2e/auth
+.spec.ts
+  ΓùÅ Test suite 
+failed to run
+
+    Cannot find module 
+'@playwright/test' 
+from '__tests__/e2e/aut
+h.spec.ts'
+
+    [0m [90m 3 
+|[39m test[33m.[39md
+escribe([32m'E2E: 
+Authentication 
+Flow'[39m[33m,[39m 
+() [33m=>[39m {
+     [90m 4 |[39m    
+ test([32m'1∩╕ÅΓâú 
+User can view landing 
+page and start onboardi
+ng'[39m[33m,[39m 
+[36masync[39m ({ 
+page }) [33m=>[39m {
+    [31m[1m>[22m[39
+m[90m 5 |[39m        
+ [36mawait[39m page[
+33m.[39mgoto([32m'htt
+p://localhost:3000'[39
+m)[33m;[39m
+     [90m   |[39m    
+           
+[31m[1m^[22m[39m
+     [90m 6 |[39m    
+     
+     [90m 7 |[39m    
+     [90m// Wait for 
+main title 
+structure[39m
+     [90m 8 |[39m    
+     [36mawait[39m ex
+pect(page[33m.[39mloc
+ator([32m'body'[39m))
+[33m.[39mtoContainTex
+t([35m/Splitter/i[39m
+)[33m;[39m[0m
+
+      at Resolver._thro
+wModNotFoundError (node
+_modules/jest-resolve/b
+uild/index.js:863:11)
+      at 
+Object.<anonymous> (__t
+ests__/e2e/auth.spec.ts
+:5:15)
+
+PASS __tests__/pages/Lo
+ginPage.test.jsx
+  LoginPage
+    ΓêÜ 1∩╕ÅΓâú 
+Renders correctly (617 
+ms)
+    ΓêÜ 2∩╕ÅΓâú 
+Validation ΓÇö Empty 
+Fields (204 ms)
+    ΓêÜ 3∩╕ÅΓâú 
+Successful Password 
+Login Flow (509 ms)
+    ΓêÜ 4∩╕ÅΓâú Failed 
+Login (145 ms)
+    ΓêÜ 5∩╕ÅΓâú DID 
+Login Toggle (215 ms)
+    ΓêÜ 6∩╕ÅΓâú 
+Challenge Request (171 
+ms)
+    ΓêÜ 7∩╕ÅΓâú Theme 
+Toggle (29 ms)
+
+Test Suites: 3 failed, 
+17 passed, 20 total
+Tests:       1 failed, 
+56 passed, 57 total
+Snapshots:   2 passed, 
+2 total
+Time:        8.226 s
+Ran all test suites.
+Force exiting Jest: 
+Have you considered 
+using 
+`--detectOpenHandles` 
+to detect async 
+operations that kept 
+running after all 
+tests finished?

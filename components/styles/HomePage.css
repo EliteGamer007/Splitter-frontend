@@ -34,7 +34,7 @@
   font-size: clamp(1.1rem, 4vw, 1.5rem);
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, var(--primary-cyan), var(--accent-magenta));
+  background: linear-gradient(135deg, var(--primary-cyan), var(--accent-purple, #7c3aed));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -48,19 +48,26 @@
 
 .nav-item {
   background: transparent;
-  color: var(--text-primary);
+  color: var(--text-secondary, #9aa4b2);
   border: none;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   border-bottom: 2px solid transparent;
 }
 
 .nav-item:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--primary-cyan) 10%, transparent);
+}
+
+.nav-item.active {
+  background: color-mix(in srgb, var(--primary-cyan) 15%, transparent);
   color: var(--primary-cyan);
+  font-weight: 600;
   border-bottom-color: var(--primary-cyan);
 }
 
@@ -189,14 +196,25 @@
   color: var(--text-primary);
   text-decoration: none;
   border-radius: 0.5rem;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   font-size: 0.95rem;
   font-weight: 500;
+  border: none;
+  background: transparent;
+}
+
+.sidebar-link svg {
+  transition: transform 0.2s ease;
 }
 
 .sidebar-link:hover {
-  background: color-mix(in srgb, var(--primary-cyan) 10%, transparent);
+  background: var(--secondary-navy);
   color: var(--primary-cyan);
+  transform: translateX(3px);
+}
+
+.sidebar-link:hover svg {
+  transform: scale(1.1);
 }
 
 .sidebar-link.active {
@@ -391,19 +409,33 @@
 
 .composer-btn-media {
   background: transparent;
-  color: var(--disabled-yellow);
-  border: 1px solid var(--disabled-yellow);
-  opacity: 0.6;
+  color: var(--text-secondary, #94a3b8);
+  border: 1px solid var(--border-color, #333);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  opacity: 1;
+}
+
+.composer-btn-media:hover {
+  color: var(--primary-cyan);
+  border-color: var(--primary-cyan);
+  background: rgba(34, 211, 238, 0.08);
+}
+
+.composer-btn-media:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .composer-btn-post {
-  background: var(--primary-cyan);
-  color: var(--bg-dark);
+  background: var(--primary-cyan, #22d3ee);
+  color: var(--bg-dark, #0f0f1a);
 }
 
 .composer-btn-post:not(.disabled):hover {
-  box-shadow: 0 0 20px var(--cyan-glow);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.35);
+  transform: translateY(-1px);
 }
 
 .composer-btn-post.disabled {
@@ -430,12 +462,13 @@
   border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   padding: 1rem;
-  transition: all 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .post:hover {
   border-color: var(--primary-cyan);
-  box-shadow: 0 0 20px color-mix(in srgb, var(--primary-cyan) 10%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 0 20px color-mix(in srgb, var(--primary-cyan) 8%, transparent);
 }
 
 .post-header {
@@ -565,6 +598,32 @@
 
 .action-icon {
   font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.action-icon svg {
+  transition: transform 0.18s ease;
+}
+
+.post-action:hover .action-icon svg {
+  transform: scale(1.15);
+}
+
+/* Colored hover per action type */
+.post-action:nth-child(1):hover {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.post-action:nth-child(2):hover {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.post-action:nth-child(3):hover {
+  color: #f472b6;
+  background: rgba(244, 114, 182, 0.08);
 }
 
 .action-count {
@@ -1116,4 +1175,99 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
+}
+
+/* ─── Post Metadata Hierarchy ─── */
+
+.post-display-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.post-meta-line {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+}
+
+.post-meta-dot {
+  color: var(--text-muted, #64748b);
+  font-weight: 700;
+  user-select: none;
+}
+
+.post-meta-line .post-handle {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.8rem;
+}
+
+.post-meta-line .post-time {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 0.8rem;
+}
+
+.post-meta-line .post-badge {
+  font-size: 0.7rem;
+}
+
+/* ─── Like Pulse Animation ─── */
+
+@keyframes likePulse {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.post-action:nth-child(3).active .action-icon svg {
+  animation: likePulse 0.35s ease-in-out;
+}
+
+/* ─── Story Item Hover ─── */
+
+.story-item {
+  transition: transform 0.2s ease;
+}
+
+.story-item:hover {
+  transform: scale(1.08);
+}
+
+.story-item:hover .story-ring {
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
+}
+
+/* ─── Trend Card Hover Elevation ─── */
+
+.trend-item {
+  transition: all 0.2s ease;
+}
+
+.trend-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* ─── Sidebar Section Hover ─── */
+
+.sidebar-section {
+  transition: border-color 0.25s ease;
+}
+
+.sidebar-section:hover {
+  border-color: color-mix(in srgb, var(--primary-cyan) 30%, transparent);
+}
+
+/* ─── Nav button hover micro-animation ─── */
+
+.nav-btn-profile {
+  transition: all 0.2s ease;
+}
+
+.nav-btn-profile:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 211, 238, 0.2);
 }

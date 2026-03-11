@@ -128,9 +128,9 @@ export default function HashtagPage({ hashtag, onNavigate }) {
                 </div>
               )}
               <div className="hashtag-post-stats">
-                <span>❤️ {post.like_count || 0}</span>
-                <span>💬 {post.direct_reply_count || 0}</span>
-                <span>🔁 {post.repost_count || 0}</span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'14px',height:'14px',verticalAlign:'middle',marginRight:'4px'}}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>{post.like_count || 0}</span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'14px',height:'14px',verticalAlign:'middle',marginRight:'4px'}}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>{post.direct_reply_count || 0}</span>
+                <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'14px',height:'14px',verticalAlign:'middle',marginRight:'4px'}}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>{post.repost_count || 0}</span>
               </div>
             </div>
           ))}

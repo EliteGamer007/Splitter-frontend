@@ -1107,6 +1107,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                 onClick={() => setActiveTab('home')}
                 style={{ textAlign: 'left', width: '100%' }}
               >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px',flexShrink:0}}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 <span>Home</span>
               </button>
               <button
@@ -1114,6 +1115,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                 onClick={() => onNavigate('dm')}
                 style={{ textAlign: 'left', width: '100%', position: 'relative' }}
               >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px',flexShrink:0}}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 <span>Messages 🔒</span>
                 {hasUnreadMessages && (
                   <span style={{
@@ -1133,6 +1135,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                 onClick={() => onNavigate('security')}
                 style={{ textAlign: 'left', width: '100%' }}
               >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px',flexShrink:0}}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 <span>Security</span>
               </button>
             </div>
@@ -1411,14 +1414,9 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     onClick={() => document.getElementById('post-media-input').click()}
                     title="Attach media (max 5MB)"
                     disabled={isPosting || isOffline}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      opacity: isPosting ? 0.5 : 1
-                    }}
                   >
-                    🖼️ Media
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'16px',height:'16px',verticalAlign:'middle',marginRight:'4px'}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    Media
                   </button>
                   <button
                     className={`composer-btn-post ${(!newPostText.trim() && !selectedFile) || isPosting || isOffline ? 'disabled' : ''}`}
@@ -1457,22 +1455,24 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     </span>
                     <div className="post-meta">
                       <div className="post-name-line">
-                        <strong>{post.displayName}</strong>
+                        <strong className="post-display-name">{post.displayName}</strong>
+                      </div>
+                      <div className="post-meta-line">
                         <span className="post-handle">{post.handle}{post.isRemote && post.domain ? `@${post.domain}` : ''}</span>
-                        {!post.isRemote && <span className="post-badge local" title="This post is from your local instance">Local</span>}
-                        {post.isRemote && <span className="post-badge remote" title={`This post is from ${post.domain || 'a remote instance'}`}>🌐 {post.domain || 'Remote'}</span>}
-                        {/* Edited Badge */}
+                        <span className="post-meta-dot">·</span>
+                        <span className="post-time">{post.timestamp}</span>
+                        {!post.isRemote && <><span className="post-meta-dot">·</span><span className="post-badge local" title="This post is from your local instance">Local</span></>}
+                        {post.isRemote && <><span className="post-meta-dot">·</span><span className="post-badge remote" title={`This post is from ${post.domain || 'a remote instance'}`}>{post.domain || 'Remote'}</span></>}
                         {isEdited(post) && (
-                          <span
+                          <><span className="post-meta-dot">·</span><span
                             className="post-badge"
                             style={{ background: 'rgba(255,170,0,0.2)', color: '#ffaa00' }}
                             title={`Edited: ${new Date(post.updatedAt).toLocaleString()}`}
                           >
-                            ✏️ Edited
-                          </span>
+                            Edited
+                          </span></>
                         )}
                       </div>
-                      <span className="post-time">{post.timestamp}</span>
                       {post.expiresAt && (
                         <span className="post-time" title={`Expires at ${new Date(post.expiresAt).toLocaleString()}`}>
                           ⏳ {formatRemainingLifetime(post.expiresAt)}
@@ -1619,7 +1619,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     onClick={() => onNavigate('thread', { postId: post.id, postData: post.instanceUrl ? post : undefined })}
                     title="Reply to this post"
                   >
-                    <span className="action-icon">💬</span>
+                    <span className="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px'}}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span>
                     <span className="action-count">{post.replies}</span>
                   </button>
                   <button
@@ -1629,7 +1629,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     style={post.reposted ? { color: '#00d9ff' } : {}}
                     title={post.reposted ? 'Undo repost' : 'Repost to your followers'}
                   >
-                    <span className="action-icon">🚀</span>
+                    <span className="action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px'}}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
                     <span className="action-count">{post.boosts}</span>
                   </button>
                   <button
@@ -1639,7 +1639,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     style={post.liked ? { color: '#ff4444' } : {}}
                     title={post.liked ? 'Unlike' : 'Like this post'}
                   >
-                    <span className="action-icon">{post.liked ? '❤️' : '🤍'}</span>
+                    <span className="action-icon"><svg viewBox="0 0 24 24" fill={post.liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'18px',height:'18px'}}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
                     <span className="action-count">{post.likes}</span>
                   </button>
 

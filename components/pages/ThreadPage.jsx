@@ -79,7 +79,7 @@ const ReplyItem = ({
                 className={`action-button ${isReplying ? 'active' : ''}`}
                 onClick={() => setReplyingToId(isReplying ? null : reply.id)}
               >
-                💬 {isReplying ? 'Cancel' : 'Reply'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'16px',height:'16px',verticalAlign:'middle',marginRight:'4px'}}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg> {isReplying ? 'Cancel' : 'Reply'}
               </button>
             </div>
           )}
@@ -367,7 +367,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
               )}
 
               <div className="root-post-stats">
-                <span className="stat-item">💬 {replyCount} {replyCount === 1 ? 'Reply' : 'Replies'}</span>
+                <span className="stat-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'16px',height:'16px',verticalAlign:'middle',marginRight:'4px'}}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg> {replyCount} {replyCount === 1 ? 'Reply' : 'Replies'}</span>
               </div>
             </div>
 
@@ -412,7 +412,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
 
               {repliesTree.length === 0 ? (
                 <div className="empty-replies">
-                  <span className="empty-icon">💬</span>
+                  <span className="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{width:'32px',height:'32px'}}><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></span>
                   <p>No replies yet. Be the first to reply!</p>
                 </div>
               ) : (
