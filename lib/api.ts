@@ -26,6 +26,14 @@ function normalizeApiBaseUrl(url: string): string {
 
 // Get the current API base URL from localStorage or default
 function getApiBase(): string {
+  const defaultUrl = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_INSTANCE_1_URL || process.env.NEXT_PUBLIC_API_URL || 'https://splitter-m0kv.onrender.com/api/v1');
+  
+  // In development, force the use of the configured API URL to prevent
+  // stale production URLs in localStorage from breaking local testing.
+  if (process.env.NODE_ENV === 'development') {
+    return defaultUrl;
+  }
+
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('splitter_api_base');
     if (stored) {
@@ -36,7 +44,7 @@ function getApiBase(): string {
       return normalizedStored;
     }
   }
-  return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_INSTANCE_1_URL || process.env.NEXT_PUBLIC_API_URL || 'https://splitter-m0kv.onrender.com/api/v1');
+  return defaultUrl;
 }
 
 // Set the API base URL (called when user selects a server)
