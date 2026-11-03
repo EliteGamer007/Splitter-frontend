@@ -214,6 +214,7 @@ export default function HomePageWalkthrough() {
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'scale(1)';
           }}
+          className="walkthrough-replay"
           title="Replay walkthrough"
         >
           <RotateCcw size={24} color="#fff" />

@@ -6,12 +6,16 @@ import ProfilePage from '../../components/pages/ProfilePage';
 // Mocking the API calls
 jest.mock('@/lib/api', () => ({
     followApi: {
+        getStatus: jest.fn(async () => ({status:'none'})),
+        getRequests: jest.fn(async () => ({requests:[]})),
+        getFollowStats: jest.fn(async () => ({followers:3,following:1})),
         getFollowers: jest.fn(() => Promise.resolve([{}, {}, {}])),
         getFollowing: jest.fn(() => Promise.resolve([{}])),
         unfollowUser: jest.fn()
     },
     userApi: {
         getUserProfile: jest.fn(),
+        getFollowStats: jest.fn(async () => ({followers_count:3,following_count:1,posts_count:2})),
         updateProfile: jest.fn(),
         uploadAvatar: jest.fn()
     },

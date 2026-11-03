@@ -8,3 +8,8 @@ coverage
 *.log
 .env
 .env.*
+
+.cache
+.next
+test-results
+playwright-report

@@ -1,4 +1,7 @@
 'use client';
+import { keyStorageGet, keyStorageSet, keyStorageRemove } from '@/lib/browserState';
+import { loadKeyPair, exportRecoveryFile, importRecoveryFile, acceptRecoveryKeys, keyFingerprint, validateKeyPair } from '@/lib/crypto';
+
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
@@ -33,6 +36,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
       .then(u => {
         const pk = u?.public_key || null;
         setLivePublicKey(pk);
+        loadKeyPair().then(keys => keys && validateKeyPair(keys)).catch(() => setRotationResult({success:false,message:'The signing key stored on this device is invalid. Keep your old recovery export and use password-proven signing-key recovery below.'}));
         // Load revocation list
         if (pk) {
           setIsLoadingHistory(true);
@@ -82,7 +86,9 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
 
       // Store 64-byte secretKey as hex
       const skHex = Array.from(kp.secretKey).map(b => b.toString(16).padStart(2, '0')).join('');
-      localStorage.setItem('private_key', skHex);
+      keyStorageSet('private_key', skHex);
+      keyStorageSet('public_key', pubKeyB64);
+      keyStorageSet('did', userData.did);
 
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -98,7 +104,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
     }
   };
   // ─── Key Rotation Handler ────────────────────────────────────────────────
-  const handleRotateKey = async () => {
+  const handleRotateKey = async (currentPassword) => {
     if (!hasPublicKey) {
       alert('Key rotation is only available for DID-based accounts with a signing key.');
       return;
@@ -112,13 +118,13 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
     setRotationResult(null);
 
     try {
-      // Generate new key pair — no signing needed, JWT auth is sufficient
+      // Rotation requires the current signing proof or an explicitly supplied account password.
       const newKP = await generateKeyPair();
       const newPubKeyB64 = btoa(String.fromCharCode(...newKP.publicKey));
 
-      const storedSecretKeyHex = localStorage.getItem('private_key');
+      const storedSecretKeyHex = keyStorageGet('private_key');
       const currentSecretKey = decodeHexSecretKey(storedSecretKeyHex);
-      if (!currentSecretKey) {
+      if (!currentSecretKey && !currentPassword) {
         throw new Error('Current private key not found in browser storage. Please initialize your key again.');
       }
 
@@ -126,11 +132,12 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
       const timestamp = Math.floor(Date.now() / 1000);
       const payload = `${newPubKeyB64}|${nonce}|${timestamp}`;
       const payloadBytes = new TextEncoder().encode(payload);
-      const sigBytes = await sign(payloadBytes, currentSecretKey);
-      const signature = btoa(String.fromCharCode(...sigBytes));
+      const sigBytes = currentPassword ? null : await sign(payloadBytes, currentSecretKey);
+      const signature = sigBytes ? btoa(String.fromCharCode(...sigBytes)) : undefined;
 
       const result = await authApi.rotateKey({
         new_public_key: newPubKeyB64,
+        ...(currentPassword ? {current_password:currentPassword} : {}),
         signature,
         nonce,
         timestamp,
@@ -138,7 +145,8 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
 
       // Store new 64-byte secretKey as 128-char hex
       const newSkHex = Array.from(newKP.secretKey).map(b => b.toString(16).padStart(2, '0')).join('');
-      localStorage.setItem('private_key', newSkHex);
+      keyStorageSet('private_key', newSkHex);
+      keyStorageSet('public_key', newPubKeyB64);
 
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -172,7 +180,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
       const result = await authApi.revokeKey();
 
       // Wipe private key from browser storage
-      localStorage.removeItem('private_key');
+      keyStorageRemove('private_key');
 
       // Update local storage user object if exists
       const storedUser = localStorage.getItem('user');
@@ -201,9 +209,10 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
   const [messagePrivacy, setMessagePrivacy] = useState(userData?.message_privacy || 'everyone');
   const [accountLocked, setAccountLocked] = useState(userData?.account_locked || false);
 
-  const recoveryCode = 'RECOVERY_CODE_9c8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d';
-  const did = userData?.did || 'did:key:z6Mkjx9J5aQ2vP7nL4mK8vQ5wR2xT9nY6bZ3cD5eF7gH9...';
-  const publicKeyFingerprint = 'A4:9C:2B:7D:E1:5F:8A:3C:9B:6E:2A:4D:7C:1F:8E:5B';
+  const recoveryCode = 'Recovery uses your encrypted file and passphrase. Export and keep it offline.';
+  const did = userData?.did || 'No DID registered';
+  const [publicKeyFingerprint, setPublicKeyFingerprint] = useState('Calculating…');
+  useEffect(() => { keyFingerprint(livePublicKey).then(setPublicKeyFingerprint).catch(() => setPublicKeyFingerprint('Key unavailable')); }, [livePublicKey]);
 
   const handleCopyToClipboard = (text, fieldName) => {
     navigator.clipboard.writeText(text);
@@ -224,7 +233,8 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
           ...userData,
           default_visibility: defaultVisibility,
           message_privacy: messagePrivacy,
-          account_locked: accountLocked
+          account_locked: accountLocked,
+          is_locked: accountLocked
         });
       }
       alert('Privacy settings saved successfully!');
@@ -535,9 +545,13 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
           )}
 
           <div className="actions-grid">
+            {hasPublicKey && <button className="action-btn" disabled={isRotating} onClick={() => {const password = window.prompt('Enter your current account password to recover your signing key. Historical keys will be preserved.');if(password)handleRotateKey(password);}}>Recover Signing Key with Password</button>}
+            <label className="action-btn">Import Recovery File
+              <input aria-label="Import recovery file" type="file" accept=".json,application/json" onChange={async e => {try {if (!e.target.files[0]) return; const passphrase = window.prompt('Recovery passphrase'); const keys = await importRecoveryFile(e.target.files[0],passphrase); const user = await userApi.getCurrentUser(); await acceptRecoveryKeys(keys,user); setRotationResult({success:true,message:'Keys recovered for this account'}); }catch(err){setRotationResult({success:false,message:err.message});}}} />
+            </label>
             <button
               className="action-btn primary"
-              onClick={() => alert('Recovery file would download: recovery_' + Date.now() + '.json')}
+              onClick={async () => { try { const keys = await loadKeyPair(); if (!keys) throw new Error('No keys on this device. Import your recovery file first.'); const passphrase = window.prompt('Recovery passphrase (at least 12 characters)'); await exportRecoveryFile(keys,userData.username,userData.server,passphrase); } catch(e) { setRotationResult({success:false,message:e.message}); } }}
               style={{ background: 'var(--accent-gradient)', color: isDarkMode ? '#000' : '#fff', border: 'none' }}
             >
               📥 Export Recovery File
@@ -545,7 +559,7 @@ export default function SecurityPage({ onNavigate, userData, updateUserData }) {
 
             <button
               className="action-btn primary"
-              onClick={hasPublicKey ? handleRotateKey : handleInitializeKey}
+              onClick={hasPublicKey ? () => handleRotateKey() : handleInitializeKey}
               disabled={isRotating}
               title={hasPublicKey
                 ? 'Generate a new Ed25519 key pair, signed by your current key'

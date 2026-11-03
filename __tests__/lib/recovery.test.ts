@@ -1,0 +1,20 @@
+import {webcrypto} from 'node:crypto';
+import {generateKeyPair,exportRecoveryFile,importRecoveryFile,acceptRecoveryKeys,loadKeyPair,validateKeyPair} from '@/lib/crypto';
+beforeAll(()=>{Object.defineProperty(window,'crypto',{value:webcrypto,configurable:true});});
+beforeEach(()=>{localStorage.clear();localStorage.setItem('splitter_api_base','https://fixture.example/api/v1');localStorage.setItem('user',JSON.stringify({id:'alice'}));});
+test('encrypted exported recovery roundtrips and rejects wrong passphrase and wrong account without mutation',async()=>{
+ const pair=await generateKeyPair();let blob:Blob|undefined;
+ URL.createObjectURL=jest.fn((b:Blob)=>{blob=b;return 'blob:fixture';});URL.revokeObjectURL=jest.fn();jest.spyOn(HTMLAnchorElement.prototype,'click').mockImplementation(()=>{});
+ await exportRecoveryFile(pair,'alice','fixture','strong-passphrase-123');
+ const raw=await new Promise<string>(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result as string);r.readAsText(blob!);});
+ expect(raw).not.toContain(pair.privateKeyBase64);expect(JSON.parse(raw).encrypted).toBe(true);
+ const file=new File([raw],'recovery.json',{type:'application/json'});
+ await expect(importRecoveryFile(file,'wrong-passphrase')).rejects.toThrow();
+ const recovered=await importRecoveryFile(file,'strong-passphrase-123');expect(recovered.encryptionPublicKeyBase64).toBe(pair.encryptionPublicKeyBase64);
+ await expect(acceptRecoveryKeys(recovered,{id:'bob',public_key:'another-key'})).rejects.toThrow(/match/);
+ expect(await loadKeyPair()).toBeNull();
+ await acceptRecoveryKeys(recovered,{id:'alice',did:pair.did,public_key:pair.publicKeyBase64,encryption_public_key:pair.encryptionPublicKeyBase64});
+ expect((await loadKeyPair())?.privateKeyBase64).toBe(pair.privateKeyBase64);
+});
+test('mismatched key pairs are rejected rather than imported',async()=>{const a=await generateKeyPair();const b=await generateKeyPair();await expect(validateKeyPair({...a,encryptionPublicKeyBase64:b.encryptionPublicKeyBase64})).rejects.toThrow(/match/);});
+test('a signing secret with a tampered embedded public half is rejected',async()=>{const a=await generateKeyPair();const value=a.privateKeyBase64;const damaged=value.slice(0,-2)+(value.endsWith('00')?'01':'00');await expect(validateKeyPair({...a,privateKeyBase64:damaged})).rejects.toThrow(/match/);});

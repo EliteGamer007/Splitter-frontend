@@ -1,26 +1,21 @@
-import { test, expect } from '@playwright/test';
-
-test.describe('E2E: Authentication Flow', () => {
-    test('1️⃣ User can view landing page and start onboarding', async ({ page }) => {
-        await page.goto('http://localhost:3000');
-        
-        // Wait for main title structure
-        await expect(page.locator('body')).toContainText(/Splitter/i);
-        
-        const startButton = page.locator('button', { hasText: /Get Started/i });
-        if (await startButton.isVisible()) {
-            await startButton.click();
-            // Should transition state to "instances" view in the Single Page App
-            await expect(page.locator('body')).toContainText(/Select an Instance/i);
-        }
-    });
-
-    test('2️⃣ Failed password login highlights error visually', async ({ page }) => {
-        await page.goto('http://localhost:3000');
-        // This is a placeholder standard E2E test verifying DOM visual failure handling
-        await page.evaluate(() => {
-            // Emulating state set to 'login'
-            window.dispatchEvent(new CustomEvent('test-navigate-login'));
-        });
-    });
+import {test,expect} from '@playwright/test';
+test('guest navigation, logo, URL refresh and back work without waking any backend',async({page})=>{
+ const requests:string[]=[];
+ await page.route('**/api/v1/**',route=>{requests.push(route.request().url());return route.fulfill({status:503,json:{error:'Fixture API asleep'}});});
+ await page.goto('/');
+ await expect(page.getByRole('button',{name:/get started/i}).first()).toBeVisible();
+ await page.getByRole('button',{name:/get started/i}).first().click();
+ await expect(page).toHaveURL(/page=signup/);
+ await expect(page.getByText('Select Your Server')).toBeVisible();
+ await page.reload();await expect(page.getByText('Select Your Server')).toBeVisible();
+ await page.goBack();
+ await expect(page.getByRole('button',{name:/get started/i}).first()).toBeVisible();
+ await page.getByAltText('Logo',{exact:true}).first().click();
+ await expect(page.getByRole('button',{name:/get started/i}).first()).toBeVisible();
+ expect(requests).toEqual([]);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+test('unknown URL and unauthorized privileged deep links have useful states',async({page})=>{
+ await page.goto('/?page=unknown');await expect(page.getByRole('heading',{name:'Page not found'})).toBeVisible();
+ await page.goto('/?page=admin');await expect(page.getByRole('heading',{name:'Welcome Back'})).toBeVisible();
 });

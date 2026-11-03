@@ -1,72 +1,63 @@
-# 🌐 SPLITTER - Decentralized Social Network Frontend
+# Splitter frontend
 
-A modern, privacy-first social network interface built with **Next.js 16**, **Tailwind CSS**, and **Shadcn/UI**. It demonstrates federated identity concepts using local cryptography (DIDs) without requiring a complex backend for the initial prototype.
+The Next.js interface for **Splitter**, a college team project combining a federated social feed, browser-managed identity and encrypted messaging. The existing peach light theme and dark theme are preserved across desktop and mobile.
 
-## 📋 Project Overview
+**[Live demo](https://splitter-social.vercel.app)** · [Backend repository](https://github.com/EliteGamer007/splitter)
 
-This is a **Single Page Application (SPA)** architecture hosted within the Next.js App Router. It features **12 fully functional pages** including a complete authentication flow, social feed, direct messaging, and admin tools.
+The November repair branch is local until deployed. The former `splitter-red-phi.vercel.app` demo address is obsolete.
 
-### 🔑 Key Features
-*   **Dynamic Threading & Discovery**: Real-time multi-level replies tree display, dynamic hashtag extraction (`#tag`), global search, and a live trending sidebar.
-*   **Decentralized Identity (DID)**: Users generate keys in-browser; private keys never leave the device.
-*   **Federation Simulation**: Browse and "connect" to different backend server instances.
-*   **Light & Dark Mode**: Smooth peach light theme and neon-accented dark theme with toggle support.
-*   **Live Cloud Backend Integration**: Directly interfaces with the Render Go/Echo SQL-backed API (removing previous mock data bottlenecks).
+## Features
 
-## 🛠️ Technology Stack
+- Feed, photo posts, likes, reposts, bookmarks, nested threads, hashtags and search.
+- Profiles, follow approval, circle visibility and expiring stories.
+- Password and Ed25519 challenge-response login.
+- Browser-encrypted DMs, account/origin-scoped keys, and passphrase-encrypted key recovery exports.
+- Configurable instance selection, federation inspection, and role-guarded moderation/admin pages.
+- Shareable query-based page URLs with browser back/forward support; responsive light/dark layouts.
+- Loading, empty and error states, bounded requests, and unread polling that pauses while hidden or offline.
 
-*   **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
-*   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-*   **Components**: [Shadcn/UI](https://ui.shadcn.com/) (Radix UI + Tailwind)
-*   **Icons**: [Lucide React](https://lucide.dev/)
-*   **State**: Local React State + Context
+These screens use the real Go/Echo API. A second peer and an AI provider are optional; they are not required for the main social workflow.
 
-## 🚀 Getting Started
+## Run
 
-### Prerequisites
-*   Node.js 18+
-*   npm or pnpm
+Use Node.js **22.13+ and below 25**, and npm with the checked-in lockfile.
 
-### Installation
-```bash
-git clone https://github.com/your-repo/splitter-frontend.git
-cd splitter-frontend
-npm install
+```sh
+npm ci
 ```
 
-### Run Locally
-```bash
+Create `.env.local` for your backend:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_INSTANCE_1_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_INSTANCE_2_URL=
+```
+
+```sh
 npm run dev
 ```
-Visit `http://localhost:3000` to start the experience.
 
-## 🧭 Page Map
+Open [localhost:3000](http://localhost:3000). Browser cryptography requires HTTPS or localhost. Configure the backend CORS allowlist for the frontend origin. For the hosted primary, use `https://splitter-m0kv.onrender.com/api/v1` for both primary API variables and rebuild.
 
-| Page | Description |
-|---|---|
-| **Landing** | Concept introduction & "Get Started" flow |
-| **Instances** | Visual server browser with reputation metrics |
-| **Signup** | Cryptographic identity generation (4-step wizard) |
-| **Login** | Challenge-response authentication |
-| **Home** | The main timeline with posting, liking, and replies |
-| **Profile** | User profiles with tabs for posts, media, and network |
-| **Thread** | Detailed post view with threaded replies |
-| **DM** | E2E Encrypted mock messaging interface |
-| **Security** | Manage your keys and recovery phrases |
-| **Moderation** | Content moderation queue and filters |
-| **Federation** | Server health metrics and federation status |
-| **Admin** | Server administration tools (role-guarded) |
+## Checks and release
 
-## 🎨 Customization
+```sh
+npm run check
+```
 
-The design system is built on **Tailwind CSS** with light/dark mode support.
-*   **Theme**: Edit `app/globals.css` to change CSS variables for colors. Both light and dark themes are fully customizable.
-*   **Components**: Reusable UI components are located in `components/ui`.
+This runs ESLint, TypeScript, Jest and the optimized Next.js build. Playwright browser flows are separate: `npm run test:e2e`. Full API browser checks require `LOCAL_API_E2E=1` and an explicitly started disposable backend at `127.0.0.1:18000`; they must not target the public demo.
 
-## 🤝 Contributing
+Vercel builds with `npm run build`. Public environment variables are embedded at build time. Confirm the intended repository, revision and production alias when releasing; a local build does not update the live site.
 
-This is a prototype for the **Splitter** network. Contributions to connect this frontend to real ActivityPub backends are welcome!
+## Security and recovery
 
-## 📄 License
+Private message keys remain in the browser and are scoped to the selected API origin and account. Logout clears session/private caches and queued messages while retaining recovery material needed to read historical messages. Export an encrypted recovery backup from Security before clearing browser storage or moving devices. Password login cannot recover an encryption private key that was never backed up.
 
-MIT License.
+Ed25519 is used for signing identity; message encryption uses separate P-256 key material. Encrypted sends and edits omit plaintext. Recovery imports verify the key pairs and the authenticated account before use.
+
+## Layout
+
+`app/page.tsx` controls page navigation. `components/pages` holds feature views, `components/ui` shared UI, and `lib` the API client, scoped browser state and cryptography. URL state selects pages such as `/?page=home`, `/?page=profile&userId=...` and `/?page=thread&postId=...`.
+
+This is a team course project. Credit the team and identify your own contributions when presenting it. See the backend repository's deployment guide and demo walkthrough for the complete system.

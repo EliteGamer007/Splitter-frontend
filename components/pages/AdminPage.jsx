@@ -1,11 +1,32 @@
 'use client';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/HomePage.css';
 import { adminApi, postApi, searchApi } from '@/lib/api';
 
-export default function AdminPage({ onNavigate, userData, handleLogout }) {
+export default function AdminPage(props) {
+  const {userData} = props;
+  if (userData?.role !== 'admin') {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'var(--bg-primary)',
+        color: 'var(--text-primary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <h2>⛔ Access Denied</h2>
+      </div>
+    );
+  }
+  return <AdminPageContent {...props} />;
+}
+
+function AdminPageContent({ onNavigate, userData, handleLogout }) {
   /* ================= THEME (from your branch) ================= */
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -27,7 +48,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
   const [isSearching, setIsSearching] = useState(false);
 
   const [showBanModal, setShowBanModal] = useState(false);
-  
+
   // Federation state
   const [blockedDomains, setBlockedDomains] = useState([]);
   const [federationActivities, setFederationActivities] = useState([]);
@@ -46,20 +67,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
   const USERS_PAGE_SIZE = 10;
 
   /* ================= ACCESS CHECK ================= */
-  if (userData?.role !== 'admin') {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'var(--bg-primary)',
-        color: 'var(--text-primary)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <h2>⛔ Access Denied</h2>
-      </div>
-    );
-  }
+
 
   /* ================= EFFECTS ================= */
   useEffect(() => {
@@ -70,7 +78,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
     if (searchQuery.length >= 2) {
       const delaySearch = setTimeout(() => {
         handleSearchUsers();
-      }, 300); // Debounce search
+      }, 400); // Debounce search
       return () => clearTimeout(delaySearch);
     } else {
       setSearchResults([]);
@@ -271,19 +279,19 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
       } else {
         await adminApi.suspendUser(banTarget.id);
       }
-      
+
       // Update lists
       setUsers(users.map(u => u.id === banTarget.id ? { ...u, is_suspended: true } : u));
       setSuspendedUsers([...suspendedUsers, { ...banTarget, is_suspended: true }]);
       if (searchResults.length > 0) {
         setSearchResults(searchResults.map(u => u.id === banTarget.id ? { ...u, is_suspended: true } : u));
       }
-      
+
       // Close modal
       setShowBanModal(false);
       setBanTarget(null);
       setBanReason('');
-      
+
       // Refresh admin actions
       fetchAdminActions();
     } catch (error) {
@@ -299,14 +307,14 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
     setActionLoading(userId);
     try {
       await adminApi.unsuspendUser(userId);
-      
+
       // Update lists
       setUsers(users.map(u => u.id === userId ? { ...u, is_suspended: false } : u));
       setSuspendedUsers(suspendedUsers.filter(u => u.id !== userId));
       if (searchResults.length > 0) {
         setSearchResults(searchResults.map(u => u.id === userId ? { ...u, is_suspended: false } : u));
       }
-      
+
       // Refresh admin actions
       fetchAdminActions();
     } catch (error) {
@@ -321,7 +329,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
     setActionLoading(userId);
     try {
       await adminApi.updateUserRole(userId, newRole);
-      
+
       // Update lists
       setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
       if (searchResults.length > 0) {
@@ -356,16 +364,16 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
   /* ================= UI (UNCHANGED FROM MAIN) ================= */
 
   return (
-    <div className="home-container">
+    <div className="home-container admin-container">
 
       {/* ================= NAVBAR ================= */}
       <nav className="home-nav">
 
         <div className="nav-left">
           <h1 className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img 
-              src="/logo.png" 
-              alt="Logo" 
+            <ProtectedImage
+              src="/logo.png"
+              alt="Logo"
               style={{
                 height: '66px',
                 width: 'auto',
@@ -378,13 +386,13 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
         </div>
 
         <div className="nav-center">
-          <button 
+          <button
             className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
             onClick={() => setActiveTab('home')}
           >
             Feed
           </button>
-          <button 
+          <button
             className={`nav-item ${activeTab === 'requests' ? 'active' : ''}`}
             onClick={() => setActiveTab('requests')}
             style={{ position: 'relative' }}
@@ -409,19 +417,19 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
               </span>
             )}
           </button>
-          <button 
+          <button
             className={`nav-item ${activeTab === 'bans' ? 'active' : ''}`}
             onClick={() => setActiveTab('bans')}
           >
             Bans
           </button>
-          <button 
+          <button
             className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => setActiveTab('users')}
           >
             Users
           </button>
-          <button 
+          <button
             className={`nav-item ${activeTab === 'federation' ? 'active' : ''}`}
             onClick={() => setActiveTab('federation')}
           >
@@ -430,15 +438,15 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
         </div>
 
         <div className="nav-right">
-          <div style={{ position: 'relative' }}>
-            <input 
-              type="text" 
-              placeholder="Search users..." 
+          <div className="nav-search-wrap" style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
               className="nav-search"
-              style={{ 
+              style={{
                 minWidth: showSearchResults ? '400px' : '300px',
                 width: showSearchResults ? '450px' : '300px',
                 transition: 'all 0.3s ease'
@@ -470,7 +478,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
                   </div>
                 ) : (
                   searchResults.map(user => (
-                    <div 
+                    <div
                       key={user.id}
                       style={{
                         padding: '12px 16px',
@@ -604,7 +612,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
       </nav>
 
       {/* Main Layout */}
-      <div style={{
+      <div className="admin-layout" style={{
         display: 'flex',
         gap: '0',
         background: 'var(--bg-primary)',
@@ -995,7 +1003,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
                               </div>
                             </td>
                             <td style={{ padding: '16px' }}>
-                              <span 
+                              <span
                                 title={user.role === 'admin' ? 'Admin - Full system access' : user.role === 'moderator' ? 'Moderator - Can moderate content' : 'User - Regular user account'}
                                 style={{
                                 padding: '4px 8px',
@@ -1337,7 +1345,7 @@ export default function AdminPage({ onNavigate, userData, handleLogout }) {
         </main>
 
         {/* Right Sidebar - Admin Quick Stats */}
-        <aside style={{
+        <aside className="admin-sidebar" style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '16px',

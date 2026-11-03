@@ -1,4 +1,7 @@
 'use client';
+import PageMore from '@/components/ui/PageMore';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
@@ -11,8 +14,13 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [activeTab, setActiveTab] = useState('posts');
+  const [followPending,setFollowPending] = useState(false);
+  const [followRequests,setFollowRequests] = useState([]);
+  const [requestError,setRequestError] = useState('');
+  useEffect(() => { if (!viewingUserId && userData?.id) followApi.getRequests().then(r => setFollowRequests(Array.isArray(r) ? r : r.requests || [])).catch(e => setRequestError(e.message)); }, [viewingUserId,userData?.id]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [profileError,setProfileError] = useState('');
   const [profileData, setProfileData] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -53,8 +61,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
     setIsLoadingFollows(true);
     try {
       const [followers, following, statsObj] = await Promise.all([
-        followApi.getFollowers(targetId, 200, 0).catch(() => []),
-        followApi.getFollowing(targetId, 200, 0).catch(() => []),
+        followApi.getFollowers(targetId, 50, 0).catch(() => []),
+        followApi.getFollowing(targetId, 50, 0).catch(() => []),
         followApi.getFollowStats(targetId).catch(() => null)
       ]);
 
@@ -82,7 +90,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
         return;
       }
 
-      setIsLoadingProfile(true);
+      setIsLoadingProfile(true);setProfileError('');
       try {
         let profile;
         if (viewingUserId) {
@@ -195,8 +203,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
         }
 
       } catch (err) {
-        console.error('Failed to load profile:', err);
-        setProfileData(userData);
+        setProfileError(err.message || 'Profile unavailable');
+        setProfileData(null);
       } finally {
         setIsLoadingProfile(false);
       }
@@ -227,7 +235,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           const domain = viewingRemoteUser.domain || viewingRemoteUser.instance_domain;
           await federationApi.followRemoteUser(`@${viewingRemoteUser.username}@${domain}`);
         } else {
-          await followApi.followUser(profileTargetId);
+          const result = await followApi.followUser(profileTargetId);
+          if (result.status === 'pending' || result.pending) {setFollowPending(true);return;}
         }
         setIsFollowing(true);
         // Instantly update stats
@@ -358,6 +367,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
     setEditBio(profile.bio || '');
   }, [profile.displayName, profile.bio]);
 
+  useEffect(() => { if (profileTargetId) followApi.getStatus(profileTargetId).then(r => {setIsFollowing(r.status === 'accepted');setFollowPending(r.status === 'pending');}).catch(() => {}); }, [profileTargetId]);
+
   // Format post timestamp
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return 'recently';
@@ -371,6 +382,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
     if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
     return date.toLocaleDateString();
   };
+
+  if (profileError) return <main className="profile-container"><p role="alert">{profileError}</p><button onClick={() => onNavigate('home')}>Return home</button></main>;
 
   if (isLoadingProfile) {
     return (
@@ -386,6 +399,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
   return (
     <div className="profile-container">
       {/* Top Navigation Bar */}
+
       <div className="profile-navbar">
         <div className="navbar-left">
           <button
@@ -397,8 +411,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           <h1 className="navbar-title">Profile</h1>
         </div>
         <div className="navbar-center">
-          <button className="nav-badge">Local</button>
-          <button className="nav-badge">Federated</button>
+          <button className="nav-badge" onClick={() => onNavigate('home',{tab:'local'})}>Local</button>
+          <button className="nav-badge" onClick={() => onNavigate('home',{tab:'federated'})}>Federated</button>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px' }}>
           <button onClick={toggleTheme} className="nav-button theme-toggle" style={{ padding: '8px 12px', background: 'rgba(0,217,255,0.1)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '6px', cursor: 'pointer' }}>
@@ -408,15 +422,24 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
       </div>
 
       <div className="profile-content">
+      {!profileTargetId && <section className="follow-requests-card" aria-label="Follow requests">
+        <h3>Follow requests</h3>{requestError && <p role="status">{requestError}</p>}
+        {!requestError && followRequests.length === 0 && <p>No pending requests</p>}
+        {followRequests.map(r => <div key={r.id}><span>@{r.username}</span>
+          <button onClick={async () => {try {await followApi.acceptRequest(r.id);setFollowRequests(list => list.filter(x => x !== r));refreshFollowData(userData.id);}catch(e){setRequestError(e.message);}}}>Accept</button>
+          <button onClick={async () => {try {await followApi.rejectRequest(r.id);setFollowRequests(list => list.filter(x => x !== r));}catch(e){setRequestError(e.message);}}}>Reject</button>
+        </div>)}
+        <PageMore items={followRequests} loadPage={(limit,offset)=>followApi.getRequests(limit,offset)} onPage={rows=>setFollowRequests(previous=>[...previous,...rows])} label="Load more requests" />
+      </section>}
         {/* Profile Header Card */}
         <div className="profile-header-card">
           <div className="profile-header-top">
             <div className="profile-avatar-section">
               <div className="profile-avatar">
                 {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar preview" className="profile-avatar-image" />
+                  <ProtectedImage src={avatarPreview} alt="Avatar preview" className="profile-avatar-image" />
                 ) : isImageURL(profile.avatar) ? (
-                  <img src={resolveURL(profile.avatar)} alt="Profile avatar" className="profile-avatar-image" />
+                  <ProtectedImage src={resolveURL(profile.avatar)} alt="Profile avatar" className="profile-avatar-image" />
                 ) : (
                   profile.avatar
                 )}
@@ -439,7 +462,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                   cursor: isFollowLoading || (!profileTargetId && !hasExternalProfile) ? 'not-allowed' : 'pointer'
                 }}
               >
-                {isFollowLoading ? '...' : isFollowing ? '✓ Following' : 'Follow'}
+                {followPending ? 'Request pending' : isFollowLoading ? '...' : isFollowing ? '✓ Following' : 'Follow'}
               </button>
               {profileTargetId && (
                 <button
@@ -612,6 +635,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           </div>
         )}
 
+        {activeTab === 'posts' && <PageMore items={userPosts} loadPage={(limit,offset)=>postApi.getUserPosts(profileData?.did || userData.did,limit,offset)} onPage={rows=>setUserPosts(previous=>[...previous,...rows])} label="Load more posts" />}
         {/* Followers Tab */}
         {activeTab === 'followers' && (
           <div className="profile-list">
@@ -624,7 +648,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                 <div className="list-item" key={`follower-${user.id}`}>
                   <div className="follower-avatar">
                     {isImageURL(user.avatar_url) ? (
-                      <img src={resolveURL(user.avatar_url)} alt="Follower avatar" className="profile-avatar-image" />
+                      <ProtectedImage src={resolveURL(user.avatar_url)} alt="Follower avatar" className="profile-avatar-image" />
                     ) : (
                       user.avatar_url || '👤'
                     )}
@@ -639,6 +663,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           </div>
         )}
 
+        {activeTab === 'followers' && <PageMore limit={50} items={followersList} loadPage={(limit,offset)=>followApi.getFollowers(profileTargetId || userData.id,limit,offset)} onPage={rows=>setFollowersList(previous=>[...previous,...rows])} label="Load more followers" />}
         {/* Following Tab */}
         {activeTab === 'following' && (
           <div className="profile-list">
@@ -651,7 +676,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                 <div className="list-item" key={`following-${user.id}`}>
                   <div className="follower-avatar">
                     {isImageURL(user.avatar_url) ? (
-                      <img src={resolveURL(user.avatar_url)} alt="Following avatar" className="profile-avatar-image" />
+                      <ProtectedImage src={resolveURL(user.avatar_url)} alt="Following avatar" className="profile-avatar-image" />
                     ) : (
                       user.avatar_url || '👤'
                     )}
@@ -669,6 +694,8 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
           </div>
         )}
 
+        {activeTab === 'following' && <PageMore limit={50} items={followingList} loadPage={(limit,offset)=>followApi.getFollowing(profileTargetId || userData.id,limit,offset)} onPage={rows=>setFollowingList(previous=>[...previous,...rows])} label="Load more following" />}
+        {activeTab === 'circle' && <PageMore items={circleMembers} loadPage={(limit,offset)=>circleApi.getCircle(limit,offset)} onPage={rows=>setCircleMembers(previous=>[...previous,...rows])} label="Load more circle members" />}
         {/* My Circle Tab — own profile only */}
         {activeTab === 'circle' && !viewingUserId && (
           <div className="profile-list">
@@ -687,7 +714,7 @@ export default function ProfilePage({ onNavigate, userData, updateUserData, view
                 <div className="list-item" key={`circle-${user.id}`}>
                   <div className="follower-avatar">
                     {isImageURL(user.avatar_url) ? (
-                      <img src={resolveURL(user.avatar_url)} alt="Circle member avatar" className="profile-avatar-image" />
+                      <ProtectedImage src={resolveURL(user.avatar_url)} alt="Circle member avatar" className="profile-avatar-image" />
                     ) : (
                       user.avatar_url || '👤'
                     )}

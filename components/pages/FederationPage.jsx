@@ -5,7 +5,8 @@ import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/FederationPage.css';
 import { adminApi } from '@/lib/api';
 
-export default function FederationPage({ onNavigate, userData }) {
+export default function FederationPage(props) {
+  const {userData} = props;
   if (userData?.role !== "admin" && userData?.role !== "moderator") {
     return (
       <div style={{
@@ -18,6 +19,11 @@ export default function FederationPage({ onNavigate, userData }) {
       </div>
     );
   }
+  return <FederationPageContent {...props} />;
+}
+
+function FederationPageContent({ onNavigate, userData }) {
+
 
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
@@ -55,8 +61,7 @@ export default function FederationPage({ onNavigate, userData }) {
 
   useEffect(() => {
     loadInspector();
-    const timer = setInterval(loadInspector, 15000);
-    return () => clearInterval(timer);
+
   }, []);
 
   const mergedTraffic = useMemo(() => {

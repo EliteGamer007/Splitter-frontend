@@ -19,6 +19,7 @@ jest.mock('@/lib/api', () => ({
 }));
 
 jest.mock('@/lib/crypto', () => ({
+    knownIdentities: jest.fn(() => []),
     getStoredKeyPair: jest.fn(() => Promise.resolve(null)),
     ensureEncryptionKeys: jest.fn(() => Promise.resolve({ encryptionPublicKeyBase64: 'key123' })),
 }));

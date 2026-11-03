@@ -1,5 +1,8 @@
 'use client';
+import ProtectedImage from '@/components/ui/ProtectedImage';
 
+
+import { scopedStorageKey } from '@/lib/browserState';
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import { postApi } from '@/lib/api';
@@ -136,6 +139,9 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
   const isDarkMode = theme === 'dark';
 
   const [post, setPost] = useState(null);
+  const [flatReplies,setFlatReplies] = useState([]);
+  const [hasMoreReplies,setHasMoreReplies] = useState(false);
+  const [isLoadingReplies,setIsLoadingReplies] = useState(false);
   const [repliesTree, setRepliesTree] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -163,6 +169,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
 
   useEffect(() => {
     if (postId) loadThreadData();
+    else {setIsLoading(false);setError('Choose a post to view its thread.');}
   }, [postId]);
 
   const loadThreadData = async () => {
@@ -187,7 +194,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
       // Try to load local replies for this remote post (it's cached locally)
       try {
         const replies = await postApi.getReplies(postData.id);
-        setRepliesTree(buildReplyTree(replies));
+        replaceReplies(replies);
       } catch {
         setRepliesTree([]);
       }
@@ -196,11 +203,11 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
     }
 
     if (!navigator.onLine) {
-      const cached = localStorage.getItem(`thread_cache_${postId}`);
+      const cached = localStorage.getItem(scopedStorageKey(`thread-${postId}`,userData?.id));
       if (cached) {
         const parsed = JSON.parse(cached);
         setPost(parsed.post || null);
-        setRepliesTree(buildReplyTree(parsed.replies || []));
+        replaceReplies(parsed.replies || []);
       }
       setIsLoading(false);
       return;
@@ -211,9 +218,9 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
       setPost(postResult);
 
       const replies = await postApi.getReplies(postId);
-      setRepliesTree(buildReplyTree(replies));
+      replaceReplies(replies);
       localStorage.setItem(
-        `thread_cache_${postId}`,
+        scopedStorageKey(`thread-${postId}`,userData?.id),
         JSON.stringify({
           post: postResult,
           replies: replies
@@ -224,6 +231,16 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const replaceReplies = (replies) => {
+    setFlatReplies(replies || []);setRepliesTree(buildReplyTree(replies || []));setHasMoreReplies((replies || []).length >= 20);
+  };
+  const loadMoreReplies = async () => {
+    if (isLoadingReplies) return;
+    setIsLoadingReplies(true);
+    try {const page = await postApi.getReplies(postId,20,flatReplies.length); const combined = [...flatReplies,...page].filter((r,i,list) => list.findIndex(x => x.id === r.id) === i);setFlatReplies(combined);setRepliesTree(buildReplyTree(combined));setHasMoreReplies(page.length >= 20);}
+    catch(err){setError(err.message || 'Could not load more replies.');}finally{setIsLoadingReplies(false);}
   };
 
   const buildReplyTree = (flatReplies = []) => {
@@ -295,7 +312,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
         setPost(refreshed.post);
       }
       const replies = await postApi.getReplies(post.id);
-      setRepliesTree(buildReplyTree(replies));
+      replaceReplies(replies);
     } catch (err) {
       console.error('Failed to fetch remote thread context:', err);
       setError('Failed to fetch full thread context from original instance.');
@@ -318,6 +335,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
       </div>
 
       <div className="thread-content">
+        {hasMoreReplies && <button onClick={loadMoreReplies} disabled={isLoadingReplies}>{isLoadingReplies ? 'Loading replies…' : 'Load more replies'}</button>}
         {isOffline && (
           <div className="offline-banner">
             ⚠️ You are offline — viewing cached thread.
@@ -386,7 +404,7 @@ export default function ThreadPage({ onNavigate, postId, postData, userData }) {
 
               {post.image_url && (
                 <div className="root-post-image">
-                  <img src={
+                  <ProtectedImage src={
                     post.image_url.startsWith('http') ? post.image_url
                       : post.instance_url ? `${post.instance_url}${post.image_url}`
                       : post.image_url

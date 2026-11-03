@@ -1,4 +1,9 @@
 'use client';
+import PageMore from '@/components/ui/PageMore';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+import { scopedStorageKey } from '@/lib/browserState';
+import { encryptedPayload } from '@/lib/encryptedMessages';
+
 
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
@@ -22,6 +27,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   const [selectedThread, setSelectedThread] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
+  const [loadError,setLoadError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,9 +38,13 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
 
   // E2EE State
   const [myKeyPair, setMyKeyPair] = useState(null);
+  const [legacyPlaintext,setLegacyPlaintext] = useState(false);
+  const [editingEncrypted,setEditingEncrypted] = useState(true);
+  const [readyThreadId,setReadyThreadId] = useState(null);
   const [sharedSecret, setSharedSecret] = useState(null);
   const [isEncryptionReady, setIsEncryptionReady] = useState(false);
   const [recruitPublicKey, setRecruitPublicKey] = useState(null); // For new chats
+  const [keyError, setKeyError] = useState('');
   const [encryptionStatus, setEncryptionStatus] = useState('loading'); // loading, ready, missing_keys, recipient_missing_keys
   const [decryptedPreviews, setDecryptedPreviews] = useState({}); // Store decrypted previews by thread ID
   const [editingMessageId, setEditingMessageId] = useState(null);
@@ -45,7 +55,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
 
   const getOfflineQueueKey = () => {
     const uid = userData?.id || 'anonymous';
-    return `splitter_dm_offline_queue_${uid}`;
+    return scopedStorageKey('dm-offline-queue',userData?.id);
   };
 
   const loadOfflineQueue = () => {
@@ -72,6 +82,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
 
   const syncQueuedMessages = async () => {
     if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+    if (!localStorage.getItem('jwt_token') || document.visibilityState === 'hidden') return;
 
     const queue = loadOfflineQueue();
     if (queue.length === 0) return;
@@ -97,7 +108,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
     const resolved = resolveMediaUrl(raw);
     if (resolved) {
       return (
-        <img
+        <ProtectedImage
           src={resolved}
           alt={`${user?.username || 'user'} avatar`}
           className={className}
@@ -132,10 +143,11 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
     async function loadKeys() {
       try {
         // ensureEncryptionKeys: loads from localStorage if present, generates if not
-        const encKeys = await ensureEncryptionKeys();
+        const currentUser = await userApi.getCurrentUser();
+        const encKeys = await ensureEncryptionKeys(currentUser);
 
         // Always upload to backend to ensure backend key matches our private key
-        await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+        if (!currentUser.encryption_public_key) await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
         console.log('Encryption keys ready and synced to backend');
 
         setMyKeyPair({
@@ -152,6 +164,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
       } catch (err) {
         console.error('Failed to load/generate encryption keys:', err);
         setEncryptionStatus('missing_keys');
+        setKeyError(err.message);
       }
     }
     loadKeys();
@@ -196,8 +209,10 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
 
   // Derive Shared Secret when Thread Changes
   useEffect(() => {
+    let cancelled = false;
     async function setupEncryption() {
       setSharedSecret(null);
+      setReadyThreadId(null);setLegacyPlaintext(false);
       setIsEncryptionReady(false);
 
       if (!selectedThread || !myKeyPair) return;
@@ -231,8 +246,10 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
         return;
       }
 
-      const cacheKey = otherUser.id;
+      if (cancelled) return;
+      const cacheKey = `${otherUser.id}:${otherUserPublicKey}:${myKeyPair.encryptionPublicKeyBase64}`;
       if (sharedSecretsRef.current[cacheKey]) {
+        setReadyThreadId(selectedThread.id);
         setSharedSecret(sharedSecretsRef.current[cacheKey]);
         setIsEncryptionReady(true);
         setEncryptionStatus('ready');
@@ -242,6 +259,8 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
       try {
         const importedPublicKey = await importEncryptionPublicKey(otherUserPublicKey);
         const secret = await deriveSharedSecret(myKeyPair.encryptionPrivateKey, importedPublicKey);
+        if (cancelled) return;
+        setReadyThreadId(selectedThread.id);
         sharedSecretsRef.current[cacheKey] = secret;
         setSharedSecret(secret);
         setIsEncryptionReady(true);
@@ -253,6 +272,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
     }
 
     setupEncryption();
+    return () => {cancelled = true;};
   }, [selectedThread, myKeyPair]);
 
   // Decrypt Messages when Messages or SharedSecret changes
@@ -370,6 +390,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   };
 
   const handleEditMessage = async (messageId, originalMessage) => {
+    setEditingEncrypted(!!originalMessage.ciphertext);
     setEditingMessageId(messageId);
     setEditMessage(originalMessage.content || '');
   };
@@ -378,15 +399,8 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
     if (!editMessage.trim()) return;
 
     try {
-      let ciphertext = '';
-
-      // Re-encrypt if this was an encrypted message
-      if (encryptionStatus === 'ready' && sharedSecret) {
-        const { ciphertext: encrypted, iv } = await encryptMessage(editMessage, sharedSecret);
-        ciphertext = JSON.stringify({ c: encrypted, iv });
-      }
-
-      await messageApi.editMessage(messageId, editMessage, ciphertext);
+      const payload = editingEncrypted ? await encryptedPayload(editMessage, encryptionStatus === 'ready' && readyThreadId === selectedThread?.id ? sharedSecret : null) : {content:editMessage,ciphertext:''};
+      await messageApi.editMessage(messageId, payload.content, payload.ciphertext);
       setEditingMessageId(null);
       setEditMessage('');
 
@@ -403,7 +417,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   };
 
   const fetchThreads = async () => {
-    setIsLoading(true);
+    setLoadError('');setIsLoading(true);
     try {
       const result = await messageApi.getThreads();
       setThreads(result.threads || []);
@@ -413,7 +427,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
         selectThread(result.threads[0]);
       }
     } catch (err) {
-      console.error('Failed to fetch threads:', err);
+      setLoadError(err.message || 'Could not load conversations.');
     } finally {
       setIsLoading(false);
     }
@@ -426,7 +440,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
       // Messages come with ciphertext. Transformation happens in useEffect.
       setMessages(result.messages || []);
     } catch (err) {
-      console.error('Failed to fetch messages:', err);
+      setLoadError(err.message || 'Could not load messages.');
       setMessages([]);
     }
   };
@@ -434,14 +448,15 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   const handleGenerateEncryptionKeys = async () => {
     try {
       // Generate new ECDH P-256 encryption keys (lightweight, no Ed25519 dependency)
-      const generated = await ensureEncryptionKeys();
+      const currentUser = await userApi.getCurrentUser();
+      const generated = await ensureEncryptionKeys(currentUser);
 
       if (!generated.encryptionPublicKeyBase64 || !generated.encryptionPrivateKeyBase64) {
         throw new Error('Failed to generate encryption keys');
       }
 
       // Update user's encryption key on backend
-      await userApi.updateEncryptionKey(generated.encryptionPublicKeyBase64);
+      if (!currentUser.encryption_public_key) await userApi.updateEncryptionKey(generated.encryptionPublicKeyBase64);
 
       // Update state with the generated keys
       setMyKeyPair({
@@ -475,33 +490,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
         ? selectedThread.participant_b_id
         : selectedThread.participant_a_id;
 
-      let payload = {
-        recipient_id: recipientId,
-        content: messageText // Fallback/Metadata content? Or keep empty? 
-        // Backend requires content OR ciphertext. 
-        // I'll send a placeholder in content like "Encrypted Message" for backward compat clients.
-      };
-
-      if (isEncryptionReady && sharedSecret) {
-        const { ciphertext, iv } = await encryptMessage(messageText, sharedSecret);
-        // Store as JSON
-        const combinedCipher = JSON.stringify({ c: ciphertext, iv });
-        payload.ciphertext = combinedCipher;
-        payload.content = "🔒 Encrypted Message";
-      } else {
-        // Fallback to plain text if encryption not ready (e.g. recipient partial support)
-        // User should be warned.
-        if (encryptionStatus === 'recipient_missing_keys') {
-          if (!confirm("Recipient has no encryption keys. Send as plain text?")) {
-            setIsSending(false);
-            return;
-          }
-        } else if (encryptionStatus === 'missing_keys') {
-          alert("You don't have encryption keys. Cannot send message.");
-          setIsSending(false);
-          return;
-        }
-      }
+      const payload = legacyPlaintext ? {content:messageText,ciphertext:''} : await encryptedPayload(messageText, isEncryptionReady && readyThreadId === selectedThread.id ? sharedSecret : null);
 
       const clientMessageId = (typeof crypto !== 'undefined' && crypto.randomUUID)
         ? crypto.randomUUID()
@@ -571,20 +560,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
             : `offline-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
           const clientCreatedAt = new Date().toISOString();
 
-          let fallbackPayload = {
-            recipient_id: recipientId,
-            content: messageText,
-            ciphertext: ''
-          };
-
-          if (isEncryptionReady && sharedSecret) {
-            const { ciphertext, iv } = await encryptMessage(messageText, sharedSecret);
-            fallbackPayload = {
-              recipient_id: recipientId,
-              content: '🔒 Encrypted Message',
-              ciphertext: JSON.stringify({ c: ciphertext, iv })
-            };
-          }
+          const fallbackPayload = {recipient_id: recipientId, ...(legacyPlaintext ? {content:messageText,ciphertext:''} : await encryptedPayload(messageText, isEncryptionReady && readyThreadId === selectedThread.id ? sharedSecret : null))};
 
           queueOfflineMessage({
             client_message_id: clientMessageId,
@@ -680,7 +656,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
 
   useEffect(() => {
     if (searchQuery.length >= 2) {
-      const timer = setTimeout(handleSearch, 300);
+      const timer = setTimeout(handleSearch, 400);
       return () => clearTimeout(timer);
     } else {
       setSearchResults([]);
@@ -716,6 +692,7 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
   return (
     <div className="dm-container">
 
+      {loadError && <div role="alert">{loadError} <button onClick={fetchThreads}>Retry conversations</button></div>}
       {/* Top Navigation */}
       <div className="dm-navbar">
         <button
@@ -885,12 +862,13 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                         {thread.unread_count}
                       </div>
                     )}
-                    <div className="encryption-badge" title="End-to-end encrypted conversation"><LockIcon size={12} /></div>
+                    <div className="encryption-badge" title="Supports ECDH encryption when both participants have keys"><LockIcon size={12} /></div>
                   </div>
                 );
               })
             )}
           </div>
+        <PageMore items={threads} limit={30} loadPage={async (limit,offset)=>(await messageApi.getThreads(undefined,limit,offset)).threads || []} onPage={rows=>setThreads(previous=>[...previous,...rows])} label="Load more conversations" />
         </div>
 
         {/* Chat Window */}
@@ -923,7 +901,8 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                         <span className="status-text">🌐 Remote • </span>
                       )}
 
-                      {encryptionStatus === 'ready' && <span className="status-text" style={{ color: '#00ff88' }}><LockIcon size={13} style={{ marginRight: '4px', color: '#00ff88' }} />Encrypted With Signal Protocol (ECDH)</span>}
+                      {keyError && <span role="alert">{keyError} <button onClick={() => onNavigate('security')}>Recover keys</button></span>}
+                      {encryptionStatus === 'ready' && <span className="status-text" style={{ color: '#00ff88' }}><LockIcon size={13} style={{ marginRight: '4px', color: '#00ff88' }} />Encrypted with ECDH + AES-GCM (no forward secrecy)</span>}
                       {encryptionStatus === 'loading' && <span className="status-text">🔄 Verifying Keys...</span>}
                       {encryptionStatus === 'recipient_missing_keys' && <span className="status-text" style={{ color: '#ffaa00' }}>⚠️ Recipient has no keys</span>}
                       {encryptionStatus === 'missing_keys' && (
@@ -1102,10 +1081,13 @@ export default function DMPage({ onNavigate, userData, selectedUser }) {
                     );
                   })
                 )}
+                <PageMore key={selectedThread.id} limit={30} items={messages} loadPage={async(limit,offset)=>(await messageApi.getMessages(selectedThread.id,limit,offset)).messages || []} onPage={rows=>setMessages(previous=>[...previous,...rows])} label="Load more messages" />
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Input Box */}
+              <label style={{padding:'8px 16px',display:'block'}}><input type="checkbox" checked={legacyPlaintext} onChange={e => setLegacyPlaintext(e.target.checked)} /> Use legacy plaintext for this conversation (server can read messages)</label>
+              {legacyPlaintext && <p role="status">Legacy plaintext selected. New messages are not end-to-end encrypted.</p>}
               <div className="message-input-box">
                 <textarea
                   className="message-input"

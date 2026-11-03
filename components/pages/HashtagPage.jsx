@@ -1,4 +1,7 @@
 'use client';
+import PageMore from '@/components/ui/PageMore';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+
 
 import React, { useState, useEffect } from 'react';
 import { hashtagApi } from '@/lib/api';
@@ -13,6 +16,7 @@ export default function HashtagPage({ hashtag, onNavigate }) {
 
   useEffect(() => {
     if (hashtag) fetchPosts();
+    else {setLoading(false);setError('Choose a hashtag to view its posts.');}
   }, [hashtag]);
 
   const fetchPosts = async () => {
@@ -76,6 +80,7 @@ export default function HashtagPage({ hashtag, onNavigate }) {
         </div>
       )}
 
+      <PageMore key={hashtag} limit={50} items={posts} loadPage={async(limit,offset)=>(await hashtagApi.getPostsByHashtag(hashtag,limit,offset)).posts || []} onPage={rows=>setPosts(previous=>[...previous,...rows])} label="Load more hashtag posts" />
       {!loading && !error && posts.length > 0 && (
         <div className="hashtag-posts">
           {posts.map((post) => (
@@ -87,7 +92,7 @@ export default function HashtagPage({ hashtag, onNavigate }) {
               <div className="hashtag-post-header">
                 <div className="hashtag-post-avatar">
                   {post.avatar_url ? (
-                    <img src={post.avatar_url} alt="" className="avatar-img" />
+                    <ProtectedImage src={post.avatar_url} alt="" className="avatar-img" />
                   ) : (
                     <span className="avatar-placeholder">👤</span>
                   )}
@@ -104,7 +109,7 @@ export default function HashtagPage({ hashtag, onNavigate }) {
               </div>
               {post.media && post.media.length > 0 && (
                 <div className="hashtag-post-media">
-                  <img src={post.media[0].media_url} alt="" />
+                  <ProtectedImage src={post.media[0].media_url} alt="" />
                 </div>
               )}
               <div className="hashtag-post-stats">

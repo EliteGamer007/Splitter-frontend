@@ -1,0 +1,16 @@
+.cache/
+.git/
+.env*
+!.env.example
+node_modules/
+.next/
+coverage/
+test-results/
+playwright-report/
+__tests__/
+Splitter-Mobile/
+*.log
+*.tsbuildinfo
+build_log.txt
+jest*.txt
+out.txt

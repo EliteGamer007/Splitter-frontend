@@ -17,8 +17,8 @@ export default function AppBottomNav({ currentPage, onNavigate, hasUnread = fals
 
   return (
     <>
-      <div className="md:hidden fixed bottom-20 right-4 z-50">
-        <button 
+      <div className="app-compose-button md:hidden fixed right-4 z-50" style={{bottom:'calc(80px + env(safe-area-inset-bottom))'}}>
+        <button aria-label="Compose post"
           onClick={() => {
              if (currentPage !== 'home') onNavigate('home');
              setTimeout(() => {
@@ -42,7 +42,7 @@ export default function AppBottomNav({ currentPage, onNavigate, hasUnread = fals
         </button>
       </div>
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 flex justify-around items-center h-16 z-50 transition-colors border-t"
+      {currentPage !== 'home' && <nav className="md:hidden fixed bottom-0 left-0 right-0 flex justify-around items-center h-16 z-50 transition-colors border-t"
            style={{ 
                background: 'color-mix(in srgb, var(--bg-primary, #000) 90%, transparent)',
                backdropFilter: 'blur(10px)',
@@ -82,9 +82,9 @@ export default function AppBottomNav({ currentPage, onNavigate, hasUnread = fals
               </button>
             )
         })}
-      </nav>
+      </nav>}
       {/* Spacer to avoid content being hidden behind the bottom nav on mobile */}
-      <div className="block md:hidden" style={{ height: '64px', width: '100%' }} />
+
     </>
   );
 }

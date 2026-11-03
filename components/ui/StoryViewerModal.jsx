@@ -1,3 +1,4 @@
+import ProtectedImage from '@/components/ui/ProtectedImage';
 import React, { useState, useEffect, useRef } from 'react';
 import { resolveMediaUrl, storyApi } from '@/lib/api';
 
@@ -139,7 +140,7 @@ export default function StoryViewerModal({ stories, initialIndex, onClose, curre
                 <div style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px', zIndex: 10 }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#444', overflow: 'hidden' }}>
                         {currentStory.author?.avatar && (
-                            <img src={resolveMediaUrl(currentStory.author.avatar)} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <ProtectedImage src={resolveMediaUrl(currentStory.author.avatar)} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         )}
                     </div>
                     <div style={{ color: '#fff', fontWeight: 'bold' }}>{currentStory.author?.username || 'Unknown User'}</div>
@@ -167,7 +168,7 @@ export default function StoryViewerModal({ stories, initialIndex, onClose, curre
                 </div>
 
                 <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    <img
+                    <ProtectedImage
                         src={resolveMediaUrl(currentStory.media_url)}
                         alt="Story"
                         style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}

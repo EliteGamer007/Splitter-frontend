@@ -1,11 +1,27 @@
-﻿'use client';
+'use client';
+
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/ModerationPage.css';
 import { adminApi } from '@/lib/api';
 
-export default function ModerationPage({ onNavigate, userData }) {
+export default function ModerationPage(props) {
+  const {userData,onNavigate} = props;
+  if (userData?.role !== 'admin' && userData?.role !== 'moderator') {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>
+        <h1 style={{ color: '#ff4444', marginBottom: '16px' }}>Access Denied</h1>
+        <p style={{ color: '#666', marginBottom: '24px' }}>You need moderator privileges to access this page.</p>
+        <button onClick={() => onNavigate('home')} style={{ padding: '12px 24px', background: 'rgba(0,217,255,0.2)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '8px', cursor: 'pointer' }}>
+          Back to Home
+        </button>
+      </div>
+    );
+  }
+  return <ModerationPageContent {...props} />;
+}
+function ModerationPageContent({onNavigate,userData}) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
 
@@ -18,19 +34,8 @@ export default function ModerationPage({ onNavigate, userData }) {
   const [error, setError] = useState('');
   const [filterType, setFilterType] = useState('all');
 
-  if (userData?.role !== 'admin' && userData?.role !== 'moderator') {
-    return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>
-        <h1 style={{ color: '#ff4444', marginBottom: '16px' }}>Access Denied</h1>
-        <p style={{ color: '#666', marginBottom: '24px' }}>You need moderator privileges to access this page.</p>
-        <button onClick={() => onNavigate('home')} style={{ padding: '12px 24px', background: 'rgba(0,217,255,0.2)', border: '1px solid #00d9ff', color: '#00d9ff', borderRadius: '8px', cursor: 'pointer' }}>
-          Back to Home
-        </button>
-      </div>
-    );
-  }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   useEffect(() => { fetchAll(); }, []);
 
   const fetchAll = async () => {
@@ -38,9 +43,9 @@ export default function ModerationPage({ onNavigate, userData }) {
     setError('');
     try {
       const [queueRes, aiRes, appealsRes] = await Promise.all([
-        adminApi.getModerationQueue().catch(() => ({ items: [] })),
-        adminApi.getAIActions().catch(() => ({ items: [] })),
-        adminApi.getAppeals().catch(() => ({ appeals: [] }))
+        adminApi.getModerationQueue(),
+        adminApi.getAIActions(),
+        adminApi.getAppeals()
       ]);
       setQueue(queueRes.items || []);
       setAIActions(aiRes.items || []);

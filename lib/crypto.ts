@@ -1,5 +1,6 @@
+import { keyStorageGet, keyStorageSet, migrateLegacyKeys, clearSessionData } from './browserState';
 // This runs in the browser using Web Crypto API and a custom Ed25519 utility
-import { generateKeyPair as generateEdKeyPair, sign as signEd } from './ed25519-browser';
+import { generateKeyPair as generateEdKeyPair, generateKeyPairFromSeed, sign as signEd } from './ed25519-browser';
 
 export interface KeyPair {
   publicKey: CryptoKey | Uint8Array | null;
@@ -107,7 +108,7 @@ export async function importPrivateKey(keyString: string): Promise<Uint8Array> {
     return new Uint8Array(buffer);
   } catch (e) {
     console.error('Failed to decode private key as hex or base64');
-    throw new Error('Invalid private key format');
+    throw new Error('Invalid private key format', {cause:e});
   }
 }
 
@@ -206,7 +207,7 @@ export async function decryptMessage(ciphertext: string, iv: string, sharedKey: 
     } else {
       console.error('Decryption failed:', error);
     }
-    throw new Error('Failed to decrypt message');
+    throw new Error('Failed to decrypt message',{cause:error});
   }
 }
 
@@ -289,24 +290,24 @@ export function storeKeyPair(keyPair: KeyPair): void {
   // Store private_key in the format it came in (Hex for Ed25519 if it was generated/rotated in SecurityPage)
   // or use the base64 string provided in the KeyPair object.
   const sk = keyPair.privateKeyBase64; // This might actually be hex now, but we keep the name for compatibility
-  localStorage.setItem('private_key', sk);
-  localStorage.setItem('public_key', keyPair.publicKeyBase64);
-  localStorage.setItem('did', keyPair.did);
+  keyStorageSet('private_key', sk);
+  keyStorageSet('public_key', keyPair.publicKeyBase64);
+  keyStorageSet('did', keyPair.did);
 
   if (keyPair.encryptionPrivateKeyBase64 && keyPair.encryptionPublicKeyBase64) {
-    localStorage.setItem('encryption_private_key', keyPair.encryptionPrivateKeyBase64);
-    localStorage.setItem('encryption_public_key', keyPair.encryptionPublicKeyBase64);
+    keyStorageSet('encryption_private_key', keyPair.encryptionPrivateKeyBase64);
+    keyStorageSet('encryption_public_key', keyPair.encryptionPublicKeyBase64);
   }
 }
 
 // Retrieve keypair from localStorage
-export async function loadKeyPair(): Promise<KeyPair | null> {
-  const privateKeyBase64 = localStorage.getItem('private_key');
-  const publicKeyBase64 = localStorage.getItem('public_key');
-  const did = localStorage.getItem('did');
+export async function loadKeyPair(account?: string): Promise<KeyPair | null> {
+  const privateKeyBase64 = keyStorageGet('private_key',account);
+  const publicKeyBase64 = keyStorageGet('public_key',account);
+  const did = keyStorageGet('did',account);
 
-  const encryptionPrivateKeyBase64 = localStorage.getItem('encryption_private_key');
-  const encryptionPublicKeyBase64 = localStorage.getItem('encryption_public_key');
+  const encryptionPrivateKeyBase64 = keyStorageGet('encryption_private_key',account);
+  const encryptionPublicKeyBase64 = keyStorageGet('encryption_public_key',account);
 
   if (!privateKeyBase64 || !publicKeyBase64 || !did) {
     return null;
@@ -349,6 +350,7 @@ export async function loadKeyPair(): Promise<KeyPair | null> {
 
 // Export recovery file
 export async function exportRecoveryFile(keyPair: KeyPair, username: string, server: string, passphrase?: string): Promise<void> {
+  if (!passphrase || passphrase.trim().length < 12) throw new Error('Recovery passphrase must contain at least 12 characters');
   const recoveryData = {
     did: keyPair.did,
     public_key: keyPair.publicKeyBase64,
@@ -404,20 +406,14 @@ export async function exportRecoveryFile(keyPair: KeyPair, username: string, ser
 }
 
 // Clear stored keys (logout)
-export function clearStoredKeys(): void {
-  localStorage.removeItem('private_key');
-  localStorage.removeItem('public_key');
-  localStorage.removeItem('did');
-  localStorage.removeItem('encryption_private_key');
-  localStorage.removeItem('encryption_public_key');
-  localStorage.removeItem('jwt_token');
-}
+export function clearStoredKeys(): void { clearSessionData(); }
 
 // Alias for loadKeyPair (for backward compatibility)
 export const getStoredKeyPair = loadKeyPair;
 
 // Import recovery file
 export async function importRecoveryFile(file: File, passphrase?: string): Promise<KeyPair> {
+  if (file.size > 1024 * 1024) throw new Error('Recovery file is too large');
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -476,8 +472,7 @@ export async function importRecoveryFile(file: File, passphrase?: string): Promi
           encryptionPublicKeyBase64: recoveryData.encryption_public_key,
         };
 
-        // Store the imported keys
-        storeKeyPair(keyPair);
+        await validateKeyPair(keyPair); // Storage requires authenticated account matching, done by caller.
 
         resolve(keyPair);
       } catch (error) {
@@ -491,8 +486,8 @@ export async function importRecoveryFile(file: File, passphrase?: string): Promi
 }
 // Load ONLY encryption keys (for users without DID/signing keys)
 export async function loadEncryptionKeys(): Promise<{ encryptionPrivateKey?: CryptoKey; encryptionPublicKey?: CryptoKey; encryptionPrivateKeyBase64?: string; encryptionPublicKeyBase64?: string } | null> {
-  const encryptionPrivateKeyBase64 = localStorage.getItem('encryption_private_key');
-  const encryptionPublicKeyBase64 = localStorage.getItem('encryption_public_key');
+  const encryptionPrivateKeyBase64 = keyStorageGet('encryption_private_key');
+  const encryptionPublicKeyBase64 = keyStorageGet('encryption_public_key');
 
   if (!encryptionPrivateKeyBase64 || !encryptionPublicKeyBase64) {
     return null;
@@ -541,30 +536,55 @@ export async function generateEncryptionKeyPair(): Promise<{
   };
 }
 
-// Ensure encryption keys exist: load from localStorage or generate + store new ones
-export async function ensureEncryptionKeys(): Promise<{
-  encryptionPrivateKey: CryptoKey;
-  encryptionPublicKey: CryptoKey;
-  encryptionPrivateKeyBase64: string;
-  encryptionPublicKeyBase64: string;
-}> {
-  // Try loading existing keys first
-  const existing = await loadEncryptionKeys();
-  if (existing && existing.encryptionPrivateKey && existing.encryptionPublicKey) {
-    return existing as {
-      encryptionPrivateKey: CryptoKey;
-      encryptionPublicKey: CryptoKey;
-      encryptionPrivateKeyBase64: string;
-      encryptionPublicKeyBase64: string;
-    };
-  }
+// Never replace an existing server key from a fresh browser.
+export async function ensureEncryptionKeys(user?: any): Promise<any> {
+ if (!user) { const {userApi} = await import('./api'); user = await userApi.getCurrentUser(); }
+ if (!user?.id) throw new Error('Sign in before loading encryption keys');
+ localStorage.setItem('user', JSON.stringify(user));
+ migrateLegacyKeys(user);
+ const existing = await loadEncryptionKeys();
+ if (user.encryption_public_key) {
+   if (!existing || existing.encryptionPublicKeyBase64 !== user.encryption_public_key) throw new Error('Device key mismatch. Import your recovery file to read encrypted messages; your server key has not changed.');
+   return existing;
+ }
+ if (existing) return existing;
+ const generated = await generateEncryptionKeyPair();
+ keyStorageSet('encryption_private_key',generated.encryptionPrivateKeyBase64);
+ keyStorageSet('encryption_public_key',generated.encryptionPublicKeyBase64);
+ return generated;
+}
+export async function validateKeyPair(pair: KeyPair): Promise<void> {
+ if (pair.privateKeyBase64) {
+   const privateBytes = await importPrivateKey(pair.privateKeyBase64);
+   if (privateBytes.length !== 64) throw new Error('Invalid signing private key');
+   const derived = await generateKeyPairFromSeed(privateBytes.slice(0,32));
+   if (uint8ArrayToBase64(derived.publicKey) !== pair.publicKeyBase64 || uint8ArrayToBase64(privateBytes.slice(32)) !== pair.publicKeyBase64) throw new Error('Signing public and private keys do not match');
+ }
+ if (pair.encryptionPrivateKeyBase64 || pair.encryptionPublicKeyBase64) {
+   if (!pair.encryptionPrivateKeyBase64 || !pair.encryptionPublicKeyBase64) throw new Error('Encryption keys are incomplete');
+   const priv = await importEncryptionPrivateKey(pair.encryptionPrivateKeyBase64);
+   const pub = await importEncryptionPublicKey(pair.encryptionPublicKeyBase64);
+   const a = await crypto.subtle.exportKey('jwk',priv); const b = await crypto.subtle.exportKey('jwk',pub);
+   if (a.x !== b.x || a.y !== b.y) throw new Error('Encryption public and private keys do not match');
+ }
+}
+export async function acceptRecoveryKeys(pair: KeyPair, user: any): Promise<void> {
+ await validateKeyPair(pair);
+ if (user.public_key && pair.publicKeyBase64 !== user.public_key) throw new Error('Recovery signing key does not match this account');
+ if (user.encryption_public_key && pair.encryptionPublicKeyBase64 !== user.encryption_public_key) throw new Error('Recovery encryption key does not match this account');
+ if (user.did && pair.did !== user.did) throw new Error('Recovery DID does not match this account');
+ localStorage.setItem('user',JSON.stringify(user)); storeKeyPair(pair);
+}
+export async function keyFingerprint(publicKey: string): Promise<string> {
+ if (!publicKey) return 'No key registered';
+ const digest = await crypto.subtle.digest('SHA-256',base64ToBuffer(publicKey));
+ return Array.from(new Uint8Array(digest),b => b.toString(16).padStart(2,'0')).join(':').toUpperCase();
+}
 
-  // Generate new ECDH P-256 keys
-  const generated = await generateEncryptionKeyPair();
-
-  // Store in localStorage
-  localStorage.setItem('encryption_private_key', generated.encryptionPrivateKeyBase64);
-  localStorage.setItem('encryption_public_key', generated.encryptionPublicKeyBase64);
-
-  return generated;
+export function knownIdentities(): {id:string;did:string}[] {
+ const origin = encodeURIComponent(new URL(localStorage.getItem('splitter_api_base') || process.env.NEXT_PUBLIC_INSTANCE_1_URL || 'https://splitter-m0kv.onrender.com/api/v1').origin);
+ const prefix = `splitter:v2:${origin}:`;
+ return Object.keys(localStorage).filter(k => k.startsWith(prefix) && k.endsWith(':keys')).flatMap(k => {
+   try {const data = JSON.parse(localStorage.getItem(k)!); return data.did && data.private_key ? [{id:decodeURIComponent(k.slice(prefix.length,-5)),did:data.did}] : [];} catch {return [];}
+ });
 }
