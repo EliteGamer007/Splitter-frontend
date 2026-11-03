@@ -285,7 +285,7 @@ No single company owns your social network anymore.`}
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/80">Protocol V1.0 Live</span>
+              <span className="text-xs font-semibold tracking-widest uppercase text-muted-foreground/80">Federated Social Network</span>
             </motion.div>
 
             <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tighter leading-[0.9]">
@@ -298,8 +298,8 @@ No single company owns your social network anymore.`}
             </h1>
 
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
-              The decentralized protocol where <span className="text-foreground font-normal">identity</span> is yours,
-              <span className="text-foreground font-normal"> data</span> is sovereign, and <span className="text-foreground font-normal">connections</span> are forever.
+              A federated network with browser-managed <span className="text-foreground font-normal">identity</span>,
+              <span className="text-foreground font-normal"> private audiences</span>, and <span className="text-foreground font-normal">encrypted conversations</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-10">
@@ -356,13 +356,13 @@ No single company owns your social network anymore.`}
             <TransformCard
               icon={<Shield className="w-6 h-6" />}
               title="Sovereign Identity"
-              description="Your keys, your crypto, your identity. Stored locally on your device, never on our servers."
+              description="Your private identity keys stay in your browser. Public keys let your server verify your identity."
               delay={0.1}
             />
             <TransformCard
               icon={<Globe className="w-6 h-6 text-purple-500" />}
               title="Global Federation"
-              description="Seamlessly connect with millions across the fediverse. One protocol, infinite communities."
+              description="Connect independently hosted instances through signed ActivityPub messages and configured peers."
               delay={0.2}
             />
             <TransformCard
@@ -379,14 +379,14 @@ No single company owns your social network anymore.`}
             />
             <TransformCard
               icon={<Layers className="w-6 h-6 text-cyan-500" />}
-              title="Portable Graph"
-              description="Zero lock-in. Move your followers, posts, and reputation to any server at any time."
+              title="Identity Recovery"
+              description="Export a passphrase-encrypted recovery file and restore your verified identity keys on another device."
               delay={0.5}
             />
             <TransformCard
               icon={<Zap className="w-6 h-6 text-amber-500" />}
-              title="Censorship Resistant"
-              description="Unstoppable communication powered by distributed networks and p2p technology."
+              title="Independent Communities"
+              description="Each instance sets its own moderation policy while exchanging content with its configured network."
               delay={0.6}
             />
           </div>
@@ -419,10 +419,10 @@ No single company owns your social network anymore.`}
                 </p>
                 <div className="space-y-4 pt-4">
                   {[
-                    "Zero algorithmic manipulation",
+                    "Follow-based social feeds",
                     "End-to-End Encrypted DMs",
                     "Community-driven moderation",
-                    "No tracking pixels or spyware"
+                    "No advertising in your feed"
                   ].map((item, i) => (
                     <motion.div
                       key={i}
@@ -539,7 +539,7 @@ No single company owns your social network anymore.`}
           <div className="flex gap-8 opacity-70 hover:opacity-100 transition-opacity">
             <a href="https://github.com/EliteGamer007/splitter/blob/main/README.md" className="hover:text-primary transition-colors">Docs</a>
             <a href="https://github.com/EliteGamer007/splitter/blob/main/PRIVACY.md" className="hover:text-primary transition-colors">Privacy</a>
-            <a href="https://github.com/Jaswita/Splitter-frontend" className="hover:text-primary transition-colors">GitHub</a>
+            <a href="https://github.com/EliteGamer007/Splitter-frontend" className="hover:text-primary transition-colors">GitHub</a>
             <button onClick={() => onNavigate('instances')} className="hover:text-primary transition-colors">Instances</button>
           </div>
         </div>

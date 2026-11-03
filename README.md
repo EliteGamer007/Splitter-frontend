@@ -4,7 +4,7 @@ The Next.js interface for **Splitter**, a college team project combining a feder
 
 **[Live demo](https://splitter-social.vercel.app)** · [Backend repository](https://github.com/EliteGamer007/splitter)
 
-The November repair branch is local until deployed. The former `splitter-red-phi.vercel.app` demo address is obsolete.
+The repaired portfolio build was deployed on 3 November 2026. The former `splitter-red-phi.vercel.app` demo address is obsolete. Production uses one Render primary; additional peers appear when explicitly configured.
 
 ## Features
 
@@ -60,4 +60,4 @@ Ed25519 is used for signing identity; message encryption uses separate P-256 key
 
 `app/page.tsx` controls page navigation. `components/pages` holds feature views, `components/ui` shared UI, and `lib` the API client, scoped browser state and cryptography. URL state selects pages such as `/?page=home`, `/?page=profile&userId=...` and `/?page=thread&postId=...`.
 
-This is a team course project. Credit the team and identify your own contributions when presenting it. See the backend repository's deployment guide and demo walkthrough for the complete system.
+This is a team course project, developed from the [team upstream repository](https://github.com/Jaswita/Splitter-frontend). This fork hosts the repaired portfolio deployment. Credit the team and identify your own contributions when presenting it. See the backend repository's deployment guide and demo walkthrough for the complete system.
