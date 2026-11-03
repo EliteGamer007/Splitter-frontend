@@ -40,7 +40,7 @@ const SERVERS = [
     uptime: 'Not measured',
     ping: 'On demand'
   }
-];
+].filter(server => server.name !== 'splitter-2' || !!process.env.NEXT_PUBLIC_INSTANCE_2_URL?.trim());
 
 const REGIONS = ['All', 'Cloud'];
 

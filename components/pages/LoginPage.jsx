@@ -276,7 +276,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
             >
               {!['splitter-1','splitter-2'].includes(formData.server) && <option value={formData.server}>{formData.server}</option>}
                 <option value="splitter-1">splitter-1 (Primary)</option>
-              <option value="splitter-2">splitter-2 (Federation)</option>
+              {(process.env.NEXT_PUBLIC_INSTANCE_2_URL?.trim() || formData.server === 'splitter-2') && <option value="splitter-2">splitter-2 (Configured peer)</option>}
             </select>
           </div>
         )}
