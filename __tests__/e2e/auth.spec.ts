@@ -7,6 +7,7 @@ test('guest navigation, logo, URL refresh and back work without waking any backe
  await page.getByRole('button',{name:/get started/i}).first().click();
  await expect(page).toHaveURL(/page=signup/);
  await expect(page.getByText('Select Your Server')).toBeVisible();
+ await expect(page.getByText('splitter-2',{exact:true})).toHaveCount(0);
  await page.reload();await expect(page.getByText('Select Your Server')).toBeVisible();
  await page.goBack();
  await expect(page.getByRole('button',{name:/get started/i}).first()).toBeVisible();

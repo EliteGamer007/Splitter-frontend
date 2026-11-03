@@ -8,7 +8,7 @@ import { setApiBase } from '@/lib/api';
 const SERVERS = [
  {id:1,name:'splitter-1',category:'Primary Instance',users:null,federation:'Configurable',moderation:'Server policy',reputation:'unverified',description:'Primary Splitter community. Connect when selected.',region:'Cloud'},
  {id:2,name:'splitter-2',category:'Optional Peer',users:null,federation:'On demand',moderation:'Server policy',reputation:'unverified',description:'Configurable federation peer; may be offline.',region:'Cloud'}
-];
+].filter(server => server.name !== 'splitter-2' || !!process.env.NEXT_PUBLIC_INSTANCE_2_URL?.trim());
 const REGIONS = ['All','Cloud'];
 const MODERATION_LEVELS = ['All','Server policy'];
 
