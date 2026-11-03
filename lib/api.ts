@@ -1,3 +1,4 @@
+import { clearSessionData } from './browserState';
 // API Service Layer for Splitter Frontend
 // Supports multiple backend instances for federation testing
 
@@ -26,6 +27,8 @@ function normalizeApiBaseUrl(url: string): string {
 
 // Get the current API base URL from localStorage or default
 function getApiBase(): string {
+  const defaultUrl = normalizeApiBaseUrl(process.env.NEXT_PUBLIC_INSTANCE_1_URL || process.env.NEXT_PUBLIC_API_URL || 'https://splitter-m0kv.onrender.com/api/v1');
+  
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('splitter_api_base');
     if (stored) {
@@ -36,22 +39,23 @@ function getApiBase(): string {
       return normalizedStored;
     }
   }
-  return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_INSTANCE_1_URL || process.env.NEXT_PUBLIC_API_URL || 'https://splitter-m0kv.onrender.com/api/v1');
+  return defaultUrl;
 }
 
 // Set the API base URL (called when user selects a server)
 export function setApiBase(serverDomain: string): void {
   const fallbackUrl = process.env.NEXT_PUBLIC_INSTANCE_1_URL || `https://splitter-m0kv.onrender.com/api/v1`;
-  const url = normalizeApiBaseUrl(INSTANCE_URLS[serverDomain] || fallbackUrl);
+  const raw = INSTANCE_URLS[serverDomain] || (serverDomain.startsWith('https://') || serverDomain.startsWith('http://localhost') || serverDomain.startsWith('http://127.0.0.1') ? serverDomain : fallbackUrl);
+  const url = normalizeApiBaseUrl(raw);
+  const parsed = new URL(url);
+  if (parsed.protocol !== 'https:' && !['localhost','127.0.0.1'].includes(parsed.hostname)) throw new Error('Use HTTPS for a custom instance');
   if (typeof window !== 'undefined') {
     const prevDomain = localStorage.getItem('splitter_instance');
-    if (prevDomain && prevDomain !== serverDomain) {
-      console.log(`🔄 Instance changed from ${prevDomain} to ${serverDomain}. Clearing token.`);
-      localStorage.removeItem('jwt_token');
+    if (getApiBase() !== url || (prevDomain && prevDomain !== serverDomain)) {
+      clearSessionData();
     }
     localStorage.setItem('splitter_api_base', url);
     localStorage.setItem('splitter_instance', serverDomain);
-    console.log(`🌐 API base set to: ${url} (instance: ${serverDomain})`);
   }
 }
 
@@ -59,7 +63,7 @@ export function setApiBase(serverDomain: string): void {
 export function getCurrentInstance(): { domain: string; url: string } {
   if (typeof window !== 'undefined') {
     const domain = localStorage.getItem('splitter_instance') || 'splitter-1';
-    const url = normalizeApiBaseUrl(localStorage.getItem('splitter_api_base') || INSTANCE_URLS['splitter-1']);
+    const url = getApiBase();
     return { domain, url };
   }
   return { domain: 'splitter-1', url: normalizeApiBaseUrl(INSTANCE_URLS['splitter-1']) };
@@ -114,13 +118,7 @@ const getAuthHeaders = (): HeadersInit => {
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('API Error Response:', {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.url,
-      body: errorText
-    });
-
+    if (response.status === 401 && localStorage.getItem('jwt_token')) clearSessionData();
     let message = `HTTP ${response.status}`;
     try {
       const error = JSON.parse(errorText);
@@ -134,8 +132,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
         message = errorText;
       }
     }
-    throw new Error(message);
+    const error = new Error(message);
+    (error as any).status = response.status;
+    throw error;
   }
+  if (response.status === 204) return {} as T;
   return response.json();
 }
 
@@ -167,12 +168,12 @@ export const authApi = {
       if (data.encryption_public_key !== undefined) fd.append('encryption_public_key', String(data.encryption_public_key));
       fd.append('avatar', avatarFile);
 
-      response = await fetch(`${apiBase()}/auth/register`, {
+      response = await apiFetch(`${apiBase()}/auth/register`, {
         method: 'POST',
         body: fd
       });
     } else {
-      response = await fetch(`${apiBase()}/auth/register`, {
+      response = await apiFetch(`${apiBase()}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -180,6 +181,8 @@ export const authApi = {
     }
 
     const result = await handleResponse<{ user: any; token: string }>(response);
+    const previousUser = authApi.getCurrentUserFromStorage();
+    if (previousUser?.id && result.user?.id && previousUser.id !== result.user.id) clearSessionData();
     if (result.token) {
       localStorage.setItem('jwt_token', result.token);
       if (result.user) {
@@ -190,12 +193,14 @@ export const authApi = {
   },
 
   async login(data: { username: string; password: string }) {
-    const response = await fetch(`${apiBase()}/auth/login`, {
+    const response = await apiFetch(`${apiBase()}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     const result = await handleResponse<{ user: any; token: string }>(response);
+    const previousUser = authApi.getCurrentUserFromStorage();
+    if (previousUser?.id && result.user?.id && previousUser.id !== result.user.id) clearSessionData();
     if (result.token) {
       localStorage.setItem('jwt_token', result.token);
       if (result.user) {
@@ -206,7 +211,7 @@ export const authApi = {
   },
 
   async getChallenge(did: string) {
-    const response = await fetch(`${apiBase()}/auth/challenge`, {
+    const response = await apiFetch(`${apiBase()}/auth/challenge`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ did })
@@ -215,12 +220,14 @@ export const authApi = {
   },
 
   async verifyChallenge(data: { did: string; challenge: string; signature: string }) {
-    const response = await fetch(`${apiBase()}/auth/verify`, {
+    const response = await apiFetch(`${apiBase()}/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     const result = await handleResponse<{ user: any; token: string }>(response);
+    const previousUser = authApi.getCurrentUserFromStorage();
+    if (previousUser?.id && result.user?.id && previousUser.id !== result.user.id) clearSessionData();
     if (result.token) {
       localStorage.setItem('jwt_token', result.token);
     }
@@ -228,7 +235,7 @@ export const authApi = {
   },
 
   async registerKey(publicKey: string) {
-    const response = await fetch(`${apiBase()}/auth/register-key`, {
+    const response = await apiFetch(`${apiBase()}/auth/register-key`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ public_key: publicKey })
@@ -238,11 +245,12 @@ export const authApi = {
 
   async rotateKey(data: {
     new_public_key: string;
+    current_password?: string;
     signature?: string;
     nonce?: string;
     timestamp?: number;
   }) {
-    const response = await fetch(`${apiBase()}/auth/rotate-key`, {
+    const response = await apiFetch(`${apiBase()}/auth/rotate-key`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
@@ -251,28 +259,28 @@ export const authApi = {
   },
 
   async getKeyHistory() {
-    const response = await fetch(`${apiBase()}/auth/key-history`, {
+    const response = await apiFetch(`${apiBase()}/auth/key-history`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ key_history: any[]; count: number }>(response);
   },
 
   async getRevokedKeys() {
-    const response = await fetch(`${apiBase()}/auth/revoked-keys`, {
+    const response = await apiFetch(`${apiBase()}/auth/revoked-keys`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ did: string; active_key: string; revoked_keys: any[]; count: number }>(response);
   },
 
   async checkKeyRevocation(publicKey: string) {
-    const response = await fetch(`${apiBase()}/auth/check-key?key=${encodeURIComponent(publicKey)}`, {
+    const response = await apiFetch(`${apiBase()}/auth/check-key?key=${encodeURIComponent(publicKey)}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ key: string; status: string; revoked: boolean }>(response);
   },
 
   async revokeKey() {
-    const response = await fetch(`${apiBase()}/auth/revoke-key`, {
+    const response = await apiFetch(`${apiBase()}/auth/revoke-key`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -290,35 +298,26 @@ export const authApi = {
     return user ? JSON.parse(user) : null;
   },
 
-  logout() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('jwt_token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('private_key');
-      localStorage.removeItem('public_key');
-      localStorage.removeItem('did');
-      localStorage.removeItem('encryption_private_key');
-      localStorage.removeItem('encryption_public_key');
-    }
+  logout() { clearSessionData();
   }
 };
 
 // User API
 export const userApi = {
   async getCurrentUser() {
-    const response = await fetch(`${apiBase()}/users/me`, {
+    const response = await apiFetch(`${apiBase()}/users/me`, {
       headers: getAuthHeaders()
     });
     return handleResponse<any>(response);
   },
 
   async getUserProfile(id: string) {
-    const response = await fetch(`${apiBase()}/users/${id}`);
+    const response = await apiFetch(`${apiBase()}/users/${id}`,{headers:getAuthHeaders()});
     return handleResponse<any>(response);
   },
 
   async getUserByDID(did: string) {
-    const response = await fetch(`${apiBase()}/users/did?did=${encodeURIComponent(did)}`);
+    const response = await apiFetch(`${apiBase()}/users/did?did=${encodeURIComponent(did)}`);
     return handleResponse<any>(response);
   },
 
@@ -329,8 +328,9 @@ export const userApi = {
     default_visibility?: string;
     message_privacy?: string;
     account_locked?: boolean;
+    is_locked?: boolean;
   }) {
-    const response = await fetch(`${apiBase()}/users/me`, {
+    const response = await apiFetch(`${apiBase()}/users/me`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(data)
@@ -348,7 +348,7 @@ export const userApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${apiBase()}/users/me/avatar`, {
+    const response = await apiFetch(`${apiBase()}/users/me/avatar`, {
       method: 'POST',
       headers,
       body: fd
@@ -357,7 +357,7 @@ export const userApi = {
   },
 
   async updateEncryptionKey(encryptionPublicKey: string) {
-    const response = await fetch(`${apiBase()}/users/me/encryption-key`, {
+    const response = await apiFetch(`${apiBase()}/users/me/encryption-key`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ encryption_public_key: encryptionPublicKey })
@@ -366,7 +366,7 @@ export const userApi = {
   },
 
   async deleteAccount() {
-    const response = await fetch(`${apiBase()}/users/me`, {
+    const response = await apiFetch(`${apiBase()}/users/me`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -406,21 +406,21 @@ export const postApi = {
   },
 
   async getPost(id: string) {
-    const response = await fetch(`${apiBase()}/posts/${id}`, {
+    const response = await apiFetch(`${apiBase()}/posts/${id}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<any>(response);
   },
 
   async getUserPosts(userId: string, limit = 20, offset = 0) {
-    const response = await fetch(
-      `${apiBase()}/posts/user/${encodeURIComponent(userId)}?limit=${limit}&offset=${offset}`
+    const response = await apiFetch(
+      `${apiBase()}/posts/user/${encodeURIComponent(userId)}?limit=${limit}&offset=${offset}`,{headers:getAuthHeaders()}
     );
     return handleResponse<any[]>(response);
   },
 
   async getFeed(limit = 20, offset = 0) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/posts/feed?limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -428,14 +428,14 @@ export const postApi = {
   },
 
   async getPublicFeed(limit = 20, offset = 0, localOnly = false) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/posts/public?limit=${limit}&offset=${offset}&local_only=${localOnly}`
     );
     return handleResponse<any[]>(response);
   },
 
   async updatePost(id: string, content: string, imageUrl?: string) {
-    const response = await fetch(`${apiBase()}/posts/${id}`, {
+    const response = await apiFetch(`${apiBase()}/posts/${id}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ content, image_url: imageUrl })
@@ -444,22 +444,22 @@ export const postApi = {
   },
 
   async deletePost(id: string) {
-    const response = await fetch(`${apiBase()}/posts/${id}`, {
+    const response = await apiFetch(`${apiBase()}/posts/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
     return handleResponse<{ message: string }>(response);
   },
 
-  async getReplies(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/replies`, {
+  async getReplies(postId: string, limit = 20, offset = 0) {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/replies?limit=${Math.min(50,Math.max(1,limit))}&offset=${Math.max(0,offset)}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<any[]>(response);
   },
 
   async createReply(postId: string, content: string, parentId?: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/replies`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/replies`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ post_id: postId, content, parent_id: parentId || null })
@@ -468,7 +468,7 @@ export const postApi = {
   },
 
   async fetchThreadContext(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/fetch-context`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/fetch-context`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -477,7 +477,7 @@ export const postApi = {
 
   async reportPost(postId: string, reason: string) {
     // Report a post for moderation
-    const response = await fetch(`${apiBase()}/posts/${postId}/report`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/report`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ reason })
@@ -486,7 +486,7 @@ export const postApi = {
   },
 
   async submitAppeal(postId: string, reason: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/appeal`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/appeal`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ reason })
@@ -497,48 +497,45 @@ export const postApi = {
 
 // Follow API
 export const followApi = {
+  async getStatus(id:string) {const r=await apiFetch(`${apiBase()}/users/${encodeURIComponent(id)}/follow-status`,{headers:getAuthHeaders()});return handleResponse<{status:string}>(r);},
+  async getRequests(limit=20,offset=0) { const r = await apiFetch(`${apiBase()}/users/me/follow-requests?limit=${limit}&offset=${offset}`,{headers:getAuthHeaders()}); return handleResponse<any[]>(r); },
+  async acceptRequest(id:string) { const r = await apiFetch(`${apiBase()}/users/me/follow-requests/${encodeURIComponent(id)}/accept`,{method:'POST',headers:getAuthHeaders()}); return handleResponse<any>(r); },
+  async rejectRequest(id:string) { const r = await apiFetch(`${apiBase()}/users/me/follow-requests/${encodeURIComponent(id)}`,{method:'DELETE',headers:getAuthHeaders()}); return handleResponse<any>(r); },
   async followUser(userId: string) {
-    console.log('followApi.followUser called with userId:', userId);
-    console.log('API endpoint:', `${apiBase()}/users/${userId}/follow`);
     const headers = getAuthHeaders();
-    console.log('Auth headers:', headers);
 
-    const response = await fetch(`${apiBase()}/users/${userId}/follow`, {
+    const response = await apiFetch(`${apiBase()}/users/${userId}/follow`, {
       method: 'POST',
       headers: headers
     });
-
-    console.log('Follow response status:', response.status);
     const result = await handleResponse<any>(response);
-    console.log('Follow result:', result);
     return result;
   },
 
   async unfollowUser(userId: string) {
-    console.log('followApi.unfollowUser called with userId:', userId);
-    const response = await fetch(`${apiBase()}/users/${userId}/follow`, {
+    const response = await apiFetch(`${apiBase()}/users/${userId}/follow`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
     return handleResponse<{ message: string }>(response);
   },
 
-  async getFollowers(userId: string, limit = 50, offset = 0) {
-    const response = await fetch(
-      `${apiBase()}/users/${userId}/followers?limit=${limit}&offset=${offset}`
+  async getFollowers(userId: string, limit = 20, offset = 0) {
+    const response = await apiFetch(
+      `${apiBase()}/users/${userId}/followers?limit=${limit}&offset=${offset}`,{headers:getAuthHeaders()}
     );
     return handleResponse<any[]>(response);
   },
 
-  async getFollowing(userId: string, limit = 50, offset = 0) {
-    const response = await fetch(
-      `${apiBase()}/users/${userId}/following?limit=${limit}&offset=${offset}`
+  async getFollowing(userId: string, limit = 20, offset = 0) {
+    const response = await apiFetch(
+      `${apiBase()}/users/${userId}/following?limit=${limit}&offset=${offset}`,{headers:getAuthHeaders()}
     );
     return handleResponse<any[]>(response);
   },
 
   async getFollowStats(userId: string) {
-    const response = await fetch(`${apiBase()}/users/${userId}/stats`);
+    const response = await apiFetch(`${apiBase()}/users/${userId}/stats`,{headers:getAuthHeaders()});
     return handleResponse<{ followers: number; following: number }>(response);
   }
 };
@@ -546,7 +543,7 @@ export const followApi = {
 // Interaction API
 export const interactionApi = {
   async likePost(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/like`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/like`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -554,7 +551,7 @@ export const interactionApi = {
   },
 
   async unlikePost(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/like`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/like`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -562,7 +559,7 @@ export const interactionApi = {
   },
 
   async repostPost(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/repost`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/repost`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -570,7 +567,7 @@ export const interactionApi = {
   },
 
   async unrepostPost(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/repost`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/repost`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -578,7 +575,7 @@ export const interactionApi = {
   },
 
   async bookmarkPost(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/bookmark`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/bookmark`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -586,15 +583,15 @@ export const interactionApi = {
   },
 
   async unbookmarkPost(postId: string) {
-    const response = await fetch(`${apiBase()}/posts/${postId}/bookmark`, {
+    const response = await apiFetch(`${apiBase()}/posts/${postId}/bookmark`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
     return handleResponse<{ message: string }>(response);
   },
 
-  async getBookmarks() {
-    const response = await fetch(`${apiBase()}/users/me/bookmarks`, {
+  async getBookmarks(limit=20,offset=0) {
+    const response = await apiFetch(`${apiBase()}/users/me/bookmarks?limit=${limit}&offset=${offset}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<any[]>(response);
@@ -604,8 +601,8 @@ export const interactionApi = {
 
 // Health check
 export const healthApi = {
-  async check() {
-    const response = await fetch(`${apiBase()}/health`);
+  async check(signal?: AbortSignal) {
+    const response = await apiFetch(`${apiBase()}/health`, {signal}, 90000);
     return handleResponse<{ status: string }>(response);
   }
 };
@@ -613,7 +610,7 @@ export const healthApi = {
 // Search API
 export const searchApi = {
   async searchUsers(query: string, limit = 20, offset = 0) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/users/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -623,15 +620,15 @@ export const searchApi = {
 
 // Message API
 export const messageApi = {
-  async getThreads() {
-    const response = await fetch(`${apiBase()}/messages/threads`, {
-      headers: getAuthHeaders()
+  async getThreads(signal?: AbortSignal,limit=30,offset=0) {
+    const response = await apiFetch(`${apiBase()}/messages/threads?limit=${limit}&offset=${offset}`, {
+      signal, headers: getAuthHeaders()
     });
     return handleResponse<{ threads: any[] }>(response);
   },
 
-  async getMessages(threadId: string, limit = 50, offset = 0) {
-    const response = await fetch(
+  async getMessages(threadId: string, limit = 30, offset = 0) {
+    const response = await apiFetch(
       `${apiBase()}/messages/threads/${threadId}?limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -639,7 +636,8 @@ export const messageApi = {
   },
 
   async sendMessage(recipientId: string, content: string, ciphertext?: string, encrypted_keys?: Record<string, string>) {
-    const response = await fetch(`${apiBase()}/messages/send`, {
+    if (ciphertext && content) throw new Error('Encrypted messages must not include plaintext');
+    const response = await apiFetch(`${apiBase()}/messages/send`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ recipient_id: recipientId, content, ciphertext, encrypted_keys })
@@ -655,7 +653,8 @@ export const messageApi = {
     encrypted_keys?: Record<string, string>;
     client_created_at?: string;
   }>) {
-    const response = await fetch(`${apiBase()}/messages/sync`, {
+    if (queuedMessages.some(m => m.ciphertext && m.content)) throw new Error('Encrypted queued messages must not include plaintext');
+    const response = await apiFetch(`${apiBase()}/messages/sync`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ queued_messages: queuedMessages })
@@ -669,7 +668,7 @@ export const messageApi = {
   },
 
   async deleteMessage(messageId: string) {
-    const response = await fetch(`${apiBase()}/messages/${messageId}`, {
+    const response = await apiFetch(`${apiBase()}/messages/${messageId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -677,7 +676,8 @@ export const messageApi = {
   },
 
   async editMessage(messageId: string, content: string, ciphertext?: string) {
-    const response = await fetch(`${apiBase()}/messages/${messageId}`, {
+    if (ciphertext && content) throw new Error('Encrypted edits must not include plaintext');
+    const response = await apiFetch(`${apiBase()}/messages/${messageId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ content, ciphertext })
@@ -686,7 +686,7 @@ export const messageApi = {
   },
 
   async startConversation(userId: string) {
-    const response = await fetch(`${apiBase()}/messages/conversation/${userId}`, {
+    const response = await apiFetch(`${apiBase()}/messages/conversation/${userId}`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -694,7 +694,7 @@ export const messageApi = {
   },
 
   async markAsRead(threadId: string) {
-    const response = await fetch(`${apiBase()}/messages/threads/${threadId}/read`, {
+    const response = await apiFetch(`${apiBase()}/messages/threads/${threadId}/read`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -704,8 +704,8 @@ export const messageApi = {
 
 // Admin API
 export const adminApi = {
-  async getAllUsers(limit = 50, offset = 0) {
-    const response = await fetch(
+  async getAllUsers(limit = 20, offset = 0) {
+    const response = await apiFetch(
       `${apiBase()}/admin/users?limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -713,14 +713,14 @@ export const adminApi = {
   },
 
   async getModerationRequests() {
-    const response = await fetch(`${apiBase()}/admin/moderation-requests`, {
+    const response = await apiFetch(`${apiBase()}/admin/moderation-requests`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ requests: any[] }>(response);
   },
 
   async approveModerationRequest(userId: string) {
-    const response = await fetch(`${apiBase()}/admin/moderation-requests/${userId}/approve`, {
+    const response = await apiFetch(`${apiBase()}/admin/moderation-requests/${userId}/approve`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -728,7 +728,7 @@ export const adminApi = {
   },
 
   async rejectModerationRequest(userId: string) {
-    const response = await fetch(`${apiBase()}/admin/moderation-requests/${userId}/reject`, {
+    const response = await apiFetch(`${apiBase()}/admin/moderation-requests/${userId}/reject`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -736,7 +736,7 @@ export const adminApi = {
   },
 
   async updateUserRole(userId: string, role: string) {
-    const response = await fetch(`${apiBase()}/admin/users/${userId}/role`, {
+    const response = await apiFetch(`${apiBase()}/admin/users/${userId}/role`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ role })
@@ -745,7 +745,7 @@ export const adminApi = {
   },
 
   async suspendUser(userId: string) {
-    const response = await fetch(`${apiBase()}/admin/users/${userId}/suspend`, {
+    const response = await apiFetch(`${apiBase()}/admin/users/${userId}/suspend`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -753,15 +753,15 @@ export const adminApi = {
   },
 
   async unsuspendUser(userId: string) {
-    const response = await fetch(`${apiBase()}/admin/users/${userId}/unsuspend`, {
+    const response = await apiFetch(`${apiBase()}/admin/users/${userId}/unsuspend`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
     return handleResponse<{ message: string }>(response);
   },
 
-  async getSuspendedUsers(limit = 50, offset = 0) {
-    const response = await fetch(
+  async getSuspendedUsers(limit = 20, offset = 0) {
+    const response = await apiFetch(
       `${apiBase()}/admin/users/suspended?limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -769,7 +769,7 @@ export const adminApi = {
   },
 
   async requestModeration() {
-    const response = await fetch(`${apiBase()}/users/me/request-moderation`, {
+    const response = await apiFetch(`${apiBase()}/users/me/request-moderation`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -778,14 +778,14 @@ export const adminApi = {
 
   // Content moderation queue
   async getModerationQueue() {
-    const response = await fetch(`${apiBase()}/admin/moderation-queue`, {
+    const response = await apiFetch(`${apiBase()}/admin/moderation-queue`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ items: any[]; total: number }>(response);
   },
 
   async approveContent(reportId: string) {
-    const response = await fetch(`${apiBase()}/admin/moderation-queue/${reportId}/approve`, {
+    const response = await apiFetch(`${apiBase()}/admin/moderation-queue/${reportId}/approve`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -793,7 +793,7 @@ export const adminApi = {
   },
 
   async removeContent(reportId: string) {
-    const response = await fetch(`${apiBase()}/admin/moderation-queue/${reportId}/remove`, {
+    const response = await apiFetch(`${apiBase()}/admin/moderation-queue/${reportId}/remove`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -801,7 +801,7 @@ export const adminApi = {
   },
 
   async warnUser(userId: string, reason: string) {
-    const response = await fetch(`${apiBase()}/admin/users/${userId}/warn`, {
+    const response = await apiFetch(`${apiBase()}/admin/users/${userId}/warn`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ reason })
@@ -810,7 +810,7 @@ export const adminApi = {
   },
 
   async blockDomain(domain: string) {
-    const response = await fetch(`${apiBase()}/admin/domains/block`, {
+    const response = await apiFetch(`${apiBase()}/admin/domains/block`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ domain })
@@ -819,7 +819,7 @@ export const adminApi = {
   },
 
   async blockDomainWithReason(domain: string, reason: string) {
-    const response = await fetch(`${apiBase()}/admin/domains/block`, {
+    const response = await apiFetch(`${apiBase()}/admin/domains/block`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ domain, reason })
@@ -828,14 +828,14 @@ export const adminApi = {
   },
 
   async getBlockedDomains() {
-    const response = await fetch(`${apiBase()}/admin/domains/blocked`, {
+    const response = await apiFetch(`${apiBase()}/admin/domains/blocked`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ domains: any[] }>(response);
   },
 
   async unblockDomain(domain: string) {
-    const response = await fetch(`${apiBase()}/admin/domains/${encodeURIComponent(domain)}/block`, {
+    const response = await apiFetch(`${apiBase()}/admin/domains/${encodeURIComponent(domain)}/block`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
@@ -843,8 +843,8 @@ export const adminApi = {
   },
 
   // Get admin action history (ban/unban log)
-  async getAdminActions(limit = 50, offset = 0) {
-    const response = await fetch(
+  async getAdminActions(limit = 20, offset = 0) {
+    const response = await apiFetch(
       `${apiBase()}/admin/actions?limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -852,14 +852,13 @@ export const adminApi = {
     try {
       return handleResponse<{ actions: any[] }>(response);
     } catch (err) {
-      console.log('Admin actions endpoint not yet implemented, returning empty');
       return { actions: [] };
     }
   },
 
   // Suspend user with reason
   async suspendUserWithReason(userId: string, reason: string) {
-    const response = await fetch(`${apiBase()}/admin/users/${userId}/suspend`, {
+    const response = await apiFetch(`${apiBase()}/admin/users/${userId}/suspend`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ reason })
@@ -868,7 +867,7 @@ export const adminApi = {
   },
 
   async getFederationInspector() {
-    const response = await fetch(`${apiBase()}/admin/federation-inspector`, {
+    const response = await apiFetch(`${apiBase()}/admin/federation-inspector`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{
@@ -907,7 +906,7 @@ export const adminApi = {
 
   async getFederationNetwork(selfDomain?: string) {
     const suffix = selfDomain ? `?self=${encodeURIComponent(selfDomain)}` : '';
-    const response = await fetch(`${apiBase()}/admin/federation/network${suffix}`, {
+    const response = await apiFetch(`${apiBase()}/admin/federation/network${suffix}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{
@@ -925,21 +924,21 @@ export const adminApi = {
   },
 
   async getAIActions() {
-    const response = await fetch(`${apiBase()}/admin/ai-actions`, {
+    const response = await apiFetch(`${apiBase()}/admin/ai-actions`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ items: any[]; total: number }>(response);
   },
 
   async getAppeals() {
-    const response = await fetch(`${apiBase()}/admin/appeals`, {
+    const response = await apiFetch(`${apiBase()}/admin/appeals`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ appeals: any[]; total: number }>(response);
   },
 
   async resolveAppeal(appealId: string, decision: 'accept' | 'reject', note?: string) {
-    const response = await fetch(`${apiBase()}/admin/appeals/${appealId}/resolve`, {
+    const response = await apiFetch(`${apiBase()}/admin/appeals/${appealId}/resolve`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ decision, note: note || '' })
@@ -948,7 +947,7 @@ export const adminApi = {
   },
 
   async banUser(userId: string, reason?: string) {
-    const response = await fetch(`${apiBase()}/admin/users/${userId}/ban`, {
+    const response = await apiFetch(`${apiBase()}/admin/users/${userId}/ban`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ reason: reason || '' })
@@ -960,16 +959,16 @@ export const adminApi = {
 // Federation API - cross-instance communication
 export const federationApi = {
   // Get federated timeline (local + remote posts)
-  async getTimeline(limit = 50) {
-    const response = await fetch(
-      `${apiBase()}/federation/timeline?limit=${limit}`
+  async getTimeline(limit = 20,offset = 0) {
+    const response = await apiFetch(
+      `${apiBase()}/federation/timeline?limit=${limit}&offset=${offset}`
     );
     return handleResponse<{ posts: any[]; total: number }>(response);
   },
 
   // Search users across all instances (supports @user@domain format)
   async searchUsers(query: string) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/federation/users?q=${encodeURIComponent(query)}`
     );
     return handleResponse<{ users: any[]; total: number }>(response);
@@ -977,7 +976,7 @@ export const federationApi = {
 
   async searchExternalHandle(handle: string) {
     const normalized = handle.startsWith('@') ? handle : `@${handle}`;
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/federation/users?q=${encodeURIComponent(normalized)}`
     );
     return handleResponse<{ users: any[]; total: number }>(response);
@@ -985,7 +984,7 @@ export const federationApi = {
 
   // Get all users from all known federated instances
   async getAllUsers() {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/federation/all-users`
     );
     return handleResponse<{ users: any[]; total: number }>(response);
@@ -993,7 +992,7 @@ export const federationApi = {
 
   // Follow a remote user (requires auth)
   async followRemoteUser(handle: string) {
-    const response = await fetch(`${apiBase()}/federation/follow`, {
+    const response = await apiFetch(`${apiBase()}/federation/follow`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ handle })
@@ -1003,7 +1002,7 @@ export const federationApi = {
 
   // Get public user list from a specific instance (for federation discovery)
   async getPublicUsers(limit = 100) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/federation/public-users?limit=${limit}`
     );
     return handleResponse<{ users: any[]; total: number; domain: string }>(response);
@@ -1011,7 +1010,7 @@ export const federationApi = {
 
   // Get peer health status
   async getHealth() {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/federation/health`
     );
     return handleResponse<{ self_domain: string; peers: any[] }>(response);
@@ -1019,7 +1018,7 @@ export const federationApi = {
 
   // Get user migration status
   async getMigrations() {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/federation/migrations`
     );
     return handleResponse<{ migrations: any[]; total: number }>(response);
@@ -1029,7 +1028,7 @@ export const federationApi = {
 // Export all APIs
 export const hashtagApi = {
   async getTrending(limit = 10) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/hashtags/trending?limit=${limit}`,
       { headers: getAuthHeaders() }
     );
@@ -1037,7 +1036,7 @@ export const hashtagApi = {
   },
 
   async getPostsByHashtag(tag: string, limit = 20, offset = 0) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/hashtags/tag/${encodeURIComponent(tag)}?limit=${limit}&offset=${offset}`,
       { headers: getAuthHeaders() }
     );
@@ -1045,7 +1044,7 @@ export const hashtagApi = {
   },
 
   async searchHashtags(query: string, limit = 10) {
-    const response = await fetch(
+    const response = await apiFetch(
       `${apiBase()}/hashtags/search?q=${encodeURIComponent(query)}&limit=${limit}`,
       { headers: getAuthHeaders() }
     );
@@ -1056,8 +1055,8 @@ export const hashtagApi = {
 // Story API
 export const storyApi = {
 
-  async getStoryFeed() {
-    const response = await fetch(`${apiBase()}/stories/feed`, {
+  async getStoryFeed(limit=20,offset=0) {
+    const response = await apiFetch(`${apiBase()}/stories/feed?limit=${limit}&offset=${offset}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<{ stories: any[] }>(response);
@@ -1073,7 +1072,7 @@ export const storyApi = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${apiBase()}/stories`, {
+    const response = await apiFetch(`${apiBase()}/stories`, {
       method: 'POST',
       headers,
       body: fd
@@ -1083,7 +1082,7 @@ export const storyApi = {
   },
 
   async deleteStory(id: string) {
-    const response = await fetch(`${apiBase()}/stories/${id}`, {
+    const response = await apiFetch(`${apiBase()}/stories/${id}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -1091,7 +1090,7 @@ export const storyApi = {
   },
 
   async viewStory(storyId: string) {
-    const response = await fetch(`${apiBase()}/stories/${storyId}/view`, {
+    const response = await apiFetch(`${apiBase()}/stories/${storyId}/view`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -1105,15 +1104,15 @@ export const storyApi = {
 
 // Circle API - close friends / restricted visibility
 export const circleApi = {
-  async getCircle(): Promise<any[]> {
-    const response = await fetch(`${apiBase()}/users/me/circle`, {
+  async getCircle(limit=20,offset=0): Promise<any[]> {
+    const response = await apiFetch(`${apiBase()}/users/me/circle?limit=${limit}&offset=${offset}`, {
       headers: getAuthHeaders()
     });
     return handleResponse<any[]>(response);
   },
 
   async addToCircle(userId: string): Promise<{ message: string }> {
-    const response = await fetch(`${apiBase()}/users/me/circle/${userId}`, {
+    const response = await apiFetch(`${apiBase()}/users/me/circle/${userId}`, {
       method: 'POST',
       headers: getAuthHeaders()
     });
@@ -1121,7 +1120,7 @@ export const circleApi = {
   },
 
   async removeFromCircle(userId: string): Promise<{ message: string }> {
-    const response = await fetch(`${apiBase()}/users/me/circle/${userId}`, {
+    const response = await apiFetch(`${apiBase()}/users/me/circle/${userId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
@@ -1129,7 +1128,7 @@ export const circleApi = {
   },
 
   async isInCircle(userId: string): Promise<boolean> {
-    const response = await fetch(`${apiBase()}/users/me/circle/${userId}/check`, {
+    const response = await apiFetch(`${apiBase()}/users/me/circle/${userId}/check`, {
       headers: getAuthHeaders()
     });
     const data = await handleResponse<{ in_circle: boolean }>(response);
@@ -1154,3 +1153,22 @@ export const api = {
 };
 
 export default api;
+
+// One request, one deadline. Caller cancellation is propagated; writes are never retried.
+const activeRequests = new Set<AbortController>();
+export function cancelPendingRequests() { for (const request of activeRequests) request.abort(); }
+export async function apiFetch(input: string, options: RequestInit = {}, timeout = 20000): Promise<Response> {
+ const controller = new AbortController();
+ activeRequests.add(controller);
+ const abort = () => controller.abort();
+ if (options.signal?.aborted) controller.abort();
+ options.signal?.addEventListener('abort', abort, {once:true});
+ if (/\/auth\/(login|verify|register|challenge)$/.test(input)) timeout = 90000;
+ const timer = setTimeout(abort,timeout);
+ const headers = new Headers(options.headers);
+ // Credentials must only be sent to the canonical selected API.
+ if (new URL(input).origin !== new URL(apiBase()).origin) headers.delete('Authorization');
+ try { return await fetch(input,{...options,headers: Object.fromEntries(Array.from(headers.entries()).map(([k,v]) => [k.toLowerCase() === 'authorization' ? 'Authorization' : k.toLowerCase() === 'content-type' ? 'Content-Type' : k,v])),signal:controller.signal}); }
+ catch (error) { if (controller.signal.aborted) throw new Error(options.signal?.aborted ? 'Request cancelled' : 'The service is taking longer to respond. Retry when ready.',{cause:error}); throw error; }
+ finally {activeRequests.delete(controller);clearTimeout(timer);options.signal?.removeEventListener('abort',abort);}
+}

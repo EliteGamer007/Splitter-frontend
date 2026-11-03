@@ -1,0 +1,10 @@
+import React from 'react';
+import {render,screen} from '@testing-library/react';
+import ThreadPage from '@/components/pages/ThreadPage';
+import HashtagPage from '@/components/pages/HashtagPage';
+import ProfilePage from '@/components/pages/ProfilePage';
+jest.mock('@/components/ui/theme-provider',()=>({useTheme:()=>({theme:'dark',toggleTheme:jest.fn()})}));
+beforeEach(()=>{localStorage.clear();localStorage.setItem('splitter_api_base','https://fixture.example/api/v1');localStorage.setItem('user',JSON.stringify({id:'alice'}));global.fetch=jest.fn(async()=>({ok:false,status:404,text:async()=>JSON.stringify({error:'Profile not found'})}));});
+test('thread URL missing its post ID shows a useful error instead of loading forever',async()=>{render(<ThreadPage postId={null} userData={{id:'alice'}} onNavigate={jest.fn()}/>);expect(await screen.findByText(/Choose a post/)).toBeInTheDocument();});
+test('hashtag URL missing its tag shows a useful error instead of loading forever',async()=>{render(<HashtagPage hashtag={null} onNavigate={jest.fn()}/>);expect(await screen.findByText(/Choose a hashtag/)).toBeInTheDocument();});
+test('unavailable profile does not impersonate the signed-in user',async()=>{render(<ProfilePage viewingUserId="missing" userData={{id:'alice',username:'alice',displayName:'Alice'}} onNavigate={jest.fn()}/>);expect(await screen.findByRole('alert')).toHaveTextContent(/not found|unavailable/i);expect(screen.queryByDisplayValue('Alice')).not.toBeInTheDocument();});

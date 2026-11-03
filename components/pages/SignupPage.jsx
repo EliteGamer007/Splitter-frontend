@@ -1,9 +1,11 @@
 'use client';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+
 
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/SignupPage.css';
-import { authApi, setApiBase } from '@/lib/api';
+import { authApi, setApiBase, getCurrentInstance } from '@/lib/api';
 import { generateKeyPair, storeKeyPair, exportRecoveryFile } from '@/lib/crypto';
 import WalkthroughTooltip from '@/components/ui/WalkthroughTooltip';
 import LockIcon from '@/components/ui/LockIcon';
@@ -14,44 +16,40 @@ const SERVERS = [
     id: 1,
     name: 'splitter-1',
     category: 'Primary Instance',
-    users: 0,
-    federation: 'Open',
+    users: null,
+    federation: 'Configurable',
     moderation: 'Moderate',
-    reputation: 'trusted',
+    reputation: 'configured',
     description: 'Primary Splitter instance — your main server',
     region: 'Cloud',
     location: 'splitter-m0kv.onrender.com',
-    uptime: '100%',
-    ping: '~1s'
+    uptime: 'Not measured',
+    ping: 'On demand'
   },
   {
     id: 2,
     name: 'splitter-2',
     category: 'Federation Instance',
-    users: 0,
-    federation: 'Open',
+    users: null,
+    federation: 'Configurable',
     moderation: 'Moderate',
-    reputation: 'trusted',
+    reputation: 'configured',
     description: 'Second Splitter instance for federation — separate database',
     region: 'Cloud',
     location: 'splitter-2.onrender.com',
-    uptime: '100%',
-    ping: '~1s'
+    uptime: 'Not measured',
+    ping: 'On demand'
   }
 ];
 
 const REGIONS = ['All', 'Cloud'];
-const SERVER_DISCOVERY_URLS = {
-  'splitter-1': 'https://splitter-m0kv.onrender.com/api/v1/federation/public-users?limit=1',
-  'splitter-2': 'https://splitter-2.onrender.com/api/v1/federation/public-users?limit=1'
-};
 
 export default function SignupPage({ onNavigate, updateUserData, setIsAuthenticated }) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    server: '',
+    server: typeof window !== 'undefined' ? getCurrentInstance().domain : 'splitter-1',
     username: '',
     email: '',
     password: '',
@@ -68,55 +66,9 @@ export default function SignupPage({ onNavigate, updateUserData, setIsAuthentica
   const [selectedRegion, setSelectedRegion] = useState('All');
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState('');
-  const [servers, setServers] = useState(SERVERS);
+  const [servers, setServers] = useState(() => {const instance = getCurrentInstance(); return SERVERS.some(s => s.name === instance.domain) ? SERVERS : [...SERVERS,{...SERVERS[0],id:3,name:instance.domain,location:new URL(instance.url).host,description:'Your configured peer'}];});
   const [isRefreshingServers, setIsRefreshingServers] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadServerCounts = async () => {
-      setIsRefreshingServers(true);
-      try {
-        const updated = await Promise.all(
-          SERVERS.map(async (server) => {
-            const endpoint = SERVER_DISCOVERY_URLS[server.name];
-            if (!endpoint) return server;
-
-            try {
-              const response = await fetch(endpoint);
-              if (!response.ok) {
-                return server;
-              }
-              const data = await response.json();
-              const userCount = Number(data?.total);
-              return {
-                ...server,
-                users: Number.isFinite(userCount) ? userCount : server.users
-              };
-            } catch {
-              return server;
-            }
-          })
-        );
-
-        if (isMounted) {
-          setServers(updated);
-        }
-      } finally {
-        if (isMounted) {
-          setIsRefreshingServers(false);
-        }
-      }
-    };
-
-    loadServerCounts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Filter servers based on search and region
   const filteredServers = servers.filter(server => {
     const matchesSearch = server.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       server.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -155,7 +107,7 @@ export default function SignupPage({ onNavigate, updateUserData, setIsAuthentica
       const newKeyPair = await generateKeyPair();
       setKeyPair(newKeyPair);
       // Store the key pair for this session
-      await storeKeyPair(newKeyPair);
+
     } catch (err) {
       setError('Failed to generate cryptographic keys. Please try again.');
       console.error('Key generation error:', err);
@@ -168,11 +120,11 @@ export default function SignupPage({ onNavigate, updateUserData, setIsAuthentica
     if (!keyPair || !formData.username) return;
 
     try {
-      const passphrase = window.prompt('Optional: Set a recovery file passphrase (min 8 chars). Leave blank for unencrypted export.');
-      const normalizedPassphrase = passphrase && passphrase.trim().length >= 8 ? passphrase.trim() : undefined;
+      const passphrase = window.prompt('Set a recovery file passphrase (at least 12 characters).');
+      const normalizedPassphrase = passphrase?.trim();
       await exportRecoveryFile(keyPair, formData.username, formData.server, normalizedPassphrase);
     } catch (err) {
-      setError('Failed to create recovery file');
+      setError(err.message || 'Failed to create recovery file');
     }
   };
 
@@ -227,7 +179,7 @@ export default function SignupPage({ onNavigate, updateUserData, setIsAuthentica
       try {
         const newKeyPair = await generateKeyPair();
         setKeyPair(newKeyPair);
-        await storeKeyPair(newKeyPair);
+
         console.log('✅ Auto-generated encryption keys for E2E messaging');
       } catch (err) {
         console.error('Failed to auto-generate keys:', err);
@@ -291,7 +243,8 @@ export default function SignupPage({ onNavigate, updateUserData, setIsAuthentica
       }
 
       const result = await authApi.register(registrationData, avatarFile || undefined);
-      console.log('Registration successful:', result);
+      localStorage.setItem('user', JSON.stringify(result.user));
+      storeKeyPair(keyPair);
 
       // Move to success step
       setStep(5);
@@ -393,7 +346,7 @@ Don't worry - you can always move later.`}
                 Choose a Splitter server aligned with your interests and region
               </p>
               <p style={{ color: isDarkMode ? '#777' : '#666', marginBottom: '14px', fontSize: '12px' }}>
-                {isRefreshingServers ? 'Syncing live instance user counts…' : 'User counts are live from each instance'}
+                {isRefreshingServers ? 'Syncing live instance user counts…' : 'Instances connect only when selected; peers may be offline'}
               </p>
 
               {/* Search & Filter */}
@@ -525,7 +478,7 @@ Don't worry - you can always move later.`}
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ color: isDarkMode ? '#666' : '#999', fontSize: '10px', textTransform: 'uppercase' }}>Users</div>
                         <div style={{ color: isDarkMode ? '#fff' : '#000', fontSize: '14px', fontWeight: '600' }}>
-                          {server.users.toLocaleString()}
+                          {server.users == null ? 'Not queried' : server.users.toLocaleString()}
                         </div>
                       </div>
                       <div style={{ textAlign: 'center' }}>
@@ -938,7 +891,7 @@ This is optional - you can always add it later. If you generate it now, download
                 }}
               />
               {avatarPreview && (
-                <img
+                <ProtectedImage
                   src={avatarPreview}
                   alt="Avatar preview"
                   style={{ width: '72px', height: '72px', borderRadius: '50%', objectFit: 'cover', marginTop: '8px' }}

@@ -14,15 +14,15 @@ global.IntersectionObserver = class IntersectionObserver {
 // Mock Next.js router and other dependencies
 jest.mock('@/lib/api', () => ({
   userApi: { getCurrentUser: jest.fn() },
-  postApi: { getPublicFeed: jest.fn(), getFeed: jest.fn(), getHomeFeed: jest.fn(() => Promise.resolve([])) },
+  postApi: { getPublicFeed: jest.fn(async()=>[]), getFeed: jest.fn(async()=>[]), getHomeFeed: jest.fn(() => Promise.resolve([])) },
   authApi: { isLoggedIn: jest.fn(() => false), getCurrentUserFromStorage: jest.fn(() => null) },
-  followApi: { getFollowers: jest.fn(), getFollowing: jest.fn() },
+  followApi: {getFollowers:jest.fn(async()=>[]),getFollowing:jest.fn(async()=>[]),getFollowStats:jest.fn(async()=>({followers:0,following:0}))},
   interactionApi: { getNotifications: jest.fn(() => Promise.resolve({ notifications: [] })) },
   adminApi: {},
   searchApi: {},
   messageApi: {},
   federationApi: {},
-  hashtagApi: {},
+  hashtagApi: {getTrending: jest.fn(async()=>({hashtags:[]}))},
   getCurrentInstance: jest.fn(() => ({ domain: 'splitter-1', url: 'https://splitter-m0kv.onrender.com/api/v1' })),
   resolveMediaUrl: jest.fn(url => url),
   setApiBase: jest.fn(),
@@ -30,6 +30,7 @@ jest.mock('@/lib/api', () => ({
 
 jest.mock('@/lib/crypto', () => ({
   getStoredKeyPair: jest.fn(() => Promise.resolve(null)),
+  knownIdentities: jest.fn(() => []),
   ensureEncryptionKeys: jest.fn(() => Promise.resolve({ encryptionPublicKeyBase64: 'key123' })),
 }));
 

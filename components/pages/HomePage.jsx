@@ -1,4 +1,7 @@
 'use client';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+import { scopedStorageKey } from '@/lib/browserState';
+
 
 import React, { useState, useEffect } from 'react';
 import '../styles/HomePage.css';
@@ -6,7 +9,7 @@ import HomePageWalkthrough from '@/components/ui/HomePageWalkthrough';
 import StoriesBar from '@/components/ui/StoriesBar';
 import SafeHTMLDisplay from '@/components/ui/SafeHTMLDisplay';
 import LockIcon from '@/components/ui/LockIcon';
-import { postApi, authApi, userApi, healthApi, messageApi, federationApi, hashtagApi, followApi, searchApi, getCurrentInstance } from '@/lib/api';
+import { interactionApi, adminApi, postApi, authApi, userApi, healthApi, messageApi, federationApi, hashtagApi, followApi, searchApi, getCurrentInstance } from '@/lib/api';
 
 // Sample posts for demo when no backend posts available
 const SAMPLE_POSTS = [
@@ -56,16 +59,18 @@ const SAMPLE_POSTS = [
 
 import { useTheme } from '@/components/ui/theme-provider';
 
-export default function HomePage({ onNavigate, userData, updateUserData, handleLogout, isAuthenticated, backendConnected, hasUnreadMessages }) {
+export default function HomePage({ onNavigate, userData, updateUserData, handleLogout, isAuthenticated, backendConnected, hasUnreadMessages, initialTab = 'home' }) {
   const { theme, toggleTheme } = useTheme();
 
 
 
   const isDarkMode = theme === 'dark';
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [newPostText, setNewPostText] = useState('');
-  const [newPostVisibility, setNewPostVisibility] = useState('public');
+  const [newPostVisibility, setNewPostVisibility] = useState(userData?.default_visibility || 'public');
   const [newPostExpiryMinutes, setNewPostExpiryMinutes] = useState('0');
+  const [feedOffset,setFeedOffset] = useState(0);
+  const [hasMoreFeed,setHasMoreFeed] = useState(false);
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPosting, setIsPosting] = useState(false);
@@ -190,6 +195,8 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       handle: `@${match[1]}@${match[2].toLowerCase()}`,
     };
   };
+
+  useEffect(() => {setActiveTab(initialTab);}, [initialTab]);
 
   // Fetch posts on mount and when tab changes
   useEffect(() => {
@@ -407,7 +414,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
       if (parsed) {
         setShowSearchResults(true);
       }
-      const timer = setTimeout(handleSearch, 300);
+      const timer = setTimeout(handleSearch, 400);
       return () => clearTimeout(timer);
     } else {
       setExternalHandleSuggestion('');
@@ -480,9 +487,11 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     }
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (loadMore = false) => {
+    const append = loadMore === true;
+    const offset = append ? feedOffset : 0;
     if (!navigator.onLine) {
-      const cached = localStorage.getItem(`timeline_cache_${activeTab}`);
+      const cached = localStorage.getItem(scopedStorageKey(`timeline-${activeTab}`, userData?.id));
       if (cached) {
         try {
           setPosts(JSON.parse(cached));
@@ -497,17 +506,18 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
     setError(null);
     try {
       let feedPosts;
+      let pageSize = 0;
       const token = typeof window !== 'undefined' ? localStorage.getItem('jwt_token') : null;
 
       if (activeTab === 'home') {
         // Home tab: use authenticated feed endpoint (backend JOINs on follows table)
         if (token) {
           try {
-            feedPosts = await postApi.getFeed(20, 0);
+            feedPosts = await postApi.getFeed(20, offset);
 
             // Also merge remote followed user posts from federated timeline
             try {
-              const following = await followApi.getFollowing(userData?.id, 200, 0);
+              const following = await followApi.getFollowing(userData?.id, 50, 0);
               const followedHandles = new Set(
                 (following || [])
                   .filter(u => {
@@ -518,7 +528,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
               );
 
               if (followedHandles.size > 0) {
-                const fedResult = await federationApi.getTimeline(100);
+                const fedResult = await federationApi.getTimeline(20,offset);
                 const followedRemotePosts = (fedResult.posts || []).filter(p => {
                   if (!p.is_remote) return false;
                   const identity = parseRemoteIdentity(p, getCurrentInstance().domain);
@@ -531,25 +541,26 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
               console.log('Followed remote merge skipped:', mergeErr);
             }
           } catch (authErr) {
-            feedPosts = await postApi.getPublicFeed(20, 0, false);
+            feedPosts = await postApi.getPublicFeed(20, offset, false);
           }
         } else {
-          feedPosts = await postApi.getPublicFeed(20, 0, false);
+          feedPosts = await postApi.getPublicFeed(20, offset, false);
         }
       } else if (activeTab === 'local') {
         // Local tab: local_only = true
-        feedPosts = await postApi.getPublicFeed(20, 0, true);
+        feedPosts = await postApi.getPublicFeed(20, offset, true);
       } else if (activeTab === 'federated') {
         // Federated tab: fetch from federation timeline (includes remote posts)
         try {
-          const fedResult = await federationApi.getTimeline(50);
-          feedPosts = (fedResult.posts || []).filter(p => p.is_remote === true);
+          const fedResult = await federationApi.getTimeline(20,offset);
+          feedPosts = fedResult.posts || [];
         } catch (fedErr) {
           console.error('Federation timeline failed, falling back:', fedErr);
-          feedPosts = await postApi.getPublicFeed(20, 0, false);
+          feedPosts = await postApi.getPublicFeed(20, offset, false);
         }
       }
 
+      pageSize = Math.min(20,(feedPosts || []).length);setHasMoreFeed(pageSize >= 20);setFeedOffset(offset + pageSize);
       if (feedPosts && feedPosts.length > 0) {
         const instanceInfo = getCurrentInstance();
         const transformedPosts = feedPosts.map(post => {
@@ -605,17 +616,18 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
           filteredPosts = filteredPosts.filter((item) => item.isRemote);
         }
 
-        setPosts(filteredPosts);
+        const nextPosts = append ? dedupePosts([...posts,...filteredPosts]) : filteredPosts;
+        setPosts(nextPosts);
         localStorage.setItem(
-          `timeline_cache_${activeTab}`,
-          JSON.stringify(filteredPosts)
+          scopedStorageKey(`timeline-${activeTab}`, userData?.id),
+          JSON.stringify(nextPosts)
         );
       } else {
-        setPosts([]);
+        if (!append) setPosts([]);
       }
     } catch (err) {
-      console.error('Failed to fetch posts:', err);
-      setPosts([]);
+      setError(err.message || 'Could not load posts. Please retry.');
+      if (!append) setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -854,7 +866,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             }}
             style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
           >
-            <img
+            <ProtectedImage
               src="/logo.png"
               alt="Logo"
               style={{
@@ -1045,7 +1057,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                                 fontSize: '18px'
                               }}>
                                 {isImageAvatar(user.avatar_url) ? (
-                                  <img src={resolveAssetURL(user.avatar_url, user.domain || user.instance_domain)} alt="User avatar" className="avatar-image-fill" />
+                                  <ProtectedImage src={resolveAssetURL(user.avatar_url, user.domain || user.instance_domain)} alt="User avatar" className="avatar-image-fill" />
                                 ) : (
                                   user.avatar_url || '👤'
                                 )}
@@ -1146,6 +1158,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
           </button>
           <button
             className="nav-btn-profile"
+            aria-label="Toggle color theme"
             onClick={toggleTheme}
             title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             style={{
@@ -1234,7 +1247,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             <div className="sidebar-profile">
               <div className="profile-avatar">
                 {isImageAvatar(userData.avatar) ? (
-                  <img src={resolveAssetURL(userData.avatar, userData.server)} alt="Your avatar" className="avatar-image-fill" />
+                  <ProtectedImage src={resolveAssetURL(userData.avatar, userData.server)} alt="Your avatar" className="avatar-image-fill" />
                 ) : (
                   userData.avatar
                 )}
@@ -1365,7 +1378,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                         fontSize: '14px'
                       }}>
                         {isImageAvatar(user.avatar_url) ? (
-                          <img src={resolveAssetURL(user.avatar_url, user.instance_domain)} alt="" className="avatar-image-fill" />
+                          <ProtectedImage src={resolveAssetURL(user.avatar_url, user.instance_domain)} alt="" className="avatar-image-fill" />
                         ) : (
                           user.avatar_url || '👤'
                         )}
@@ -1390,7 +1403,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
               {/* Media Preview */}
               {previewUrl && (
                 <div style={{ position: 'relative', margin: '10px 0', maxWidth: '100%' }}>
-                  <img
+                  <ProtectedImage
                     src={previewUrl}
                     alt="Preview"
                     style={{
@@ -1518,6 +1531,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
             </div>
           </div>
 
+          {hasMoreFeed && <button className="nav-item" onClick={() => fetchPosts(true)} disabled={isLoading || isOffline}>{isLoading ? 'Loading…' : 'Load more posts'}</button>}
           {/* Feed Divider */}
           <div className="feed-divider" />
 
@@ -1536,7 +1550,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                   <div className="post-author" style={{ cursor: 'pointer' }} onClick={() => onNavigate('thread', { postId: post.id, postData: post.instanceUrl ? post : undefined })}>
                     <span className="post-avatar">
                       {isImageAvatar(post.avatar) ? (
-                        <img src={resolveAssetURL(post.avatar, post.domain)} alt="Post author avatar" className="avatar-image-fill" />
+                        <ProtectedImage src={resolveAssetURL(post.avatar, post.domain)} alt="Post author avatar" className="avatar-image-fill" />
                       ) : (
                         post.avatar
                       )}
@@ -1640,7 +1654,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
                     <SafeHTMLDisplay html={post.content} onHashtagClick={(tag) => onNavigate('hashtag', { hashtag: tag })} />
                     {post.imageUrl && (
                       <div style={{ marginTop: '10px' }}>
-                        <img
+                        <ProtectedImage
                           src={resolveAssetURL(post.imageUrl, post.domain)}
                           alt="Post attachment"
                           style={{
@@ -1988,7 +2002,7 @@ export default function HomePage({ onNavigate, userData, updateUserData, handleL
               Flag this post
             </h3>
             <p style={{ margin: '0 0 20px', color: '#888', fontSize: '13px' }}>
-              Select a reason. Our AI will screen the post immediately.
+              Select a reason. Moderators will review your report; automated assistance depends on instance configuration.
             </p>
 
             {reportSuccess ? (

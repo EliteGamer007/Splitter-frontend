@@ -512,3 +512,6 @@
     font-size: 11px;
   }
 }
+.profile-info, .profile-header-top {min-width:0;}
+.profile-username, .profile-display-name, .did-value, .did-display code {white-space:normal;overflow-wrap:anywhere;word-break:normal;}
+.profile-content .follow-requests-card {padding:16px;margin-bottom:16px;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-secondary);}

@@ -5,20 +5,23 @@ import HomePage from '../../components/pages/HomePage';
 
 // Mocking the API calls used in HomePage
 jest.mock('@/lib/api', () => ({
+    resolveMediaUrl: jest.fn(url => url || ''),
     userApi: {
         getCurrentUser: jest.fn()
     },
     postApi: {
-        getHomeFeed: jest.fn(() => Promise.resolve([]))
+        getHomeFeed: jest.fn(() => Promise.resolve([])), getFeed: jest.fn(async()=>[]), getPublicFeed: jest.fn(async()=>[])
     },
     interactionApi: {
         getNotifications: jest.fn(() => Promise.resolve({ notifications: [] }))
     },
+    followApi: {getFollowing:jest.fn(async()=>[]),getFollowStats:jest.fn(async()=>({followers:0,following:0}))},
+    storyApi:{getStoryFeed:jest.fn(async()=>({stories:[]}))},
     adminApi: {},
     searchApi: {},
     messageApi: {},
     federationApi: {},
-    hashtagApi: {},
+    hashtagApi: {getTrending: jest.fn(async()=>({hashtags:[]}))},
     getCurrentInstance: jest.fn(() => ({ url: 'http://localhost:3000', domain: 'splitter-1' }))
 }));
 

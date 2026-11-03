@@ -1,10 +1,14 @@
 'use client';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+
 
 import React, { useState, useEffect, useRef } from 'react';
 import { storyApi, resolveMediaUrl } from '@/lib/api';
 
 export default function StoriesBar({ currentUser }) {
-    const [storyUsers, setStoryUsers] = useState([]);
+    const [storyOffset,setStoryOffset] = useState(0);
+  const [moreStories,setMoreStories] = useState(false);
+  const [storyUsers, setStoryUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewerOpen, setViewerOpen] = useState(false);
     const [viewerUserIdx, setViewerUserIdx] = useState(0);
@@ -22,10 +26,16 @@ export default function StoriesBar({ currentUser }) {
         fetchStories();
     }, []);
 
-    const fetchStories = async () => {
+    const loadMoreStories = async () => {
+    if(isLoading)return;setIsLoading(true);
+    try {const data=await storyApi.getStoryFeed(20,storyOffset);const groups=data.stories || [];const count=groups.reduce((sum,g)=>sum+(g.stories?.length || 0),0);setStoryOffset(previous=>previous+count);setMoreStories(count>=20);setStoryUsers(previous=>{const merged=previous.map(group=>({...group,stories:[...group.stories]}));for(const group of groups){const existing=merged.find(g=>g.author_did===group.author_did);if(existing){existing.stories=[...existing.stories,...group.stories].filter((story,index,list)=>list.findIndex(s=>s.id===story.id)===index);}else merged.push(group);}return merged;});}
+    catch(err){alert(err.message || 'Could not load more stories.');}finally{setIsLoading(false);}
+  };
+  const fetchStories = async () => {
         try {
             const data = await storyApi.getStoryFeed();
             setStoryUsers(data.stories || []);
+      const count=(data.stories || []).reduce((sum,group)=>sum+(group.stories?.length || 0),0);setStoryOffset(count);setMoreStories(count>=20);
         } catch (err) {
             console.log('Failed to fetch stories:', err);
             setStoryUsers([]);
@@ -172,7 +182,7 @@ export default function StoriesBar({ currentUser }) {
                         <div className="story-ring story-add">
                             <div className="story-avatar-inner">
                                 {isImageAvatar(currentUser?.avatar) ? (
-                                    <img
+                                    <ProtectedImage
                                         src={resolveMediaUrl(currentUser.avatar)}
                                         alt="Your avatar"
                                         className="story-avatar-img"
@@ -192,7 +202,8 @@ export default function StoriesBar({ currentUser }) {
                         <span className="story-username">Your Story</span>
                     </div>
 
-                    {/* Story User Circles */}
+          {moreStories && <button onClick={loadMoreStories} disabled={isLoading}>More stories</button>}
+          {/* Story User Circles */}
                     {storyUsers.map((user, idx) => {
                         // Skip "Your Story" as a separate circle if currentUser has a story — show it as first circle separately
                         const isOwnStory = user.author_did === currentUser?.did;
@@ -206,7 +217,7 @@ export default function StoriesBar({ currentUser }) {
                                 <div className={`story-ring ${isOwnStory ? 'story-ring-own' : 'story-ring-active'}`}>
                                     <div className="story-avatar-inner">
                                         {isImageAvatar(user.avatar_url) ? (
-                                            <img
+                                            <ProtectedImage
                                                 src={resolveMediaUrl(user.avatar_url)}
                                                 alt={user.username}
                                                 className="story-avatar-img"
@@ -267,7 +278,7 @@ export default function StoriesBar({ currentUser }) {
                             <div className="story-viewer-user-info">
                                 <div className="story-viewer-avatar">
                                     {isImageAvatar(storyUsers[viewerUserIdx].avatar_url) ? (
-                                        <img
+                                        <ProtectedImage
                                             src={resolveMediaUrl(storyUsers[viewerUserIdx].avatar_url)}
                                             alt=""
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
@@ -338,7 +349,7 @@ export default function StoriesBar({ currentUser }) {
 
                         {/* Story image */}
                         <div className="story-viewer-image-container" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <img
+                            <ProtectedImage
                                 src={storyApi.getStoryMediaUrl(storyUsers[viewerUserIdx].stories[viewerStoryIdx]?.id)}
                                 alt="Story"
                                 className="story-viewer-image"

@@ -1,4 +1,6 @@
 'use client';
+import ProtectedImage from '@/components/ui/ProtectedImage';
+
 
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionTemplate } from 'framer-motion';
@@ -169,12 +171,12 @@ No single company owns your social network anymore.`}
       >
         <div
           className="flex items-center space-x-2 group cursor-pointer"
-          onClick={() => onNavigate('/')}
+          onClick={() => onNavigate('landing')}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <img 
-              src="/logo.png" 
-              alt="Logo" 
+            <ProtectedImage
+              src="/logo.png"
+              alt="Logo"
               style={{
                 height: '66px',
                 width: 'auto',
@@ -182,7 +184,7 @@ No single company owns your social network anymore.`}
                 filter: isDarkMode ? 'invert(1) hue-rotate(180deg)' : 'none'
               }}
             />
-            <span 
+            <span
               className="text-2xl font-bold tracking-tight"
               style={{
                 background: 'linear-gradient(135deg, var(--primary-cyan), var(--accent-magenta))',
@@ -467,7 +469,7 @@ No single company owns your social network anymore.`}
                     <div className="flex gap-4 items-end flex-row-reverse">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 shadow-lg ring-2 ring-background"></div>
                       <div className="bg-primary/10 p-5 rounded-3xl rounded-br-sm border border-primary/20 text-base max-w-[85%] text-foreground shadow-sm transform transition-transform group-hover:-translate-x-1">
-                        <p className="font-medium">100%. Your keys, your database. You can export everything in JSON format anytime.</p>
+                        <p className="font-medium">Your private keys stay in your browser. Keep an encrypted recovery file so you can restore them on another device.</p>
                       </div>
                     </div>
 
@@ -476,7 +478,7 @@ No single company owns your social network anymore.`}
                       <div className="h-px bg-border flex-1"></div>
                       <div className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-muted-foreground">
                         <Shield className="w-3 h-3" />
-                        <span>E2E Encrypted</span>
+                        <span>ECDH encrypted messaging</span>
                       </div>
                       <div className="h-px bg-border flex-1"></div>
                     </div>
@@ -535,10 +537,10 @@ No single company owns your social network anymore.`}
             <p>© 2026 Splitter Protocol. Open Source.</p>
           </div>
           <div className="flex gap-8 opacity-70 hover:opacity-100 transition-opacity">
-            <a href="#" className="hover:text-primary transition-colors">Docs</a>
-            <a href="#" className="hover:text-primary transition-colors">Manifesto</a>
-            <a href="#" className="hover:text-primary transition-colors">GitHub</a>
-            <a href="#" className="hover:text-primary transition-colors">Status</a>
+            <a href="https://github.com/EliteGamer007/splitter/blob/main/README.md" className="hover:text-primary transition-colors">Docs</a>
+            <a href="https://github.com/EliteGamer007/splitter/blob/main/PRIVACY.md" className="hover:text-primary transition-colors">Privacy</a>
+            <a href="https://github.com/Jaswita/Splitter-frontend" className="hover:text-primary transition-colors">GitHub</a>
+            <button onClick={() => onNavigate('instances')} className="hover:text-primary transition-colors">Instances</button>
           </div>
         </div>
       </footer>

@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/LoginPage.css';
-import { authApi, userApi, setApiBase, getCurrentInstance } from '@/lib/api';
-import { getStoredKeyPair, signChallenge, importRecoveryFile, ensureEncryptionKeys } from '@/lib/crypto';
+import { authApi, userApi, setApiBase, getCurrentInstance, cancelPendingRequests } from '@/lib/api';
+import { getStoredKeyPair, signChallenge, importRecoveryFile, ensureEncryptionKeys, acceptRecoveryKeys, knownIdentities } from '@/lib/crypto';
 import LockIcon from '@/components/ui/LockIcon';
 
 export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticated }) {
@@ -21,6 +21,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
       did: ''
     };
   });
+  const [identities,setIdentities] = useState([]);
   const [keyPair, setKeyPair] = useState(null);
   const [challenge, setChallenge] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,10 +42,10 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
           setFormData(prev => ({ ...prev, did: stored.did }));
         }
       } catch (err) {
-        console.log('No stored keys found');
       }
     };
     loadStoredKeys();
+    setIdentities(knownIdentities() || []);
   }, []);
 
   const handleInputChange = (e) => {
@@ -53,6 +54,8 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
     // When server changes, update API base URL
     if (name === 'server') {
       setApiBase(value);
+      setKeyPair(null);setChallenge(null);setStep(1);
+      setIdentities(knownIdentities() || []);
     }
   };
 
@@ -74,24 +77,15 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
         password: formData.password
       });
 
-      console.log('Login successful:', result);
-
       // Get full user data
       const user = await userApi.getCurrentUser();
-      console.log('Current user data:', user);
-      console.log('User role:', user.role);
 
-      // Ensure encryption keys exist (generate if missing, upload if backend has none)
+      localStorage.setItem('user', JSON.stringify(user));
+      if (keyPair) {try {await acceptRecoveryKeys(keyPair, user);}catch(recoveryError){setError(recoveryError.message);}}
       try {
-        const encKeys = await ensureEncryptionKeys();
-        // Always upload the local public key to backend to ensure sync.
-        // If the backend was reset or has a stale key, this overwrites it.
-        // The private key stays in localStorage, so decrypt always matches.
-        await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
-        console.log('Encryption keys synced to backend after login');
-      } catch (encErr) {
-        console.warn('Failed to ensure encryption keys after login:', encErr);
-      }
+        const encKeys = await ensureEncryptionKeys(user);
+        if (!user.encryption_public_key) await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+      } catch (encErr) { setError(encErr.message); }
 
       updateUserData({
         id: user.id,
@@ -101,6 +95,11 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
         avatar: user.avatar_url || '👤',
         email: user.email || `${user.username}@${user.instance_domain || formData.server}`,
         bio: user.bio || '',
+        public_key: user.public_key,
+        encryption_public_key: user.encryption_public_key,
+        default_visibility: user.default_visibility || 'public',
+        message_privacy: user.message_privacy || 'everyone',
+        account_locked: !!(user.is_locked ?? user.account_locked),
         did: user.did,
         role: user.role || 'user',
         moderation_requested: user.moderation_requested || false,
@@ -121,7 +120,6 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
       });
 
     } catch (err) {
-      console.error('Login error:', err);
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
@@ -160,6 +158,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
     setError(null);
 
     try {
+      if (keyPair.did !== formData.did) throw new Error('Selected key does not match the entered DID');
       const signature = await signChallenge(keyPair.privateKey, challenge);
 
       const result = await authApi.verifyChallenge({
@@ -168,19 +167,15 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
         signature: signature
       });
 
-      console.log('DID authentication successful:', result);
-
       // Get full user data
       const user = await userApi.getCurrentUser();
 
-      // Ensure encryption keys exist (generate if missing, upload if backend has none)
+      localStorage.setItem('user', JSON.stringify(user));
+      if (keyPair) await acceptRecoveryKeys(keyPair, user);
       try {
-        const encKeys = await ensureEncryptionKeys();
-        await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
-        console.log('Encryption keys synced to backend after DID login');
-      } catch (encErr) {
-        console.warn('Failed to ensure encryption keys after DID login:', encErr);
-      }
+        const encKeys = await ensureEncryptionKeys(user);
+        if (!user.encryption_public_key) await userApi.updateEncryptionKey(encKeys.encryptionPublicKeyBase64);
+      } catch (encErr) { setError(encErr.message); }
 
       updateUserData({
         id: user.id,
@@ -190,6 +185,11 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
         avatar: user.avatar_url || '👤',
         email: user.email || `${user.username}@${user.instance_domain || formData.server}`,
         bio: user.bio || '',
+        public_key: user.public_key,
+        encryption_public_key: user.encryption_public_key,
+        default_visibility: user.default_visibility || 'public',
+        message_privacy: user.message_privacy || 'everyone',
+        account_locked: !!(user.is_locked ?? user.account_locked),
         did: user.did,
         role: user.role || 'user',
         moderation_requested: user.moderation_requested || false,
@@ -274,7 +274,8 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
               name="server"
               className="form-select"
             >
-              <option value="splitter-1">splitter-1 (Primary)</option>
+              {!['splitter-1','splitter-2'].includes(formData.server) && <option value={formData.server}>{formData.server}</option>}
+                <option value="splitter-1">splitter-1 (Primary)</option>
               <option value="splitter-2">splitter-2 (Federation)</option>
             </select>
           </div>
@@ -322,8 +323,9 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
           </div>
         )}
 
-        {error && (
-          <div style={{
+        {isLoading && <p role="status">Connecting to your instance. A sleeping service may take up to 90 seconds. <button type="button" onClick={() => {cancelPendingRequests();setIsLoading(false);}}>Cancel</button></p>}
+      {error && (
+          <div role="alert" style={{
             background: 'rgba(255, 68, 68, 0.1)',
             border: '1px solid #ff4444',
             color: '#ff4444',
@@ -378,7 +380,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
             <div style={{ textAlign: 'center', marginTop: '12px' }}>
               <button
                 type="button"
-                onClick={() => setError('Password reset coming soon!')}
+                onClick={() => setError('Password reset email is unavailable. Use DID login with your encrypted recovery file, or contact your instance administrator for account recovery.')}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -434,6 +436,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
                 className="form-input"
               />
               <small>Enter your DID or use stored keys from this device</small>
+              {identities.length > 0 && <label>Saved identity on this instance<select aria-label="Saved identity" defaultValue="" onChange={async e => {const stored = await getStoredKeyPair(e.target.value);if(stored){setKeyPair(stored);setFormData(prev=>({...prev,did:stored.did}));}}}><option value="">Choose identity</option>{identities.map(identity => <option key={identity.id} value={identity.id}>{identity.did}</option>)}</select></label>}
             </div>
 
             {!keyPair && (

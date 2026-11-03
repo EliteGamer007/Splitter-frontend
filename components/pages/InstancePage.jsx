@@ -3,83 +3,21 @@
 import React, { useState } from 'react';
 import { useTheme } from '@/components/ui/theme-provider';
 import '../styles/InstancePage.css';
+import { setApiBase } from '@/lib/api';
 
 const SERVERS = [
-  {
-    id: 1,
-    name: 'delhi-hub.in',
-    category: 'General Community',
-    users: 4350,
-    federation: 'Open',
-    moderation: 'Moderate',
-    reputation: 'trusted',
-    description: 'Community hub for Delhi region - culture, tech, and local news',
-    region: 'Delhi'
-  },
-  {
-    id: 2,
-    name: 'bangalore-tech.in',
-    category: 'Technology',
-    users: 6200,
-    federation: 'Open',
-    moderation: 'Strict',
-    reputation: 'trusted',
-    description: 'Tech hub for Bangalore - startups, developers, and innovation',
-    region: 'Karnataka'
-  },
-  {
-    id: 3,
-    name: 'mumbai-creative.in',
-    category: 'Creative & Arts',
-    users: 5100,
-    federation: 'Open',
-    moderation: 'Lenient',
-    reputation: 'trusted',
-    description: 'Creative hub for Mumbai - artists, filmmakers, and creators',
-    region: 'Maharashtra'
-  },
-  {
-    id: 4,
-    name: 'kolkata-academic.in',
-    category: 'Academic & Research',
-    users: 2800,
-    federation: 'Open',
-    moderation: 'Strict',
-    reputation: 'trusted',
-    description: 'Academic community for Eastern India - research and education',
-    region: 'West Bengal'
-  },
-  {
-    id: 5,
-    name: 'hyderabad-network.in',
-    category: 'Technology',
-    users: 3900,
-    federation: 'Open',
-    moderation: 'Moderate',
-    reputation: 'trusted',
-    description: 'Tech community for Hyderabad - AI, ML, and software development',
-    region: 'Telangana'
-  },
-  {
-    id: 6,
-    name: 'privacy-guard.in',
-    category: 'Privacy & Security',
-    users: 1200,
-    federation: 'Open',
-    moderation: 'Strict',
-    reputation: 'trusted',
-    description: 'Privacy-focused server for India - secure communications and encryption',
-    region: 'Pan-India'
-  }
+ {id:1,name:'splitter-1',category:'Primary Instance',users:null,federation:'Configurable',moderation:'Server policy',reputation:'unverified',description:'Primary Splitter community. Connect when selected.',region:'Cloud'},
+ {id:2,name:'splitter-2',category:'Optional Peer',users:null,federation:'On demand',moderation:'Server policy',reputation:'unverified',description:'Configurable federation peer; may be offline.',region:'Cloud'}
 ];
-
-const REGIONS = ['All', 'Delhi', 'Karnataka', 'Maharashtra', 'West Bengal', 'Telangana', 'Pan-India'];
-const MODERATION_LEVELS = ['All', 'Strict', 'Moderate', 'Lenient'];
+const REGIONS = ['All','Cloud'];
+const MODERATION_LEVELS = ['All','Server policy'];
 
 export default function InstancePage({ onNavigate }) {
   const { theme, toggleTheme } = useTheme();
   const isDarkMode = theme === 'dark';
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [customPeer,setCustomPeer] = useState('');
+  const [peerError,setPeerError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('All');
   const [selectedModeration, setSelectedModeration] = useState('All');
@@ -92,7 +30,7 @@ export default function InstancePage({ onNavigate }) {
     const matchesRegion = selectedRegion === 'All' || server.region === selectedRegion;
     const matchesModeration = selectedModeration === 'All' || server.moderation === selectedModeration;
 
-    return matchesSearch && matchesRegion && matchesModeration;
+    return matchesSearch && matchesRegion && matchesModeration && (selectedFilter !== 'trusted' || server.reputation === 'trusted');
   });
 
   return (
@@ -169,11 +107,10 @@ export default function InstancePage({ onNavigate }) {
           </div>
 
           <button
-            className="filter-chip disabled"
-            disabled
-            title="Reputation filtering - Sprint 2"
+            className="filter-chip" onClick={() => setSelectedFilter(selectedFilter === 'trusted' ? 'all' : 'trusted')}
+            title="Only show peers with verified reputation metadata"
           >
-            ⭐ Reputation (Sprint 2)
+            {selectedFilter === 'trusted' ? 'Show all peers' : 'Verified peers'}
           </button>
 
           <button
@@ -194,6 +131,11 @@ export default function InstancePage({ onNavigate }) {
         </div>
       </div>
 
+      <form className="instance-controls" onSubmit={e => {e.preventDefault();try {setApiBase(customPeer);onNavigate('signup');}catch(err){setPeerError(err.message);}}}>
+        <label>Custom peer URL <input required type="url" placeholder="https://your-instance.example" value={customPeer} onChange={e => setCustomPeer(e.target.value)} /></label>
+        <button className="instance-card-btn" type="submit">Connect to custom peer</button>
+        {peerError && <p role="alert">{peerError}</p>}
+      </form>
       {/* Servers Grid */}
       <div className="instance-grid">
         {filteredServers.map(server => (
@@ -221,7 +163,7 @@ export default function InstancePage({ onNavigate }) {
             <div className="instance-card-stats">
               <div className="stat">
                 <span className="stat-label">Users</span>
-                <span className="stat-value">{server.users.toLocaleString()}</span>
+                <span className="stat-value">{server.users == null ? 'Not queried' : server.users.toLocaleString()}</span>
               </div>
               <div className="stat">
                 <span className="stat-label">Region</span>
@@ -257,7 +199,7 @@ export default function InstancePage({ onNavigate }) {
 
             <button
               className={`instance-card-btn ${server.blocked ? 'blocked-btn' : ''}`}
-              onClick={() => !server.blocked && onNavigate('signup')}
+              onClick={() => {if (!server.blocked) {setApiBase(server.name);onNavigate('signup');}}}
               disabled={server.blocked}
             >
               {server.blocked ? 'Blocked' : 'Join Server'}

@@ -45,6 +45,7 @@ jest.mock('lucide-react', () => ({
 }));
 
 jest.mock('@/lib/api', () => ({
+    resolveMediaUrl: jest.fn(url => url || ''),
     getCurrentInstance: jest.fn(() => ({ url: 'http://localhost:3000' }))
 }));
 
