@@ -6,7 +6,7 @@ import {apiFetch,getCurrentInstance,resolveMediaUrl} from '@/lib/api';
 export default function ProtectedImage({src,alt='',onError,...props}: Omit<ImgHTMLAttributes<HTMLImageElement>,'src'> & {src?:string}) {
  const [blobUrl,setBlobUrl]=useState<string | null>(null);
  const [failed,setFailed]=useState(false);
- const imageSrc=resolveMediaUrl(src);
+ const imageSrc=src && /^(?:\/?api\/v1\/|\/uploads\/|\/media\/)/.test(src) ? resolveMediaUrl(src) : src;
  let protectedMedia=false;
  try {const url=new URL(imageSrc || '',typeof location==='undefined'?'http://localhost':location.href);protectedMedia=url.origin===new URL(getCurrentInstance().url).origin && (/\/api\/v1\/media\//.test(url.pathname)||/^\/api\/v1\/stories\/[^/]+\/media$/.test(url.pathname)||/^\/uploads\/(posts|stories)\//.test(url.pathname));}catch{}
  useEffect(()=>{

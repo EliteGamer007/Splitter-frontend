@@ -11,6 +11,12 @@ test('private local media uses bearer fetch and revokes decrypted session blobs 
 });
 test('remote images never receive a session token',()=>{render(<ProtectedImage src="https://remote.example/api/v1/media/id" alt="Public remote"/>);expect(fetch).not.toHaveBeenCalled();expect(screen.getByAltText('Public remote')).toHaveAttribute('src','https://remote.example/api/v1/media/id');});
 
+test('frontend branding stays on the frontend origin',()=>{
+ render(<ProtectedImage src="/splitter.png" alt="Logo"/>);
+ expect(screen.getByAltText('Logo')).toHaveAttribute('src','/splitter.png');
+ expect(fetch).not.toHaveBeenCalled();
+});
+
 test('locked-account story media uses authenticated retrieval at the selected API',async()=>{
  render(<ProtectedImage src="/api/v1/stories/story-id/media" alt="Private story"/>);
  await waitFor(()=>expect(screen.getByAltText('Private story')).toHaveAttribute('src','blob:fixture'));
