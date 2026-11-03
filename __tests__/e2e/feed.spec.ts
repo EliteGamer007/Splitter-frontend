@@ -5,6 +5,6 @@ test('API errors appear in the real login form without a fabricated success',asy
  await page.getByLabel(/^Username:/).fill('disposable_fixture');
  await page.getByLabel(/^Password:/).fill('invalid-fixture-password');
  await page.getByRole('button',{name:'Sign In',exact:true}).click();
- await expect(page.getByText(/Invalid credentials/)).toBeVisible();
+ await expect(page.getByRole('alert')).toContainText('Invalid credentials');
  await expect(page.getByRole('heading',{name:'Welcome Back'})).toBeVisible();
 });

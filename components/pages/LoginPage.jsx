@@ -120,7 +120,6 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
       });
 
     } catch (err) {
-      console.error('Login error:', err);
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
@@ -326,7 +325,7 @@ export default function LoginPage({ onNavigate, updateUserData, setIsAuthenticat
 
         {isLoading && <p role="status">Connecting to your instance. A sleeping service may take up to 90 seconds. <button type="button" onClick={() => {cancelPendingRequests();setIsLoading(false);}}>Cancel</button></p>}
       {error && (
-          <div style={{
+          <div role="alert" style={{
             background: 'rgba(255, 68, 68, 0.1)',
             border: '1px solid #ff4444',
             color: '#ff4444',
